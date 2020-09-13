@@ -1,5 +1,4 @@
-# Use a C++11 distro
-dist: trusty
+dist: bionic
 sudo: required
 
 # Enable C++ support
@@ -10,45 +9,24 @@ compiler: gcc
 
 env:
   global:
-    # coverity key
-    - secure: "NKZbBnMALGIIQJy/s2kc3EST/stw+gjhtrGq0jkbsWr7Wx3FH+lmLeHNsDXRnD1VbpG02c5YsLllqz9OVu+0yxWGepvKNmCz1cNITIALEHbrax8/Af9LzPRL/QZxS/Qe11sMuySp4X16mFBUyxMd/X+I9i96Xf1vKkZABklYD1Q="
+    # The next declaration is the encrypted COVERITY_SCAN_TOKEN, created
+    #   via the "travis encrypt" command using the project repo's public key
+    - secure: "KyluHdkj4MB8LK6zcKisLhMTjCsyrv2nk2vZ2e8/RwDNyWlUJidY2AWHELCSw9wZXZmRz6la0DuFgcrQUxEGwF0uyh+lcKt7zOmqrkUegEow94Q7TspB002YkhcIjs83vKkP2XI5+gPJGytL91izI5VOI47ftyYwej+kiISnWrktI//Hyfqknnk55p8pwpDxjf0tY4bVTMgnzt3X47rTertNE9UnnqT6OObfkCJHz9E6T+iNgTSly0Cnp/yEQ5SgEhv5EI6Vo00QZDSGvAaztY1LzdQReXgVrIONViN/QqBg64LDCx5IO8JDA2YFh0vz0m0CLJX0mLXfmGyOdTGJ3FhKf4Zy++lJQ2jAHyuSRRojrLYA2uaCr+zl0gQ6CAY7xWR/dTLwzwJS6TuPENruOW1YKErs/8Mc/cC5rcJ4MPum1wwHY/jAnmXmcF1kQbhb48/dov6PbLbAdCpfJ/VQChu/x+9SWVyLqlmJaLW8AGd9ycKqwaRpHnyRy9Mve30u47KHWZMaDQAGU+SOcNYNTdF0fk+CBl695q7Q/W3NT30VwaeYz2J0sRp+Lt51879C5RBb4dIT3Bftveol4e/jpej9vrmt8mb1J86ET2CRlFMrzpdmSZuRSXvtJNu9ClHFS0FEA/kahCHeakBaC8Zi9XPGK00bv5niJZMQvj+k2BE="
 
-# addons
+before_install:
+  - echo -n | openssl s_client -connect https://scan.coverity.com:443 | sed -ne '/-BEGIN CERTIFICATE-/,/-END CERTIFICATE-/p' | sudo tee -a /etc/ssl/certs/ca-
+
 addons:
-  apt:
-    packages:
-      - gcc-6
-      - g++-6
-    sources:
-      - ubuntu-toolchain-r-test
-
   coverity_scan:
     project:
       name: "RespiraWorks/printf"
-      description: "Tiny printf implementation"
+      description: "Printf for ventilator debug interface"
     notification_email: martin@respira.works
     build_command_prepend: "make clean"
     build_command: "make"
     branch_pattern: master
 
-before_install:
-  # connect coverity
-  - echo -n | openssl s_client -connect scan.coverity.com:443 | sed -ne '/-BEGIN CERTIFICATE-/,/-END CERTIFICATE-/p' | sudo tee -a /etc/ssl/certs/ca-
-
-# Active branches
-branches:
-  only:
-   - master
-
 script:
-  # Link gcc-6 and g++-6 to their standard commands
-  - sudo rm /usr/bin/gcc
-  - sudo rm /usr/bin/g++
-  - sudo ln -s /usr/bin/gcc-6 /usr/bin/gcc
-  - sudo ln -s /usr/bin/g++-6 /usr/bin/g++
-  # Export CC and CXX
-  - export CC=/usr/bin/gcc-6
-  - export CXX=/usr/bin/g++-6
   # Check versions of gcc, g++
   - gcc -v && g++ -v
   # Run build commands
