@@ -292,7 +292,7 @@ static size_t _ntoa_long(out_fct_type out, char* buffer, size_t idx, size_t maxl
   if (!(flags & FLAGS_PRECISION) || value) {
     do {
       const char digit = (char)(value % base);
-      buf[len++] = digit < 10 ? '0' + digit : (flags & FLAGS_UPPERCASE ? 'A' : 'a') + digit - 10;
+      buf[len++] = (char)(digit < 10 ? '0' + digit : (flags & FLAGS_UPPERCASE ? 'A' : 'a') + digit - 10);
       value /= base;
     } while (value && (len < PRINTF_NTOA_BUFFER_SIZE));
   }
@@ -317,7 +317,7 @@ static size_t _ntoa_long_long(out_fct_type out, char* buffer, size_t idx, size_t
   if (!(flags & FLAGS_PRECISION) || value) {
     do {
       const char digit = (char)(value % base);
-      buf[len++] = digit < 10 ? '0' + digit : (flags & FLAGS_UPPERCASE ? 'A' : 'a') + digit - 10;
+      buf[len++] = (char)(digit < 10 ? '0' + digit : (flags & FLAGS_UPPERCASE ? 'A' : 'a') + digit - 10);
       value /= base;
     } while (value && (len < PRINTF_NTOA_BUFFER_SIZE));
   }
@@ -383,7 +383,7 @@ static size_t _ftoa(out_fct_type out, char* buffer, size_t idx, size_t maxlen, d
   int whole = (int)value;
   double tmp = (value - whole) * pow10[prec];
   unsigned long frac = (unsigned long)tmp;
-  diff = tmp - frac;
+  diff = tmp - (double)frac;
 
   if (diff > 0.5) {
     ++frac;
