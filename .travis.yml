@@ -11,7 +11,7 @@ env:
   global:
     # The next declaration is the encrypted COVERITY_SCAN_TOKEN, created
     #   via the "travis encrypt" command using the project repo's public key
-    - secure: "KyluHdkj4MB8LK6zcKisLhMTjCsyrv2nk2vZ2e8/RwDNyWlUJidY2AWHELCSw9wZXZmRz6la0DuFgcrQUxEGwF0uyh+lcKt7zOmqrkUegEow94Q7TspB002YkhcIjs83vKkP2XI5+gPJGytL91izI5VOI47ftyYwej+kiISnWrktI//Hyfqknnk55p8pwpDxjf0tY4bVTMgnzt3X47rTertNE9UnnqT6OObfkCJHz9E6T+iNgTSly0Cnp/yEQ5SgEhv5EI6Vo00QZDSGvAaztY1LzdQReXgVrIONViN/QqBg64LDCx5IO8JDA2YFh0vz0m0CLJX0mLXfmGyOdTGJ3FhKf4Zy++lJQ2jAHyuSRRojrLYA2uaCr+zl0gQ6CAY7xWR/dTLwzwJS6TuPENruOW1YKErs/8Mc/cC5rcJ4MPum1wwHY/jAnmXmcF1kQbhb48/dov6PbLbAdCpfJ/VQChu/x+9SWVyLqlmJaLW8AGd9ycKqwaRpHnyRy9Mve30u47KHWZMaDQAGU+SOcNYNTdF0fk+CBl695q7Q/W3NT30VwaeYz2J0sRp+Lt51879C5RBb4dIT3Bftveol4e/jpej9vrmt8mb1J86ET2CRlFMrzpdmSZuRSXvtJNu9ClHFS0FEA/kahCHeakBaC8Zi9XPGK00bv5niJZMQvj+k2BE="
+    - secure: "BI/LipviGMg5vmQM3G1ZMUksOa8TDJWbyR/5BV6P1xQuv152LLbhXacX/wlxNaPfmFshhi6x9UwYbJ/TQCAfVi1vEIlGinDxAW9OUWVgCNsC0ipw1wI0ro+wGuSahGm3k58Y2jUMKgi22RNfyNTPmAlDA4uBaIZvSU6sah75EUv9lQOIsB+uS9i16JkAbAjfE/cdZtW1upJN3vA+b8FhItg4d8jGadVMrnCgkf7Gna6Oo4z3m8KFuGZKY5HrbcpM0ty7zV+0f44s92O4AYKzUnYwE7uaqORv2RF/2W8a4zirIFsbzaHgGsRMyxt/vktL1Nkk2IhK/fsSLjFDao0kGUnLkCfcx1icO6t4pSgxgnsl0n9p4M8dSibG2RYDo5sqU0B7a/mgUIVWUXTniYZOFA93eIA/JMgkdI1KTMInwzDLjygqILbLoS3tiirkB4ElHk4YUaLgKpRiN9V5wg+Beeittq6KIqAzWXoesDAN4KVEvc9NRUFGxb5rWaRmMYJKPhXXIS5iZivSmYcOgl9Hade31s0EehIsi4YvHVThxeg/zAqXFGof3bIId9r/77r3nIKVkZhhbbd8g/jR1SxH2AJEMWpLIfzgiDvG0LwIzdbNeee1xGQsTGV17XL/c/FaBm9CVCRp3iAj4KgNF8+CAkojATVEl4YBl6JUMiNFykw="
 
 before_install:
   - echo -n | openssl s_client -connect https://scan.coverity.com:443 | sed -ne '/-BEGIN CERTIFICATE-/,/-END CERTIFICATE-/p' | sudo tee -a /etc/ssl/certs/ca-
@@ -24,7 +24,7 @@ addons:
     notification_email: martin@respira.works
     build_command_prepend: "make clean"
     build_command: "make"
-    branch_pattern: master
+    branch_pattern: coverity_scan
 
 script:
   # Check versions of gcc, g++
@@ -39,3 +39,4 @@ script:
 after_success:
   ## Report to codecov
   - bash <(curl -s https://codecov.io/bash)
+
