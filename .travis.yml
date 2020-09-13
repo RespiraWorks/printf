@@ -1,4 +1,3 @@
-# Use a C++11 distro
 dist: bionic
 sudo: required
 
@@ -26,11 +25,6 @@ addons:
     build_command_prepend: "make clean"
     build_command: "make"
     branch_pattern: master
-
-# Active branches
-branches:
-  only:
-   - master
 
 script:
   # Check versions of gcc, g++
