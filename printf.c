@@ -122,10 +122,10 @@
 #define ONE_U      1U
 #define ONE_ULL    1ULL
 #define I_1023     1023
-#define I_1023_U   1023U
-#define I_1023_ULL 1023ULL
-#define X_0x7FFU   I_1023U
-#define X_0x7FFULL I_1023ULL
+#define I_1023U    1023U
+#define I_1023ULL  1023ULL
+#define X_0x07FFU   I_1023U
+#define X_0x07FFULL I_1023ULL
 
 // import float.h for DBL_MAX
 #if defined(PRINTF_SUPPORT_FLOAT)
@@ -516,7 +516,7 @@ static size_t _etoa(out_fct_type out, char* buffer, size_t idx, size_t maxlen, d
   exp2 = (int)(expval * 3.321928094887362 + FLOATING_HALF);
   const double z  = expval * 2.302585092994046 - exp2 * 0.6931471805599453;
   const double z2 = z * z;
-  conv.U = (uint64_t)(exp2 + I_1023) << 52U;
+  conv.U = (uint64_t)(exp2 + I_1023) << SHIFT_52U;
   // compute exp(z) using continued fractions, see https://en.wikipedia.org/wiki/Exponential_function#Continued_fractions_for_ex
   conv.F *= 1 + 2 * z / (2 - z + (z2 / (6 + (z2 / (10 + z2 / 14)))));
   // correct for rounding errors
@@ -616,10 +616,8 @@ static int _vsnprintf(out_fct_type out, char* buffer, const size_t maxlen, const
       format++;
       continue;
     }
-    else {
-      // yes, evaluate it
-      format++;
-    }
+    // yes, evaluate it
+    format++;
 
     // evaluate flags
     flags = 0U;
