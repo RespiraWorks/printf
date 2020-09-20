@@ -119,13 +119,37 @@
 #define SHIFT_52U 52U
 #define FLOATING_HALF 0.5
 #define FLOATING_ONE_AND_HALF 1.5
+#define FLOATING_1eminus4 1e-4
+#define FLOATING_1e6      1e6
 #define ONE_U      1U
 #define ONE_ULL    1ULL
+#define I_1      1
+#define I_2      2
+#define I_4U     4U
+#define I_5U     5U
+#define I_6      6
+#define I_9U     9U
+#define I_10     10
+#define I_14     14
+#define I_100      100
 #define I_1023     1023
 #define I_1023U    1023U
 #define I_1023ULL  1023ULL
 #define X_0x07FFU   I_1023U
 #define X_0x07FFULL I_1023ULL
+#define I_1000        1000
+#define I_10000       10000
+#define I_100000      100000
+#define I_1000000     1000000
+#define I_10000000    10000000
+#define I_100000000   100000000
+#define I_1000000000  1000000000
+#define FLOATING_0_1760912590558    0.1760912590558
+#define FLOATING_0_301029995663981  0.301029995663981
+#define FLOATING_0_289529654602168  0.289529654602168
+#define FLOATING_3_321928094887362  3.321928094887362
+#define FLOATING_2_302585092994046  2.302585092994046
+#define FLOATING_0_6931471805599453 0.6931471805599453
 
 // import float.h for DBL_MAX
 #if defined(PRINTF_SUPPORT_FLOAT)
@@ -307,7 +331,7 @@ static size_t _ntoa_long(out_fct_type out, char* buffer, size_t idx, size_t maxl
   if (!(flags & FLAGS_PRECISION) || value) {
     do {
       const unsigned long digit = (value % base);
-      buf[len++] = (const char) (digit < 10 ? '0' + digit : (flags & FLAGS_UPPERCASE ? 'A' : 'a') + digit - 10);
+      buf[len++] = (const char) (digit < I_10 ? '0' + digit : (flags & FLAGS_UPPERCASE ? 'A' : 'a') + digit - I_10);
       value /= base;
     } while (value && (len < PRINTF_NTOA_BUFFER_SIZE));
   }
@@ -332,7 +356,7 @@ static size_t _ntoa_long_long(out_fct_type out, char* buffer, size_t idx, size_t
   if (!(flags & FLAGS_PRECISION) || value) {
     do {
       const unsigned long digit = value % base;
-      buf[len++] = (const char) (digit < 10 ? '0' + digit : (flags & FLAGS_UPPERCASE ? 'A' : 'a') + digit - 10);
+      buf[len++] = (const char) (digit < I_10 ? '0' + digit : (flags & FLAGS_UPPERCASE ? 'A' : 'a') + digit - I_10);
       value /= base;
     } while (value && (len < PRINTF_NTOA_BUFFER_SIZE));
   }
@@ -358,7 +382,7 @@ static size_t _ftoa(out_fct_type out, char* buffer, size_t idx, size_t maxlen, d
   double diff = 0.0;
 
   // powers of 10
-  static const double pow10[] = { 1, 10, 100, 1000, 10000, 100000, 1000000, 10000000, 100000000, 1000000000 };
+  static const double pow10[] = { 1, I_10, I_100, I_1000, I_10000, I_100000, I_1000000, I_10000000, I_100000000, I_1000000000 };
 
   // test for special values
   if (value != value) {
@@ -393,13 +417,13 @@ static size_t _ftoa(out_fct_type out, char* buffer, size_t idx, size_t maxlen, d
     prec = PRINTF_DEFAULT_FLOAT_PRECISION;
   }
   // limit precision to 9, cause a prec >= 10 can lead to overflow errors
-  while ((len < PRINTF_FTOA_BUFFER_SIZE) && (prec > 9U)) {
+  while ((len < PRINTF_FTOA_BUFFER_SIZE) && (prec > I_9U)) {
     buf[len++] = '0';
     prec--;
   }
 
-  int whole = (int)value;
-  double tmp = (value - whole) * pow10[prec];
+  unsigned whole = (unsigned)value;
+  double tmp = (value - (double)whole) * pow10[prec];
   unsigned long frac = (unsigned long)tmp;
   diff = tmp - (double)frac;
 
@@ -413,14 +437,14 @@ static size_t _ftoa(out_fct_type out, char* buffer, size_t idx, size_t maxlen, d
   }
   else if (diff < FLOATING_HALF) {
   }
-  else if ((frac == 0U) || (frac & 1U)) {
+  else if ((frac == 0U) || (frac & ONE_U)) {
     // if halfway, round up if odd OR if last digit is 0
     ++frac;
   }
 
   if (prec == 0U) {
     diff = value - (double)whole;
-    if ((!(diff < FLOATING_HALF) || (diff > FLOATING_HALF)) && (whole & 1)) {
+    if ((!(diff < FLOATING_HALF) || (diff > FLOATING_HALF)) && (whole & (unsigned)1)) {
       // exactly 0.5 and ODD, then round up
       // 1.5 -> 2, but 2.5 -> 2
       ++whole;
@@ -448,8 +472,8 @@ static size_t _ftoa(out_fct_type out, char* buffer, size_t idx, size_t maxlen, d
 
   // do whole part, number is reversed
   while (len < PRINTF_FTOA_BUFFER_SIZE) {
-    buf[len++] = (char)(48 + (whole % 10));
-    if (!(whole /= 10)) {
+    buf[len++] = (char)((unsigned)'0' + (whole % I_10));
+    if (!(whole /= I_10)) {
       break;
     }
   }
@@ -510,28 +534,30 @@ static size_t _etoa(out_fct_type out, char* buffer, size_t idx, size_t maxlen, d
   conv.F = value;
   int exp2 = (int)((conv.U >> SHIFT_52U) & X_0x07FFU) - I_1023;           // effectively log2
   conv.U = (conv.U & ((ONE_ULL << SHIFT_52U) - ONE_U)) | (I_1023ULL << SHIFT_52U);  // drop the exponent so conv.F is now in [1,2)
+
   // now approximate log10 from the log2 integer part and an expansion of ln around 1.5
-  int expval = (int)(0.1760912590558 + exp2 * 0.301029995663981 + (conv.F - FLOATING_ONE_AND_HALF) * 0.289529654602168);
+  int expval = (int)(FLOATING_0_1760912590558 + exp2 * FLOATING_0_301029995663981 + (conv.F - FLOATING_ONE_AND_HALF) * FLOATING_0_289529654602168);
   // now we want to compute 10^expval but we want to be sure it won't overflow
-  exp2 = (int)(expval * 3.321928094887362 + FLOATING_HALF);
-  const double z  = expval * 2.302585092994046 - exp2 * 0.6931471805599453;
+  exp2 = (int)(expval * FLOATING_3_321928094887362 + FLOATING_HALF);
+  const double z  = expval * FLOATING_2_302585092994046 - exp2 * FLOATING_0_6931471805599453;
+
   const double z2 = z * z;
   conv.U = (uint64_t)(exp2 + I_1023) << SHIFT_52U;
   // compute exp(z) using continued fractions, see https://en.wikipedia.org/wiki/Exponential_function#Continued_fractions_for_ex
-  conv.F *= 1 + 2 * z / (2 - z + (z2 / (6 + (z2 / (10 + z2 / 14)))));
+  conv.F *= I_1 + I_2 * z / (I_2 - z + (z2 / (I_6 + (z2 / (I_10 + z2 / I_14)))));
   // correct for rounding errors
   if (value < conv.F) {
     expval--;
-    conv.F /= BASE_10;
+    conv.F /= BASE_10U;
   }
 
   // the exponent format is "%+03d" and largest value is "307", so set aside 4-5 characters
-  unsigned int minwidth = ((expval < 100) && (expval > -100)) ? 4U : 5U;
+  unsigned int minwidth = ((expval < I_100) && (expval > -I_100)) ? I_4U : I_5U;
 
   // in "%g" mode, "prec" is the number of *significant figures* not decimals
   if (flags & FLAGS_ADAPT_EXP) {
     // do we want to fall-back to "%f" mode?
-    if ((value >= 1e-4) && (value < 1e6)) {
+    if ((value >= FLOATING_1eminus4) && (value < FLOATING_1e6)) {
       if ((int)prec > expval) {
         prec = (unsigned)((int)prec - expval - 1);
       }
@@ -579,7 +605,7 @@ static size_t _etoa(out_fct_type out, char* buffer, size_t idx, size_t maxlen, d
     // output the exponential symbol
     out((flags & FLAGS_UPPERCASE) ? 'E' : 'e', buffer, idx++, maxlen);
     // output the exponent value
-    idx = _ntoa_long(out, buffer, idx, maxlen, (expval < 0) ? -expval : expval, expval < 0, 10, 0, minwidth-1, FLAGS_ZEROPAD | FLAGS_PLUS);
+    idx = _ntoa_long(out, buffer, idx, maxlen, (expval < 0) ? -expval : expval, expval < 0, I_10, 0, minwidth-1, FLAGS_ZEROPAD | FLAGS_PLUS);
     // might need to right-pad spaces
     if (flags & FLAGS_LEFT) {
       while (idx - start_idx < width) {
@@ -623,11 +649,11 @@ static int _vsnprintf(out_fct_type out, char* buffer, const size_t maxlen, const
     flags = 0U;
     do {
       switch (*format) {
-        case '0': flags |= FLAGS_ZEROPAD; format++; n = 1U; break;
-        case '-': flags |= FLAGS_LEFT;    format++; n = 1U; break;
-        case '+': flags |= FLAGS_PLUS;    format++; n = 1U; break;
-        case ' ': flags |= FLAGS_SPACE;   format++; n = 1U; break;
-        case '#': flags |= FLAGS_HASH;    format++; n = 1U; break;
+        case '0': flags |= FLAGS_ZEROPAD; format++; n = ONE_U; break;
+        case '-': flags |= FLAGS_LEFT;    format++; n = ONE_U; break;
+        case '+': flags |= FLAGS_PLUS;    format++; n = ONE_U; break;
+        case ' ': flags |= FLAGS_SPACE;   format++; n = ONE_U; break;
+        case '#': flags |= FLAGS_HASH;    format++; n = ONE_U; break;
         default :                                   n = 0U; break;
       }
     } while (n);
@@ -801,7 +827,7 @@ static int _vsnprintf(out_fct_type out, char* buffer, const size_t maxlen, const
 #endif  // PRINTF_SUPPORT_EXPONENTIAL
 #endif  // PRINTF_SUPPORT_FLOAT
       case 'c' : {
-        unsigned int l = 1U;
+        unsigned int l = ONE_U;
         // pre padding
         if (!(flags & FLAGS_LEFT)) {
           while (l++ < width) {
@@ -877,7 +903,7 @@ static int _vsnprintf(out_fct_type out, char* buffer, const size_t maxlen, const
   }
 
   // termination
-  out((char)0, buffer, idx < maxlen ? idx : maxlen - 1U, maxlen);
+  out((char)0, buffer, idx < maxlen ? idx : maxlen - ONE_U, maxlen);
 
   // return written chars without terminating \0
   return (int)idx;
