@@ -16,7 +16,7 @@ PATH_TOOLS_UTIL      =
 
 PATH_BIN       = bin
 PATH_TMP       = tmp
-PATH_NUL       = /dev/null
+PATH_NUL       = /dev/stderr
 PATH_OBJ       = $(PATH_TMP)/obj
 PATH_LST       = $(PATH_TMP)/lst
 PATH_ERR       = $(PATH_TMP)/err

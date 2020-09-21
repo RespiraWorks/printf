@@ -135,8 +135,8 @@
 #define I_1023     1023
 #define I_1023U    1023U
 #define I_1023ULL  1023ULL
-#define X_0x07FFU   I_1023U
-#define X_0x07FFULL I_1023ULL
+#define X_0x07FFU   0x07FFU
+#define X_0x07FFULL 0x07FFULL
 #define I_1000        1000
 #define I_10000       10000
 #define I_100000      100000
