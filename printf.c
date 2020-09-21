@@ -331,7 +331,7 @@ static size_t _ntoa_long(out_fct_type out, char* buffer, size_t idx, size_t maxl
   if (!(flags & FLAGS_PRECISION) || value) {
     do {
       const unsigned long digit = (value % base);
-      buf[len++] = (const char) (digit < I_10 ? '0' + digit : (flags & FLAGS_UPPERCASE ? 'A' : 'a') + digit - I_10);
+      buf[len++] = (char) (digit < I_10 ? '0' + digit : (flags & FLAGS_UPPERCASE ? 'A' : 'a') + digit - I_10);
       value /= base;
     } while (value && (len < PRINTF_NTOA_BUFFER_SIZE));
   }
@@ -356,7 +356,7 @@ static size_t _ntoa_long_long(out_fct_type out, char* buffer, size_t idx, size_t
   if (!(flags & FLAGS_PRECISION) || value) {
     do {
       const unsigned long digit = value % base;
-      buf[len++] = (const char) (digit < I_10 ? '0' + digit : (flags & FLAGS_UPPERCASE ? 'A' : 'a') + digit - I_10);
+      buf[len++] = (char) (digit < I_10 ? '0' + digit : (flags & FLAGS_UPPERCASE ? 'A' : 'a') + digit - I_10);
       value /= base;
     } while (value && (len < PRINTF_NTOA_BUFFER_SIZE));
   }
@@ -385,7 +385,7 @@ static size_t _ftoa(out_fct_type out, char* buffer, size_t idx, size_t maxlen, d
   static const double pow10[] = { 1, I_10, I_100, I_1000, I_10000, I_100000, I_1000000, I_10000000, I_100000000, I_1000000000 };
 
   // test for special values
-  if (value != value) {
+  if ( isnan(value) ) {
     return _out_rev(out, buffer, idx, maxlen, "nan", 3, width, flags);
   }
   if (value < -DBL_MAX) {
@@ -509,7 +509,13 @@ static size_t _ftoa(out_fct_type out, char* buffer, size_t idx, size_t maxlen, d
 static size_t _etoa(out_fct_type out, char* buffer, size_t idx, size_t maxlen, double value, unsigned int prec, unsigned int width, unsigned int flags)
 {
   // check for NaN and special values
-  if ((value != value) || (value > DBL_MAX) || (value < -DBL_MAX)) {
+  if ( isnan(value) ) {
+    return _ftoa(out, buffer, idx, maxlen, value, prec, width, flags);
+  }
+  if ( isinf(value) ) {
+    return _ftoa(out, buffer, idx, maxlen, value, prec, width, flags);
+  }
+  if ( (value > DBL_MAX) || (value < -DBL_MAX) ) {
     return _ftoa(out, buffer, idx, maxlen, value, prec, width, flags);
   }
 
@@ -605,7 +611,7 @@ static size_t _etoa(out_fct_type out, char* buffer, size_t idx, size_t maxlen, d
     // output the exponential symbol
     out((flags & FLAGS_UPPERCASE) ? 'E' : 'e', buffer, idx++, maxlen);
     // output the exponent value
-    idx = _ntoa_long(out, buffer, idx, maxlen, (expval < 0) ? -expval : expval, expval < 0, I_10, 0, minwidth-1, FLAGS_ZEROPAD | FLAGS_PLUS);
+    idx = _ntoa_long(out, buffer, idx, maxlen, (unsigned long) ((expval < 0) ? -expval : expval), expval < 0, I_10, 0, minwidth-1, FLAGS_ZEROPAD | FLAGS_PLUS);
     // might need to right-pad spaces
     if (flags & FLAGS_LEFT) {
       while (idx - start_idx < width) {
