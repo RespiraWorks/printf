@@ -512,10 +512,10 @@ static size_t _etoa(out_fct_type out, char* buffer, size_t idx, size_t maxlen, d
   if ( isnan(value) ) {
     return _ftoa(out, buffer, idx, maxlen, value, prec, width, flags);
   }
-  if ( isinf(value) ) {
+  if ( (isinf(value) && (value > 0)) || (value > +DBL_MAX) ) {
     return _ftoa(out, buffer, idx, maxlen, value, prec, width, flags);
   }
-  if ( (value > DBL_MAX) || (value < -DBL_MAX) ) {
+  if ( (isinf(value) && (value < 0)) || (value < -DBL_MAX) ) {
     return _ftoa(out, buffer, idx, maxlen, value, prec, width, flags);
   }
 

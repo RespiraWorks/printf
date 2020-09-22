@@ -1079,6 +1079,12 @@ TEST_CASE("float", "[]" ) {
   char buffer[100];
 
   // test special-case floats using math.h macros
+  test::sprintf(buffer, "%8f", nan(""));
+  REQUIRE(!strcmp(buffer, "     nan"));
+
+  test::sprintf(buffer, "%8f", (double)nanf(""));
+  REQUIRE(!strcmp(buffer, "     nan"));
+
   test::sprintf(buffer, "%8f", NAN);
   REQUIRE(!strcmp(buffer, "     nan"));
 
@@ -1089,8 +1095,20 @@ TEST_CASE("float", "[]" ) {
   REQUIRE(!strcmp(buffer, "-inf    "));
 
 #ifndef PRINTF_DISABLE_SUPPORT_EXPONENTIAL
+  test::sprintf(buffer, "%8e", nan(""));
+  REQUIRE(!strcmp(buffer, "     nan"));
+
+  test::sprintf(buffer, "%8e", (double)nanf(""));
+  REQUIRE(!strcmp(buffer, "     nan"));
+
+  test::sprintf(buffer, "%8e", NAN);
+  REQUIRE(!strcmp(buffer, "     nan"));
+
   test::sprintf(buffer, "%+8e", INFINITY);
   REQUIRE(!strcmp(buffer, "    +inf"));
+
+  test::sprintf(buffer, "%-8e", (double)-INFINITY);
+  REQUIRE(!strcmp(buffer, "-inf    "));
 #endif
 
   test::sprintf(buffer, "%.4f", 3.1415354);
@@ -1164,6 +1182,12 @@ TEST_CASE("float", "[]" ) {
   REQUIRE(!strcmp(buffer, "3"));
 
   test::sprintf(buffer, "%.1f", 3.49);
+  REQUIRE(!strcmp(buffer, "3.5"));
+
+  test::sprintf(buffer, "%.0F", 3.49);
+  REQUIRE(!strcmp(buffer, "3"));
+
+  test::sprintf(buffer, "%.1F", 3.49);
   REQUIRE(!strcmp(buffer, "3.5"));
 
   test::sprintf(buffer, "a%-5.1f", 0.5);
