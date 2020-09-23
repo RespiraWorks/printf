@@ -103,58 +103,59 @@ using namespace std;
 ///////////////////////////////////////////////////////////////////////////////
 
 // internal flag definitions
-#define FLAGS_ZEROPAD   (1U <<  0U)
-#define FLAGS_LEFT      (1U <<  1U)
-#define FLAGS_PLUS      (1U <<  2U)
-#define FLAGS_SPACE     (1U <<  3U)
-#define FLAGS_HASH      (1U <<  4U)
-#define FLAGS_UPPERCASE (1U <<  5U)
-#define FLAGS_CHAR      (1U <<  6U)
-#define FLAGS_SHORT     (1U <<  7U)
-#define FLAGS_LONG      (1U <<  8U)
-#define FLAGS_LONG_LONG (1U <<  9U)
-#define FLAGS_PRECISION (1U << 10U)
-#define FLAGS_ADAPT_EXP (1U << 11U)
+const unsigned FLAGS_ZEROPAD   = (1U <<  0U);
+const unsigned FLAGS_LEFT      = (1U <<  1U);
+const unsigned FLAGS_PLUS      = (1U <<  2U);
+const unsigned FLAGS_SPACE     = (1U <<  3U);
+const unsigned FLAGS_HASH      = (1U <<  4U);
+const unsigned FLAGS_UPPERCASE = (1U <<  5U);
+const unsigned FLAGS_CHAR      = (1U <<  6U);
+const unsigned FLAGS_SHORT     = (1U <<  7U);
+const unsigned FLAGS_LONG      = (1U <<  8U);
+const unsigned FLAGS_LONG_LONG = (1U <<  9U);
+const unsigned FLAGS_PRECISION = (1U << 10U);
+const unsigned FLAGS_ADAPT_EXP = (1U << 11U);
 
 // math constants
-#define BASE_2U    2U
-#define BASE_8U    8U
-#define BASE_10U  10U
-#define BASE_16U  16U
-#define SHIFT_52U 52U
-#define FLOATING_HALF 0.5
-#define FLOATING_ONE_AND_HALF 1.5
-#define FLOATING_1eminus4 1e-4
-#define FLOATING_1e6      1e6
-#define ONE_U      1U
-#define ONE_ULL    1ULL
-#define I_1      1
-#define I_2      2
-#define I_4U     4U
-#define I_5U     5U
-#define I_6      6
-#define I_9U     9U
-#define I_10     10
-#define I_14     14
-#define I_100      100
-#define I_1023     1023
-#define I_1023U    1023U
-#define I_1023ULL  1023ULL
-#define X_0x07FFU   0x07FFU
-#define X_0x07FFULL 0x07FFULL
-#define I_1000        1000
-#define I_10000       10000
-#define I_100000      100000
-#define I_1000000     1000000
-#define I_10000000    10000000
-#define I_100000000   100000000
-#define I_1000000000  1000000000
-#define FLOATING_0_1760912590558    0.1760912590558
-#define FLOATING_0_301029995663981  0.301029995663981
-#define FLOATING_0_289529654602168  0.289529654602168
-#define FLOATING_3_321928094887362  3.321928094887362
-#define FLOATING_2_302585092994046  2.302585092994046
-#define FLOATING_0_6931471805599453 0.6931471805599453
+const unsigned BASE_2U         =  2U;
+const unsigned BASE_8U         =  8U;
+const unsigned BASE_10U        = 10U;
+const unsigned BASE_16U        = 16U;
+const unsigned SHIFT_52U       = 52U;
+const double FLOATING_HALF         = 0.5;
+const double FLOATING_ONE_AND_HALF = 1.5;
+const double FLOATING_1eminus4     = 1e-4;
+const double FLOATING_1e6          = 1e6;
+const unsigned           ONE_U     = 1U;
+const unsigned long long ONE_ULL   = 1ULL;
+const int       I_2        = 2;
+const unsigned  I_4U       = 4U;
+const unsigned  I_5U       = 5U;
+const int       I_6        = 6;
+const unsigned  I_9U       = 9U;
+const int       I_14       = 14;
+const int       I_1023     = 1023;
+const unsigned  I_1023U    = 1023U;
+const unsigned long long I_1023ULL  = 1023ULL;
+const unsigned           X_0x07FFU  = 0x07FFU;
+const unsigned long long X_0x07FFULL= 0x07FFULL;
+const int       I_1           = 1;
+const int       I_10          = 10;
+const int       I_100         = 100;
+const int       I_1000        = 1000;
+const int       I_10000       = 10000;
+const int       I_100000      = 100000;
+const int       I_1000000     = 1000000;
+const int       I_10000000    = 10000000;
+const int       I_100000000   = 100000000;
+const int       I_1000000000  = 1000000000;
+// The following FLOATINGs should use constexpr and make the formulas explicit.
+const double    FLOATING_0_1760912590558    = 0.1760912590558;
+const double    FLOATING_0_301029995663981  = 0.301029995663981;
+const double    FLOATING_0_289529654602168  = 0.289529654602168;
+const double    FLOATING_3_321928094887362  = 3.321928094887362;
+const double    FLOATING_2_302585092994046  = 2.302585092994046;
+const double    FLOATING_0_6931471805599453 = 0.6931471805599453;
 
 // import float.h for DBL_MAX
 #if defined(PRINTF_SUPPORT_FLOAT)
