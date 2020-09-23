@@ -178,7 +178,7 @@ typedef struct {
 static inline void _out_buffer(char character, void* buffer, size_t idx, size_t maxlen)
 {
   if (idx < maxlen) {
-    ((char*)buffer)[idx] = character;
+    (static_cast<char *>(buffer))[idx] = character;
   }
 }
 
@@ -217,7 +217,7 @@ static inline unsigned int _strnlen_s(const char* str, size_t maxsize)
 {
   const char* s = str;
   for ( ; *s && maxsize--; ++s) { }
-  return (unsigned int)(s - str);
+  return static_cast<unsigned int>(s - str);
 }
 
 
@@ -234,7 +234,7 @@ static unsigned int _atoi(const char** str)
 {
   unsigned int i = 0U;
   while (_is_digit(**str)) {
-    i = i * BASE_10U + (unsigned int)(*((*str)++) - '0');
+    i = i * BASE_10U + static_cast<unsigned int>(*((*str)++) - '0');
   }
   return i;
 }
@@ -342,7 +342,7 @@ static size_t _ntoa_long(out_fct_type out, char* buffer, size_t idx, size_t maxl
     } while (value && (len < PRINTF_NTOA_BUFFER_SIZE));
   }
 
-  return _ntoa_format(out, buffer, idx, maxlen, buf, len, negative, (unsigned int)base, prec, width, flags);
+  return _ntoa_format(out, buffer, idx, maxlen, buf, len, negative, static_cast<unsigned int>(base), prec, width, flags);
 }
 
 
@@ -367,7 +367,7 @@ static size_t _ntoa_long_long(out_fct_type out, char* buffer, size_t idx, size_t
     } while (value && (len < PRINTF_NTOA_BUFFER_SIZE));
   }
 
-  return _ntoa_format(out, buffer, idx, maxlen, buf, len, negative, (unsigned int)base, prec, width, flags);
+  return _ntoa_format(out, buffer, idx, maxlen, buf, len, negative, static_cast<unsigned int>(base), prec, width, flags);
 }
 #endif  // PRINTF_SUPPORT_LONG_LONG
 
@@ -428,15 +428,15 @@ static size_t _ftoa(out_fct_type out, char* buffer, size_t idx, size_t maxlen, d
     prec--;
   }
 
-  unsigned whole = (unsigned)value;
-  double tmp = (value - (double)whole) * pow10[prec];
-  unsigned long frac = (unsigned long)tmp;
-  diff = tmp - (double)frac;
+  unsigned whole = static_cast<unsigned>(value);
+  double tmp = (value - static_cast<double>(whole)) * pow10[prec];
+  unsigned long frac = static_cast<unsigned long>(tmp);
+  diff = tmp - static_cast<double>(frac);
 
   if (diff > FLOATING_HALF) {
     ++frac;
     // handle rollover, e.g. case 0.99 with prec 1 is 1.0
-    if (frac >= (unsigned long) pow10[prec]) {
+    if (frac >= static_cast<unsigned long> (pow10[prec])) {
       frac = 0;
       ++whole;
     }
@@ -449,8 +449,8 @@ static size_t _ftoa(out_fct_type out, char* buffer, size_t idx, size_t maxlen, d
   }
 
   if (prec == 0U) {
-    diff = value - (double)whole;
-    if ((!(diff < FLOATING_HALF) || (diff > FLOATING_HALF)) && (whole & (unsigned)1)) {
+    diff = value - static_cast<double>(whole);
+    if ((!(diff < FLOATING_HALF) || (diff > FLOATING_HALF)) && (whole & static_cast<unsigned>(1))) {
       // exactly 0.5 and ODD, then round up
       // 1.5 -> 2, but 2.5 -> 2
       ++whole;
@@ -461,7 +461,7 @@ static size_t _ftoa(out_fct_type out, char* buffer, size_t idx, size_t maxlen, d
     // now do fractional part, as an unsigned number
     while (len < PRINTF_FTOA_BUFFER_SIZE) {
       --count;
-      buf[len++] = static_cast<char>((unsigned)'0' + (frac % BASE_10U));
+      buf[len++] = static_cast<char>(static_cast<unsigned>('0') + (frac % BASE_10U));
       if (!(frac /= BASE_10U)) {
         break;
       }
@@ -478,7 +478,7 @@ static size_t _ftoa(out_fct_type out, char* buffer, size_t idx, size_t maxlen, d
 
   // do whole part, number is reversed
   while (len < PRINTF_FTOA_BUFFER_SIZE) {
-    buf[len++] = static_cast<char>((unsigned)'0' + (whole % I_10));
+    buf[len++] = static_cast<char>(static_cast<unsigned>('0') + (whole % I_10));
     if (!(whole /= I_10)) {
       break;
     }
@@ -544,13 +544,13 @@ static size_t _etoa(out_fct_type out, char* buffer, size_t idx, size_t maxlen, d
   } conv;
 
   conv.F = value;
-  int exp2 = (int)((conv.U >> SHIFT_52U) & X_0x07FFU) - I_1023;           // effectively log2
+  int exp2 = static_cast<int>((conv.U >> SHIFT_52U) & X_0x07FFU) - I_1023;           // effectively log2
   conv.U = (conv.U & ((ONE_ULL << SHIFT_52U) - ONE_U)) | (I_1023ULL << SHIFT_52U);  // drop the exponent so conv.F is now in [1,2)
 
   // now approximate log10 from the log2 integer part and an expansion of ln around 1.5
-  int expval = (int)(FLOATING_0_1760912590558 + exp2 * FLOATING_0_301029995663981 + (conv.F - FLOATING_ONE_AND_HALF) * FLOATING_0_289529654602168);
+  int expval = static_cast<int>(FLOATING_0_1760912590558 + exp2 * FLOATING_0_301029995663981 + (conv.F - FLOATING_ONE_AND_HALF) * FLOATING_0_289529654602168);
   // now we want to compute 10^expval but we want to be sure it won't overflow
-  exp2 = (int)(expval * FLOATING_3_321928094887362 + FLOATING_HALF);
+  exp2 = static_cast<int>(expval * FLOATING_3_321928094887362 + FLOATING_HALF);
   const double z  = expval * FLOATING_2_302585092994046 - exp2 * FLOATING_0_6931471805599453;
 
   const double z2 = z * z;
@@ -570,8 +570,8 @@ static size_t _etoa(out_fct_type out, char* buffer, size_t idx, size_t maxlen, d
   if (flags & FLAGS_ADAPT_EXP) {
     // do we want to fall-back to "%f" mode?
     if ((value >= FLOATING_1eminus4) && (value < FLOATING_1e6)) {
-      if ((int)prec > expval) {
-        prec = (unsigned)((int)prec - expval - 1);
+      if (static_cast<int>(prec) > expval) {
+        prec = static_cast<unsigned>(static_cast<int>(prec) - expval - 1);
       }
       else {
         prec = 0;
@@ -617,7 +617,7 @@ static size_t _etoa(out_fct_type out, char* buffer, size_t idx, size_t maxlen, d
     // output the exponential symbol
     out((flags & FLAGS_UPPERCASE) ? 'E' : 'e', buffer, idx++, maxlen);
     // output the exponent value
-    idx = _ntoa_long(out, buffer, idx, maxlen, (unsigned long) ((expval < 0) ? -expval : expval), expval < 0, I_10, 0, minwidth-1, FLAGS_ZEROPAD | FLAGS_PLUS);
+    idx = _ntoa_long(out, buffer, idx, maxlen, static_cast<unsigned long> ((expval < 0) ? -expval : expval), expval < 0, I_10, 0, minwidth-1, FLAGS_ZEROPAD | FLAGS_PLUS);
     // might need to right-pad spaces
     if (flags & FLAGS_LEFT) {
       while (idx - start_idx < width) {
@@ -679,10 +679,10 @@ static int _vsnprintf(out_fct_type out, char* buffer, const size_t maxlen, const
       const int w = va_arg(va, int);
       if (w < 0) {
         flags |= FLAGS_LEFT;    // reverse padding
-        width = (unsigned int)-w;
+        width = static_cast<unsigned int>(-w);
       }
       else {
-        width = (unsigned int)w;
+        width = static_cast<unsigned int>(w);
       }
       format++;
     }
@@ -697,7 +697,7 @@ static int _vsnprintf(out_fct_type out, char* buffer, const size_t maxlen, const
       }
       else if (*format == '*') {
         const int prec = va_arg(va, int);
-        precision = prec > 0 ? (unsigned int)prec : 0U;
+        precision = prec > 0 ? static_cast<unsigned int>(prec) : 0U;
         format++;
       }
     }
@@ -783,16 +783,16 @@ static int _vsnprintf(out_fct_type out, char* buffer, const size_t maxlen, const
           if (flags & FLAGS_LONG_LONG) {
 #if defined(PRINTF_SUPPORT_LONG_LONG)
             const long long value = va_arg(va, long long);
-            idx = _ntoa_long_long(out, buffer, idx, maxlen, (unsigned long long)(value > 0 ? value : 0 - value), value < 0, base, precision, width, flags);
+            idx = _ntoa_long_long(out, buffer, idx, maxlen, static_cast<unsigned long long>(value > 0 ? value : 0 - value), value < 0, base, precision, width, flags);
 #endif
           }
           else if (flags & FLAGS_LONG) {
             const long value = va_arg(va, long);
-            idx = _ntoa_long(out, buffer, idx, maxlen, (unsigned long)(value > 0 ? value : 0 - value), value < 0, base, precision, width, flags);
+            idx = _ntoa_long(out, buffer, idx, maxlen, static_cast<unsigned long>(value > 0 ? value : 0 - value), value < 0, base, precision, width, flags);
           }
           else {
-            const int value = (flags & FLAGS_CHAR) ? static_cast<char>(va_arg(va, int)) : (flags & FLAGS_SHORT) ? (short int)va_arg(va, int) : va_arg(va, int);
-            idx = _ntoa_long(out, buffer, idx, maxlen, (unsigned int)(value > 0 ? value : 0 - value), value < 0, base, precision, width, flags);
+            const int value = (flags & FLAGS_CHAR) ? static_cast<char>(va_arg(va, int)) : (flags & FLAGS_SHORT) ? static_cast<short int>(va_arg(va, int)) : va_arg(va, int);
+            idx = _ntoa_long(out, buffer, idx, maxlen, static_cast<unsigned int>(value > 0 ? value : 0 - value), value < 0, base, precision, width, flags);
           }
         }
         else {
@@ -806,7 +806,7 @@ static int _vsnprintf(out_fct_type out, char* buffer, const size_t maxlen, const
             idx = _ntoa_long(out, buffer, idx, maxlen, va_arg(va, unsigned long), false, base, precision, width, flags);
           }
           else {
-            const unsigned int value = (flags & FLAGS_CHAR) ? (unsigned char)va_arg(va, unsigned int) : (flags & FLAGS_SHORT) ? (unsigned short int)va_arg(va, unsigned int) : va_arg(va, unsigned int);
+            const unsigned int value = (flags & FLAGS_CHAR) ? static_cast<unsigned char>(va_arg(va, unsigned int)) : (flags & FLAGS_SHORT) ? static_cast<unsigned short int>(va_arg(va, unsigned int)) : va_arg(va, unsigned int);
             idx = _ntoa_long(out, buffer, idx, maxlen, value, false, base, precision, width, flags);
           }
         }
@@ -860,7 +860,7 @@ static int _vsnprintf(out_fct_type out, char* buffer, const size_t maxlen, const
 
       case 's' : {
         const char* p = va_arg(va, char*);
-        unsigned int l = _strnlen_s(p, precision ? precision : (size_t)-1);
+        unsigned int l = _strnlen_s(p, precision ? precision : static_cast<size_t>(-1));
         // pre padding
         if (flags & FLAGS_PRECISION) {
           l = (l < precision ? l : precision);
@@ -890,11 +890,11 @@ static int _vsnprintf(out_fct_type out, char* buffer, const size_t maxlen, const
 #if defined(PRINTF_SUPPORT_LONG_LONG)
         const bool is_ll = sizeof(uintptr_t) == sizeof(long long);
         if (is_ll) {
-          idx = _ntoa_long_long(out, buffer, idx, maxlen, (uintptr_t)va_arg(va, void*), false, BASE_16U, precision, width, flags);
+          idx = _ntoa_long_long(out, buffer, idx, maxlen, static_cast<unsigned long long>(va_arg(va, unsigned long long)), false, BASE_16U, precision, width, flags);
         }
         else {
 #endif
-          idx = _ntoa_long(out, buffer, idx, maxlen, (unsigned long)((uintptr_t)va_arg(va, void*)), false, BASE_16U, precision, width, flags);
+          idx = _ntoa_long(out, buffer, idx, maxlen, static_cast<unsigned long>(va_arg(va, unsigned long)), false, BASE_16U, precision, width, flags);
 #if defined(PRINTF_SUPPORT_LONG_LONG)
         }
 #endif
@@ -915,10 +915,10 @@ static int _vsnprintf(out_fct_type out, char* buffer, const size_t maxlen, const
   }
 
   // termination
-  out(static_cast<char>0, buffer, idx < maxlen ? idx : maxlen - ONE_U, maxlen);
+  out(static_cast<char>(0), buffer, idx < maxlen ? idx : maxlen - ONE_U, maxlen);
 
   // return written chars without terminating \0
-  return (int)idx;
+  return static_cast<int>(idx);
 }
 
 
@@ -929,7 +929,7 @@ int printf_(const char* format, ...)
   va_list va;
   va_start(va, format);
   char buffer[1];
-  const int ret = _vsnprintf(_out_char, buffer, (size_t)-1, format, va);
+  const int ret = _vsnprintf(_out_char, buffer, static_cast<size_t>(-1), format, va);
   va_end(va);
   return ret;
 }
@@ -939,7 +939,7 @@ int sprintf_(char* buffer, const char* format, ...)
 {
   va_list va;
   va_start(va, format);
-  const int ret = _vsnprintf(_out_buffer, buffer, (size_t)-1, format, va);
+  const int ret = _vsnprintf(_out_buffer, buffer, static_cast<size_t>(-1), format, va);
   va_end(va);
   return ret;
 }
@@ -958,7 +958,7 @@ int snprintf_(char* buffer, size_t count, const char* format, ...)
 int vprintf_(const char* format, va_list va)
 {
   char buffer[1];
-  return _vsnprintf(_out_char, buffer, (size_t)-1, format, va);
+  return _vsnprintf(_out_char, buffer, static_cast<size_t>(-1), format, va);
 }
 
 
@@ -973,7 +973,7 @@ int fctprintf(void (*out)(char character, void* arg), void* arg, const char* for
   va_list va;
   va_start(va, format);
   const out_fct_wrap_type out_fct_wrap = { out, arg };
-  const int ret = _vsnprintf(_out_fct, (char*)(uintptr_t)&out_fct_wrap, (size_t)-1, format, va);
+  const int ret = _vsnprintf(_out_fct, const_cast<char *>(reinterpret_cast<const char *>(&out_fct_wrap)), static_cast<size_t>(-1), format, va);
   va_end(va);
   return ret;
 }
