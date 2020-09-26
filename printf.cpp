@@ -31,10 +31,6 @@
 ///////////////////////////////////////////////////////////////////////////////
 
 
-#include <cstdbool>
-#include <cstdio>
-#include <cstdint>
-#include <cmath>
 
 #include "printf.h"
 
@@ -46,7 +42,16 @@ static size_t printf_idx = 0U;
 
 void _putchar(char character)
 {
+#if defined STM32
   printf_buffer[printf_idx++] = character;
+#else // native
+
+#include <cstdbool>
+#include <cstdint>
+#include <cstdio>
+#include <cmath>
+  putchar( character ); 
+#endif
 }
 
 void _out_fct(char character, void* arg)
