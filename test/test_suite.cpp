@@ -42,6 +42,7 @@ namespace test {
 } // namespace test
 
 
+#if 0
 // dummy putchar
 static char   printf_buffer[100];
 static size_t printf_idx = 0U;
@@ -56,24 +57,25 @@ void _out_fct(char character, void* arg)
   (void)arg;
   printf_buffer[printf_idx++] = character;
 }
+#endif
 
 
 TEST_CASE("printf", "[]" ) {
-  printf_idx = 0U;
-  memset(printf_buffer, 0xCC, 100U);
+  test::printf_idx = 0U;
+  memset(test::printf_buffer, 0xCC, 100U);
   REQUIRE(test::printf("% d", 4232) == 5);
-  REQUIRE(printf_buffer[5] == (char)0xCC);
-  printf_buffer[5] = 0;
-  REQUIRE(!strcmp(printf_buffer, " 4232"));
+  REQUIRE(test::printf_buffer[5] == (char)0xCC);
+  test::printf_buffer[5] = 0;
+  REQUIRE(!strcmp(test::printf_buffer, " 4232"));
 }
 
 
 TEST_CASE("fctprintf", "[]" ) {
-  printf_idx = 0U;
-  memset(printf_buffer, 0xCC, 100U);
-  test::fctprintf(&_out_fct, nullptr, "This is a test of %X", 0x12EFU);
-  REQUIRE(!strncmp(printf_buffer, "This is a test of 12EF", 22U));
-  REQUIRE(printf_buffer[22] == (char)0xCC);
+  test::printf_idx = 0U;
+  memset(test::printf_buffer, 0xCC, 100U);
+  test::fctprintf(&test::_out_fct, nullptr, "This is a test of %X", 0x12EFU);
+  REQUIRE(!strncmp(test::printf_buffer, "This is a test of 12EF", 22U));
+  REQUIRE(test::printf_buffer[22] == (char)0xCC);
 }
 
 
@@ -114,12 +116,12 @@ static void vsnprintf_builder_3(char* buffer, ...)
 
 TEST_CASE("vprintf", "[]" ) {
   char buffer[100];
-  printf_idx = 0U;
-  memset(printf_buffer, 0xCC, 100U);
+  test::printf_idx = 0U;
+  memset(test::printf_buffer, 0xCC, 100U);
   vprintf_builder_1(buffer, 2345);
-  REQUIRE(printf_buffer[4] == (char)0xCC);
-  printf_buffer[4] = 0;
-  REQUIRE(!strcmp(printf_buffer, "2345"));
+  REQUIRE(test::printf_buffer[4] == (char)0xCC);
+  test::printf_buffer[4] = 0;
+  REQUIRE(!strcmp(test::printf_buffer, "2345"));
 }
 
 
