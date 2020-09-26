@@ -31,14 +31,27 @@
 ///////////////////////////////////////////////////////////////////////////////
 
 
-using namespace std;
-
 #include <cstdbool>
 #include <cstdio>
 #include <cstdint>
 #include <cmath>
 
 #include "printf.h"
+
+// dummy putchar
+static char   printf_buffer[100];
+static size_t printf_idx = 0U;
+
+void _putchar(char character)
+{
+  printf_buffer[printf_idx++] = character;
+}
+
+void _out_fct(char character, void* arg)
+{
+  (void)arg;
+  printf_buffer[printf_idx++] = character;
+}
 
 
 // define this globally (e.g. gcc -DPRINTF_INCLUDE_CONFIG_H ...) to include the
@@ -293,6 +306,19 @@ static size_t _ntoa_format(out_fct_type out, char* buffer, size_t idx, size_t ma
         len--;
       }
     }
+    if ( len < PRINTF_NTOA_BUFFER_SIZE ) {
+      if ( base == BASE_16U ) {
+        if ( !(flags & FLAGS_UPPERCASE) ) {
+          buf[len++] = 'x';
+        } else {
+          buf[len++] = 'X';
+        }
+      } else if ( base == BASE_2U ) {
+        buf[len++] = 'b';
+      }
+    }
+
+    /*
     if ((base == BASE_16U) && !(flags & FLAGS_UPPERCASE) && (len < PRINTF_NTOA_BUFFER_SIZE)) {
       buf[len++] = 'x';
     }
@@ -302,6 +328,8 @@ static size_t _ntoa_format(out_fct_type out, char* buffer, size_t idx, size_t ma
     else if ((base == BASE_2U) && (len < PRINTF_NTOA_BUFFER_SIZE)) {
       buf[len++] = 'b';
     }
+    */
+
     if (len < PRINTF_NTOA_BUFFER_SIZE) {
       buf[len++] = '0';
     }
@@ -362,7 +390,7 @@ static size_t _ntoa_long_long(out_fct_type out, char* buffer, size_t idx, size_t
   // write if precision != 0 and value is != 0
   if (!(flags & FLAGS_PRECISION) || value) {
     do {
-      const unsigned long digit = value % base;
+      const unsigned long long digit = value % base;
       buf[len++] = static_cast<char>(digit < I_10 ? '0' + digit : (flags & FLAGS_UPPERCASE ? 'A' : 'a') + digit - I_10);
       value /= base;
     } while (value && (len < PRINTF_NTOA_BUFFER_SIZE));
@@ -392,7 +420,7 @@ static size_t _ftoa(out_fct_type out, char* buffer, size_t idx, size_t maxlen, d
   static const double pow10[] = { 1, I_10, I_100, I_1000, I_10000, I_100000, I_1000000, I_10000000, I_100000000, I_1000000000 };
 
   // test for special values
-  if ( isnan(value) ) {
+  if ( std::isnan(value) ) {
     return _out_rev(out, buffer, idx, maxlen, "nan", 3, width, flags);
   }
   if (value < -DBL_MAX) {
@@ -516,13 +544,13 @@ static size_t _ftoa(out_fct_type out, char* buffer, size_t idx, size_t maxlen, d
 static size_t _etoa(out_fct_type out, char* buffer, size_t idx, size_t maxlen, double value, unsigned int prec, unsigned int width, unsigned int flags)
 {
   // check for NaN and special values
-  if ( isnan(value) ) {
+  if ( std::isnan(value) ) {
     return _ftoa(out, buffer, idx, maxlen, value, prec, width, flags);
   }
-  if ( (isinf(value) && (value > 0)) || (value > +DBL_MAX) ) {
+  if ( (std::isinf(value) && (value > 0)) || (value > +DBL_MAX) ) {
     return _ftoa(out, buffer, idx, maxlen, value, prec, width, flags);
   }
-  if ( (isinf(value) && (value < 0)) || (value < -DBL_MAX) ) {
+  if ( (std::isinf(value) && (value < 0)) || (value < -DBL_MAX) ) {
     return _ftoa(out, buffer, idx, maxlen, value, prec, width, flags);
   }
 
