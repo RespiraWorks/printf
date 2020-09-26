@@ -38,6 +38,8 @@
 
 #include "printf.h"
 
+#if defined PLATFORMIO
+
 // dummy putchar
 static char   printf_buffer[100];
 static size_t printf_idx = 0U;
@@ -52,6 +54,7 @@ void _out_fct(char character, void* arg)
   (void)arg;
   printf_buffer[printf_idx++] = character;
 }
+#endif
 
 
 // define this globally (e.g. gcc -DPRINTF_INCLUDE_CONFIG_H ...) to include the

@@ -34,20 +34,13 @@
 #include <sstream>
 #include <math.h>
 
-
 namespace test {
-  // use functions in own test namespace to avoid stdio conflicts
-  #include "../printf.h"
-  #include "../printf.cpp"
-} // namespace test
 
-
-#if 0
 // dummy putchar
 static char   printf_buffer[100];
 static size_t printf_idx = 0U;
 
-void test::_putchar(char character)
+void _putchar(char character)
 {
   printf_buffer[printf_idx++] = character;
 }
@@ -57,7 +50,12 @@ void _out_fct(char character, void* arg)
   (void)arg;
   printf_buffer[printf_idx++] = character;
 }
-#endif
+
+  // use functions in own test namespace to avoid stdio conflicts
+  #include "../printf.h"
+  #include "../printf.cpp"
+
+} // namespace test
 
 
 TEST_CASE("printf", "[]" ) {
