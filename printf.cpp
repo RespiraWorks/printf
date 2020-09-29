@@ -95,18 +95,18 @@
 ///////////////////////////////////////////////////////////////////////////////
 
 // internal flag definitions
-constexpr unsigned FLAGS_ZEROPAD  = (1U <<  0U); 
-constexpr unsigned FLAGS_LEFT     = (1U <<  1U); 
-constexpr unsigned FLAGS_PLUS     = (1U <<  2U); 
-constexpr unsigned FLAGS_SPACE    = (1U <<  3U); 
-constexpr unsigned FLAGS_HASH     = (1U <<  4U); 
-constexpr unsigned FLAGS_UPPERCASE = (1U <<  5U); 
-constexpr unsigned FLAGS_CHAR     = (1U <<  6U); 
-constexpr unsigned FLAGS_SHORT    = (1U <<  7U); 
-constexpr unsigned FLAGS_LONG     = (1U <<  8U); 
-constexpr unsigned FLAGS_LONG_LONG = (1U <<  9U); 
-constexpr unsigned FLAGS_PRECISION = (1U << 10U); 
-constexpr unsigned FLAGS_ADAPT_EXP = (1U << 11U); 
+constexpr unsigned FLAGS_ZEROPAD  = (1U <<  0U);
+constexpr unsigned FLAGS_LEFT     = (1U <<  1U);
+constexpr unsigned FLAGS_PLUS     = (1U <<  2U);
+constexpr unsigned FLAGS_SPACE    = (1U <<  3U);
+constexpr unsigned FLAGS_HASH     = (1U <<  4U);
+constexpr unsigned FLAGS_UPPERCASE = (1U <<  5U);
+constexpr unsigned FLAGS_CHAR     = (1U <<  6U);
+constexpr unsigned FLAGS_SHORT    = (1U <<  7U);
+constexpr unsigned FLAGS_LONG     = (1U <<  8U);
+constexpr unsigned FLAGS_LONG_LONG = (1U <<  9U);
+constexpr unsigned FLAGS_PRECISION = (1U << 10U);
+constexpr unsigned FLAGS_ADAPT_EXP = (1U << 11U);
 
 // math constants
 const unsigned BASE_2U         =  2U;
@@ -115,9 +115,9 @@ const unsigned BASE_10U        = 10U;
 const unsigned BASE_16U        = 16U;
 const unsigned SHIFT_52U       = 52U;
 const double FL_DOUBLE_HALF         = 0.5;    // lack of appended fFlL indicates double
-const double FL_DOUBLE_ONE_AND_HALF = 1.5;    
-const double FL_DOUBLE_1eminus4     = 1e-4;   
-const double FL_DOUBLE_1e6          = 1e6;    
+const double FL_DOUBLE_ONE_AND_HALF = 1.5;
+const double FL_DOUBLE_1eminus4     = 1e-4;
+const double FL_DOUBLE_1e6          = 1e6;
 const unsigned           ONE_U     = 1U;
 const unsigned long long ONE_ULL   = 1ULL;
 const int       I_2        = 2;
@@ -143,11 +143,11 @@ const int       I_100000000   = 100000000;
 const int       I_1000000000  = 1000000000;
 // The following FL_DOUBLEs should use constexpr and make the formulas explicit.
 const double    FL_DOUBLE_0_1760912590558    = 0.1760912590558;     // lack of appended fFlL indicates double
-const double    FL_DOUBLE_0_301029995663981  = 0.301029995663981;   
-const double    FL_DOUBLE_0_289529654602168  = 0.289529654602168;   
-const double    FL_DOUBLE_3_321928094887362  = 3.321928094887362;   
-const double    FL_DOUBLE_2_302585092994046  = 2.302585092994046;   
-const double    FL_DOUBLE_0_6931471805599453 = 0.6931471805599453;  
+const double    FL_DOUBLE_0_301029995663981  = 0.301029995663981;
+const double    FL_DOUBLE_0_289529654602168  = 0.289529654602168;
+const double    FL_DOUBLE_3_321928094887362  = 3.321928094887362;
+const double    FL_DOUBLE_2_302585092994046  = 2.302585092994046;
+const double    FL_DOUBLE_0_6931471805599453 = 0.6931471805599453;
 
 // import float.h for DBL_MAX
 #if defined(PRINTF_SUPPORT_FLOAT)
@@ -996,4 +996,3 @@ int main() {
   return 0;
 }
 */
-
