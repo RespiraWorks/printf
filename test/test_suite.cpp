@@ -10,10 +10,10 @@
 // to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
 // copies of the Software, and to permit persons to whom the Software is
 // furnished to do so, subject to the following conditions:
-// 
+//
 // The above copyright notice and this permission notice shall be included in
 // all copies or substantial portions of the Software.
-// 
+//
 // THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
 // IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
 // FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
@@ -1240,10 +1240,11 @@ TEST_CASE("float", "[]" ) {
   bool fail = false;
   std::stringstream str;
   str.precision(5);
-  for (float i = -100000; i < 100000; i += 1) {
-    test::sprintf(buffer, "%.5f", (double)(i / 10000));
+  for (int i = -100000; i < 100000; i += 1) {
+    float fi = i;
+    test::sprintf(buffer, "%.5f", (double)(fi / 10000));
     str.str("");
-    str << std::fixed << i / 10000;
+    str << std::fixed << fi / 10000;
     fail = fail || !!strcmp(buffer, str.str().c_str());
   }
   REQUIRE(!fail);
@@ -1252,10 +1253,11 @@ TEST_CASE("float", "[]" ) {
 #ifndef PRINTF_DISABLE_SUPPORT_EXPONENTIAL
   // brute force exp
   str.setf(std::ios::scientific, std::ios::floatfield);
-  for (float i = -1e20; i < (float)1e20; i += (float)1e15) {
-    test::sprintf(buffer, "%.5f", (double)i);
+  for (int i = -100000; i < 100000; i++) {
+    float fi = i * 1e15;
+    test::sprintf(buffer, "%.5f", (double)fi);
     str.str("");
-    str << i;
+    str << fi;
     fail = fail || !!strcmp(buffer, str.str().c_str());
   }
   REQUIRE(!fail);
