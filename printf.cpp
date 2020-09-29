@@ -32,6 +32,14 @@
 
 #include "printf.h"
 
+///////////////////////////////////////////////////////////////////////////////
+//
+// Check c++ with:
+//
+// clang-tidy test/test_suite.cpp
+// cppcheck --enable=warning,style --inline-suppr printf.cpp
+//
+///////////////////////////////////////////////////////////////////////////////
 
 // define this globally (e.g. gcc -DPRINTF_INCLUDE_CONFIG_H ...) to include the
 // printf_config.h header file
@@ -141,6 +149,7 @@ const int       I_1000000     = 1000000;
 const int       I_10000000    = 10000000;
 const int       I_100000000   = 100000000;
 const int       I_1000000000  = 1000000000;
+const int       I_10000000000 = 10000000000;
 // The following FL_DOUBLEs should use constexpr and make the formulas explicit.
 const double    FL_DOUBLE_0_1760912590558    = 0.1760912590558;     // lack of appended fFlL indicates double
 const double    FL_DOUBLE_0_301029995663981  = 0.301029995663981;
@@ -345,7 +354,7 @@ static size_t _ntoa_long(out_fct_type out, char* buffer, size_t idx, size_t maxl
   if (!(flags & FLAGS_PRECISION) || value) {
     do {
       const unsigned long digit = (value % base);
-      buf[len++] = static_cast<char>(digit < I_10 ? '0' + digit : (flags & FLAGS_UPPERCASE ? 'A' : 'a') + digit - I_10);
+      buf[len++] = static_cast<char>(digit < I_10 ? '0' + digit : ((flags & FLAGS_UPPERCASE) ? 'A' : 'a') + digit - I_10);
       value /= base;
     } while (value && (len < PRINTF_NTOA_BUFFER_SIZE));
   }
@@ -370,7 +379,7 @@ static size_t _ntoa_long_long(out_fct_type out, char* buffer, size_t idx, size_t
   if (!(flags & FLAGS_PRECISION) || value) {
     do {
       const unsigned long long digit = value % base;
-      buf[len++] = static_cast<char>(digit < I_10 ? '0' + digit : (flags & FLAGS_UPPERCASE ? 'A' : 'a') + digit - I_10);
+      buf[len++] = static_cast<char>(digit < I_10 ? '0' + digit : ((flags & FLAGS_UPPERCASE) ? 'A' : 'a') + digit - I_10);
       value /= base;
     } while (value && (len < PRINTF_NTOA_BUFFER_SIZE));
   }
@@ -396,7 +405,7 @@ static size_t _ftoa(out_fct_type out, char* buffer, size_t idx, size_t maxlen, d
   double diff = 0.0;
 
   // powers of 10
-  static const double pow10[] = { 1, I_10, I_100, I_1000, I_10000, I_100000, I_1000000, I_10000000, I_100000000, I_1000000000 };
+  static const double pow10[] = { 1, I_10, I_100, I_1000, I_10000, I_100000, I_1000000, I_10000000, I_100000000, I_1000000000, I_10000000000 };
 
   // test for special values
   if ( std::isnan(value) ) {
@@ -756,7 +765,7 @@ static int _vsnprintf(out_fct_type out, char* buffer, const size_t maxlen, const
       case 'o' :
       case 'b' : {
         // set the base
-        unsigned int base = BASE_10U;
+        unsigned int base;
         if (*format == 'x' || *format == 'X') {
           base = BASE_16U;
         }
@@ -792,6 +801,9 @@ static int _vsnprintf(out_fct_type out, char* buffer, const size_t maxlen, const
 #if defined(PRINTF_SUPPORT_LONG_LONG)
             const long long value = va_arg(va, long long);
             idx = _ntoa_long_long(out, buffer, idx, maxlen, static_cast<unsigned long long>(value > 0 ? value : 0 - value), value < 0, base, precision, width, flags);
+#else
+            const long value = va_arg(va, long);
+            idx = _ntoa_long(out, buffer, idx, maxlen, static_cast<unsigned long>(value > 0 ? value : 0 - value), value < 0, base, precision, width, flags);
 #endif
           }
           else if (flags & FLAGS_LONG) {
@@ -808,6 +820,8 @@ static int _vsnprintf(out_fct_type out, char* buffer, const size_t maxlen, const
           if (flags & FLAGS_LONG_LONG) {
 #if defined(PRINTF_SUPPORT_LONG_LONG)
             idx = _ntoa_long_long(out, buffer, idx, maxlen, va_arg(va, unsigned long long), false, base, precision, width, flags);
+#else
+            idx = _ntoa_long(out, buffer, idx, maxlen, va_arg(va, unsigned long), false, base, precision, width, flags);
 #endif
           }
           else if (flags & FLAGS_LONG) {
@@ -897,14 +911,16 @@ static int _vsnprintf(out_fct_type out, char* buffer, const size_t maxlen, const
         flags |= FLAGS_ZEROPAD | FLAGS_UPPERCASE;
 #if defined(PRINTF_SUPPORT_LONG_LONG)
         const bool is_ll = sizeof(uintptr_t) == sizeof(long long);
+        // run cppcheck (see cmd-line at top of file)
+        // cppcheck-suppress knownConditionTrueFalse
         if (is_ll) {
           idx = _ntoa_long_long(out, buffer, idx, maxlen, static_cast<unsigned long long>(va_arg(va, unsigned long long)), false, BASE_16U, precision, width, flags);
         }
         else {
-#endif
           idx = _ntoa_long(out, buffer, idx, maxlen, static_cast<unsigned long>(va_arg(va, unsigned long)), false, BASE_16U, precision, width, flags);
-#if defined(PRINTF_SUPPORT_LONG_LONG)
         }
+#else
+        idx = _ntoa_long(out, buffer, idx, maxlen, static_cast<unsigned long>(va_arg(va, unsigned long)), false, BASE_16U, precision, width, flags);
 #endif
         format++;
         break;
