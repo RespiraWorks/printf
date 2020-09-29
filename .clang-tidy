@@ -32,7 +32,8 @@ Checks: >
   -modernize-use-using,
   -modernize-use-nodiscard,
   -readability-non-const-parameter,
-  -google-runtime-int
+  -google-runtime-int,
+  -clang-analyzer-security.FloatLoopCounter
 
 WarningsAsErrors: '*'
 

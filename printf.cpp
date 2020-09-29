@@ -149,7 +149,6 @@ const int       I_1000000     = 1000000;
 const int       I_10000000    = 10000000;
 const int       I_100000000   = 100000000;
 const int       I_1000000000  = 1000000000;
-const int       I_10000000000 = 10000000000;
 // The following FL_DOUBLEs should use constexpr and make the formulas explicit.
 const double    FL_DOUBLE_0_1760912590558    = 0.1760912590558;     // lack of appended fFlL indicates double
 const double    FL_DOUBLE_0_301029995663981  = 0.301029995663981;
@@ -405,7 +404,7 @@ static size_t _ftoa(out_fct_type out, char* buffer, size_t idx, size_t maxlen, d
   double diff = 0.0;
 
   // powers of 10
-  static const double pow10[] = { 1, I_10, I_100, I_1000, I_10000, I_100000, I_1000000, I_10000000, I_100000000, I_1000000000, I_10000000000 };
+  static const double pow10[] = { 1, I_10, I_100, I_1000, I_10000, I_100000, I_1000000, I_10000000, I_100000000, I_1000000000 };
 
   // test for special values
   if ( std::isnan(value) ) {
@@ -446,6 +445,8 @@ static size_t _ftoa(out_fct_type out, char* buffer, size_t idx, size_t maxlen, d
   }
 
   unsigned whole = static_cast<unsigned>(value);
+  // run cppcheck (see cmd-line at top of file)
+  // cppcheck-suppress arrayIndexOutOfBoundsCond
   double tmp = (value - static_cast<double>(whole)) * pow10[prec];
   unsigned long frac = static_cast<unsigned long>(tmp);
   diff = tmp - static_cast<double>(frac);
