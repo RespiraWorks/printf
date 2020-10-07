@@ -34,6 +34,7 @@
 #include <sstream>
 #include <math.h>
 
+
 namespace test {
 
 // dummy putchar
@@ -132,6 +133,38 @@ TEST_CASE("vsnprintf", "[]" ) {
   vsnprintf_builder_3(buffer, 3, -1000, "test");
   REQUIRE(!strcmp(buffer, "3 -1000 test"));
 }
+
+
+#ifndef PRINTF_DISABLE_SUPPORT_EXPONENTIAL
+
+TEST_CASE("float: prelim cases", "[]" ) {
+  char buffer[100];
+  bool fail = false;
+  bool fail1 = false;
+  std::stringstream str;
+
+  float f = -9.999999;
+  for( int i=0; i<20; i++ ) {
+    if( i >= 9 ) {
+      str.setf(std::ios::scientific, std::ios::floatfield);
+    }
+    str.precision(5);
+    test::sprintf(buffer, "%.5f", (double)f);
+    str.str("");
+    if( i >= 9 ) {
+      str << f;
+    } else {
+      str << std::fixed << f;
+    }
+    fail1 = !!strcmp(buffer, str.str().c_str());
+    std::cout << __LINE__ << " '" << str.str().c_str() << "'" << " '" << buffer << "' " << (fail1? "MISMATCH" : "" ) << std::endl;
+    fail = fail || fail1;
+    f *= (float)10.0;
+  }
+  REQUIRE(!fail);
+
+}
+#endif
 
 
 TEST_CASE("space flag", "[]" ) {
@@ -1238,6 +1271,7 @@ TEST_CASE("float", "[]" ) {
 
   // brute force float
   bool fail = false;
+  bool fail1 = false;
   std::stringstream str;
   str.precision(5);
   for (int i = -100000; i < 100000; i += 1) {
@@ -1245,14 +1279,15 @@ TEST_CASE("float", "[]" ) {
     test::sprintf(buffer, "%.5f", (double)(fi / 10000));
     str.str("");
     str << std::fixed << fi / 10000;
-    //std::cout << __LINE__ << " '" << str.str().c_str() << "'" << " '" << buffer << "'" << std::endl;
-    fail = fail || !!strcmp(buffer, str.str().c_str());
+    fail1 = !!strcmp(buffer, str.str().c_str());
+    //std::cout << __LINE__ << " '" << str.str().c_str() << "'" << " '" << buffer << "' " << (fail1? "MISMATCH" : "" ) << std::endl;
+    fail = fail || fail1;
   }
   REQUIRE(!fail);
 
 
 #ifndef PRINTF_DISABLE_SUPPORT_EXPONENTIAL
-  /*
+#if 0
   // brute force exp
   fail = false;
   str.setf(std::ios::scientific, std::ios::floatfield);
@@ -1261,12 +1296,26 @@ TEST_CASE("float", "[]" ) {
     test::sprintf(buffer, "%.5f", fi);
     str.str("");
     str << fi;
-    std::cout << __LINE__ << " '" << str.str().c_str() << "'" << " '" << buffer << "'" << std::endl;
     // snw 2020-09-29: The output of this test looks good, but fails.
-    fail = fail || !!strcmp(buffer, str.str().c_str());
+    fail1 = !!strcmp(buffer, str.str().c_str());
+    //std::cout << __LINE__ << " '" << str.str().c_str() << "'" << " '" << buffer << "' " << (fail1? "MISMATCH" : "" ) << std::endl;
+    fail = fail || fail1;
   }
   REQUIRE(!fail);
-  */
+#endif
+
+  // brute force exp
+  fail = false;
+  str.setf(std::ios::scientific, std::ios::floatfield);
+  for (float i = (float)-1e17; i < (float)+1e17; i+= (float)0.9e15) {
+    test::sprintf(buffer, "%.5f", (double)i);
+    str.str("");
+    str << i;
+    fail1 = !!strcmp(buffer, str.str().c_str());
+    std::cout << __LINE__ << " '" << str.str().c_str() << "'" << " '" << buffer << "' " << (fail1? "MISMATCH" : "" ) << std::endl;
+    fail = fail || fail1;
+  }
+  REQUIRE(!fail);
 
   // brute force exp
   fail = false;
@@ -1275,11 +1324,13 @@ TEST_CASE("float", "[]" ) {
     test::sprintf(buffer, "%.5f", (double)i);
     str.str("");
     str << i;
-    // snw 2020-09-29: The output of this test looks bad, but passes.
-    //std::cout << __LINE__ << " '" << str.str().c_str() << "'" << " '" << buffer << "'" << std::endl;
-    fail = fail || !!strcmp(buffer, str.str().c_str());
+    // snw 2020-09-29: This test passes, but some output looks wrong.
+    fail1 = !!strcmp(buffer, str.str().c_str());
+    std::cout << __LINE__ << " '" << str.str().c_str() << "'" << " '" << buffer << "' " << (fail1? "MISMATCH" : "" ) << std::endl;
+    fail = fail || fail1;
   }
   REQUIRE(!fail);
+
 #endif
 }
 

@@ -31,6 +31,7 @@
 ///////////////////////////////////////////////////////////////////////////////
 
 #include "printf.h"
+#include <math.h>
 
 ///////////////////////////////////////////////////////////////////////////////
 //
@@ -150,12 +151,20 @@ const int       I_10000000    = 10000000;
 const int       I_100000000   = 100000000;
 const int       I_1000000000  = 1000000000;
 // The following FL_DOUBLEs should use constexpr and make the formulas explicit.
+/*
 const double    FL_DOUBLE_0_1760912590558    = 0.1760912590558;     // lack of appended fFlL indicates double
 const double    FL_DOUBLE_0_301029995663981  = 0.301029995663981;
 const double    FL_DOUBLE_0_289529654602168  = 0.289529654602168;
 const double    FL_DOUBLE_3_321928094887362  = 3.321928094887362;
 const double    FL_DOUBLE_2_302585092994046  = 2.302585092994046;
 const double    FL_DOUBLE_0_6931471805599453 = 0.6931471805599453;
+*/
+constexpr double    FL_DOUBLE_0_1760912590558    = (log(1.5)/log(10.0));
+constexpr double    FL_DOUBLE_0_301029995663981  = (log(2.0)/log(10.0));
+constexpr double    FL_DOUBLE_0_289529654602168  = (1.0/(1.5*log(10.0)));
+constexpr double    FL_DOUBLE_3_321928094887362  = (log(10.0)/log(2.0));
+constexpr double    FL_DOUBLE_2_302585092994046  = (log(10.0));
+constexpr double    FL_DOUBLE_0_6931471805599453 = (log(2.0));
 
 // import float.h for DBL_MAX
 #if defined(PRINTF_SUPPORT_FLOAT)
@@ -566,30 +575,32 @@ static size_t _etoa(out_fct_type out, char* buffer, size_t idx, size_t maxlen, d
   conv.U = (conv.U & ((ONE_ULL << SHIFT_52U) - ONE_U)) | (I_1023ULL << SHIFT_52U);  // drop the exponent so conv.F is now in [1,2)
 
   // now approximate log10 from the log2 integer part and an expansion of ln around 1.5
-  int expval = static_cast<int>(FL_DOUBLE_0_1760912590558 + exp2 * FL_DOUBLE_0_301029995663981 + (conv.F - FL_DOUBLE_ONE_AND_HALF) * FL_DOUBLE_0_289529654602168);
-  // now we want to compute 10^expval but we want to be sure it won't overflow
-  exp2 = static_cast<int>(expval * FL_DOUBLE_3_321928094887362 + FL_DOUBLE_HALF);
-  const double z  = expval * FL_DOUBLE_2_302585092994046 - exp2 * FL_DOUBLE_0_6931471805599453;
+  int exp10 = static_cast<int>(FL_DOUBLE_0_1760912590558 + exp2 * FL_DOUBLE_0_301029995663981 + (conv.F - FL_DOUBLE_ONE_AND_HALF) * FL_DOUBLE_0_289529654602168);
 
+  // now we want to compute 10^exp10 but we want to be sure it won't overflow
+  exp2 = static_cast<int>(exp10 * FL_DOUBLE_3_321928094887362 + FL_DOUBLE_HALF);
+
+  const double z  = exp10 * FL_DOUBLE_2_302585092994046 - exp2 * FL_DOUBLE_0_6931471805599453;
   const double z2 = z * z;
   conv.U = (uint64_t)(exp2 + I_1023) << SHIFT_52U;
   // compute exp(z) using continued fractions, see https://en.wikipedia.org/wiki/Exponential_function#Continued_fractions_for_ex
   conv.F *= I_1 + I_2 * z / (I_2 - z + (z2 / (I_6 + (z2 / (I_10 + z2 / I_14)))));
+
   // correct for rounding errors
   if (value < conv.F) {
-    expval--;
+    exp10--;
     conv.F /= BASE_10U;
   }
 
   // the exponent format is "%+03d" and largest value is "307", so set aside 4-5 characters
-  unsigned int minwidth = ((expval < I_100) && (expval > -I_100)) ? I_4U : I_5U;
+  unsigned int minwidth = ((exp10 < I_100) && (exp10 > -I_100)) ? I_4U : I_5U;
 
   // in "%g" mode, "prec" is the number of *significant figures* not decimals
   if (flags & FLAGS_ADAPT_EXP) {
     // do we want to fall-back to "%f" mode?
     if ((value >= FL_DOUBLE_1eminus4) && (value < FL_DOUBLE_1e6)) {
-      if (static_cast<int>(prec) > expval) {
-        prec = static_cast<unsigned>(static_cast<int>(prec) - expval - 1);
+      if (static_cast<int>(prec) > exp10) {
+        prec = static_cast<unsigned>(static_cast<int>(prec) - exp10 - 1);
       }
       else {
         prec = 0;
@@ -597,7 +608,7 @@ static size_t _etoa(out_fct_type out, char* buffer, size_t idx, size_t maxlen, d
       flags |= FLAGS_PRECISION;   // make sure _ftoa respects precision
       // no characters in exponent
       minwidth = 0U;
-      expval   = 0;
+      exp10   = 0;
     }
     else {
       // we use one sigfig for the whole part
@@ -622,7 +633,7 @@ static size_t _etoa(out_fct_type out, char* buffer, size_t idx, size_t maxlen, d
   }
 
   // rescale the float value
-  if (expval) {
+  if (exp10) {
     value /= conv.F;
   }
 
@@ -635,7 +646,7 @@ static size_t _etoa(out_fct_type out, char* buffer, size_t idx, size_t maxlen, d
     // output the exponential symbol
     out((flags & FLAGS_UPPERCASE) ? 'E' : 'e', buffer, idx++, maxlen);
     // output the exponent value
-    idx = _ntoa_long(out, buffer, idx, maxlen, static_cast<unsigned long> ((expval < 0) ? -expval : expval), expval < 0, I_10, 0, minwidth-1, FLAGS_ZEROPAD | FLAGS_PLUS);
+    idx = _ntoa_long(out, buffer, idx, maxlen, static_cast<unsigned long> ((exp10 < 0) ? -exp10 : exp10), exp10 < 0, I_10, 0, minwidth-1, FLAGS_ZEROPAD | FLAGS_PLUS);
     // might need to right-pad spaces
     if (flags & FLAGS_LEFT) {
       while (idx - start_idx < width) {
