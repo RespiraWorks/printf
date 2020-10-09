@@ -47,40 +47,32 @@
 // 'ntoa' conversion buffer size, this must be big enough to hold one converted
 // numeric number including padded zeros (dynamically created on stack)
 // default: 32 byte
-#ifndef PRINTF_NTOA_BUFFER_SIZE
-#define PRINTF_NTOA_BUFFER_SIZE    32U
-#endif
+static unsigned int const PRINTF_NTOA_BUFFER_SIZE = 32;
 
 // 'ftoa' conversion buffer size, this must be big enough to hold one converted
 // float number including padded zeros (dynamically created on stack)
 // default: 32 byte
-#ifndef PRINTF_FTOA_BUFFER_SIZE
-#define PRINTF_FTOA_BUFFER_SIZE    32U
-#endif
+static unsigned int const PRINTF_FTOA_BUFFER_SIZE = 32;
 
 // support for the floating point type (%f)
 // default: activated
-#ifndef PRINTF_DISABLE_SUPPORT_FLOAT
+#ifndef PRINTF_SUPPORT_FLOAT
 #define PRINTF_SUPPORT_FLOAT
 #endif
 
 // support for exponential floating point notation (%e/%g)
 // default: activated
-#ifndef PRINTF_DISABLE_SUPPORT_EXPONENTIAL
+#ifndef PRINTF_SUPPORT_EXPONENTIAL
 #define PRINTF_SUPPORT_EXPONENTIAL
 #endif
 
 // define the default floating point precision
 // default: 6 digits
-#ifndef PRINTF_DEFAULT_FLOAT_PRECISION
-#define PRINTF_DEFAULT_FLOAT_PRECISION  6U
-#endif
+static unsigned int const PRINTF_DEFAULT_FLOAT_PRECISION = 6;
 
 // define the largest float suitable to print with %f
 // default: 1e9
-#ifndef PRINTF_MAX_FLOAT
-#define PRINTF_MAX_FLOAT  1e9
-#endif
+static unsigned int const PRINTF_MAX_FLOAT = 1000000000;
 
 // support for the long long types (%llu or %p)
 // default: activated
@@ -98,18 +90,22 @@
 ///////////////////////////////////////////////////////////////////////////////
 
 // internal flag definitions
-#define FLAGS_ZEROPAD   (1U <<  0U)
-#define FLAGS_LEFT      (1U <<  1U)
-#define FLAGS_PLUS      (1U <<  2U)
-#define FLAGS_SPACE     (1U <<  3U)
-#define FLAGS_HASH      (1U <<  4U)
-#define FLAGS_UPPERCASE (1U <<  5U)
-#define FLAGS_CHAR      (1U <<  6U)
-#define FLAGS_SHORT     (1U <<  7U)
-#define FLAGS_LONG      (1U <<  8U)
-#define FLAGS_LONG_LONG (1U <<  9U)
-#define FLAGS_PRECISION (1U << 10U)
-#define FLAGS_ADAPT_EXP (1U << 11U)
+constexpr unsigned int exponentiate(unsigned int base, unsigned int exponent) 
+{
+  return base << exponent; 
+}
+constexpr unsigned int FLAGS_ZEROPAD = exponentiate(1,0);
+constexpr unsigned int FLAGS_LEFT = exponentiate(1,1);
+constexpr unsigned int FLAGS_PLUS = exponentiate(1,2);
+constexpr unsigned int FLAGS_SPACE = exponentiate(1, 3);
+constexpr unsigned int FLAGS_HASH = exponentiate(1,4);
+constexpr unsigned int FLAGS_UPPERCASE = exponentiate(1, 5);
+constexpr unsigned int FLAGS_CHAR = exponentiate(1,6);
+constexpr unsigned int FLAGS_SHORT = exponentiate(1, 7);
+constexpr unsigned int FLAGS_LONG = exponentiate(1, 8);
+constexpr unsigned int FLAGS_LONG_LONG = exponentiate(1, 9);
+constexpr unsigned int FLAGS_PRECISION = exponentiate(1, 10);
+constexpr unsigned int FLAGS_ADAPT_EXP = exponentiate(1, 11);
 
 
 // import float.h for DBL_MAX

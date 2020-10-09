@@ -38,7 +38,7 @@
 namespace test {
   // use functions in own test namespace to avoid stdio conflicts
   #include "../printf.h"
-  #include "../printf.c"
+  #include "../printf.cpp"
 } // namespace test
 
 

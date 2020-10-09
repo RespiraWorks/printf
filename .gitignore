@@ -9,6 +9,7 @@ source/config/*
 *.desktop
 *.user
 *.log
+compile_commands.json
 !.gitignore
 
 #IDE

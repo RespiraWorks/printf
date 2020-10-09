@@ -107,7 +107,7 @@ SED       = $(PATH_TOOLS_UTIL)sed
 
 GCCFLAGS      = $(C_INCLUDES)                     \
                 $(C_DEFINES)                      \
-                -std=c++11                        \
+                -std=c++17                        \
                 -g                                \
                 -Wall                             \
                 -pedantic                         \
