@@ -274,5 +274,3 @@ $(TRG)_nm.txt : $(TRG)
 	$(SED) -e 's|.h:\([0-9]*\),|.h(\1) :|' -e 's|:\([0-9]*\):|(\1) :|' $(PATH_ERR)/$(basename $(@F)).err
 	$(OBJDUMP) -S $(PATH_OBJ)/$(basename $(@F)).o > $(PATH_LST)/$(basename $(@F)).lst
 	$(CC) $(CFLAGS) $< -MM > $(PATH_OBJ)/$(basename $(@F)).d
-  # profiling
-	$(CC) $(CFLAGS) -O0 --coverage $< -c -o $(PATH_COV)/$(basename $(@F)).o 2> $(PATH_NUL)
