@@ -415,16 +415,18 @@ static size_t _ftoa(out_fct_type out, char* buffer, size_t idx, size_t maxlen, d
   // powers of 10
   static const double pow10[] = { 1, I_10, I_100, I_1000, I_10000, I_100000, I_1000000, I_10000000, I_100000000, I_1000000000 };
 
+#if 0
   // test for special values
   if ( std::isnan(value) ) {
-    return _out_rev(out, buffer, idx, maxlen, "nan", 3, width, flags);
+    return _out_rev(out, buffer, idx, maxlen, "nan", 3U, width, flags);
   }
-  if (value < -DBL_MAX) {
-    return _out_rev(out, buffer, idx, maxlen, "fni-", 4, width, flags);
+  if ( (std::isinf(value) && (value < 0)) || (value < -DBL_MAX) ) {
+    return _out_rev(out, buffer, idx, maxlen, "fni-", 4U, width, flags);
   }
-  if (value > DBL_MAX) {
+  if ( (std::isinf(value) && (value > 0)) || (value > +DBL_MAX) ) {
     return _out_rev(out, buffer, idx, maxlen, (flags & FLAGS_PLUS) ? "fni+" : "fni", (flags & FLAGS_PLUS) ? 4U : 3U, width, flags);
   }
+#endif
 
   // test for very large values
   // standard printf behavior is to print EVERY whole number digit -- which could be 100s of characters overflowing your buffers == bad
@@ -470,14 +472,14 @@ static size_t _ftoa(out_fct_type out, char* buffer, size_t idx, size_t maxlen, d
   }
   else if (diff < FL_DOUBLE_HALF) {
   }
-  else if ((frac == 0U) || (frac & ONE_U)) {
-    // if halfway, round up if odd OR if last digit is 0
+  else if ( frac & ONE_U ) {
+    // if halfway and ODD, then round up
     ++frac;
   }
 
   if (prec == 0U) {
     diff = value - static_cast<double>(whole);
-    if ((!(diff < FL_DOUBLE_HALF) || (diff > FL_DOUBLE_HALF)) && (whole & static_cast<unsigned>(1))) {
+    if ((!(diff < FL_DOUBLE_HALF) || (diff > FL_DOUBLE_HALF)) && ( whole & ONE_U )) {
       // exactly 0.5 and ODD, then round up
       // 1.5 -> 2, but 2.5 -> 2
       ++whole;
@@ -618,6 +620,11 @@ static size_t _etoa(out_fct_type out, char* buffer, size_t idx, size_t maxlen, d
     }
   }
 
+  // rescale the float value
+  if (exp10) {
+    value /= conv.F;
+  }
+
   // will everything fit?
   unsigned int fwidth = width;
   if (width > minwidth) {
@@ -630,11 +637,6 @@ static size_t _etoa(out_fct_type out, char* buffer, size_t idx, size_t maxlen, d
   if ((flags & FLAGS_LEFT) && minwidth) {
     // if we're padding on the right, DON'T pad the floating part
     fwidth = 0U;
-  }
-
-  // rescale the float value
-  if (exp10) {
-    value /= conv.F;
   }
 
   // output the floating part
@@ -867,7 +869,10 @@ static int _vsnprintf(out_fct_type out, char* buffer, const size_t maxlen, const
         if ((*format == 'E')||(*format == 'G')) {
           flags |= FLAGS_UPPERCASE;
         }
-        idx = _etoa(out, buffer, idx, maxlen, va_arg(va, double), precision, width, flags);
+        {
+          double value = va_arg(va, double);
+          idx = _etoa(out, buffer, idx, maxlen, value, precision, width, flags);
+        }
         format++;
         break;
 #endif  // PRINTF_SUPPORT_EXPONENTIAL
