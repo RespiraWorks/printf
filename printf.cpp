@@ -423,7 +423,7 @@ static size_t _ftoa(out_fct_type out, char* buffer, size_t idx, size_t maxlen, d
   // test for very large values
   // standard printf behavior is to print EVERY whole number digit -- which could be 100s of characters overflowing your buffers == bad
 #if defined(PRINTF_SUPPORT_EXPONENTIAL)
-  idx = _etoa(out, buffer, idx, maxlen, value, precision, width, flags);
+  idx = _etoa(out, buffer, idx, maxlen, value, prec, width, flags);
 #else
   idx = 0U;
 #endif
@@ -448,12 +448,11 @@ static size_t _ftoa(out_fct_type out, char* buffer, size_t idx, size_t maxlen, d
     prec = PRINTF_DEFAULT_FLOAT_PRECISION;
   }
   // limit precision to 9, cause a prec >= 10 can lead to overflow errors
-  unsigned int excess_prec = prec;
-  while ((len < PRINTF_FTOA_BUFFER_SIZE) && (prec > I_9U)) {
-    buf[len++] = '0';
-    prec--;
+  unsigned int excess_prec = 0;
+  if( prec > I_9U ) {
+    excess_prec = prec - I_9U;
+    prec = I_9U;
   }
-  excess_prec -= prec;
 
   unsigned whole = static_cast<unsigned>(value);
   // run cppcheck (see cmd-line at top of file)
@@ -476,16 +475,26 @@ static size_t _ftoa(out_fct_type out, char* buffer, size_t idx, size_t maxlen, d
     // if halfway and ODD, then round up
     ++frac;
   }
-
   if (prec == 0U) {
     diff = value - static_cast<double>(whole);
-    if ((!(diff < FL_DOUBLE_HALF) || (diff > FL_DOUBLE_HALF)) && ( whole & ONE_U )) {
+    //if ((!(diff < FL_DOUBLE_HALF) || (diff > FL_DOUBLE_HALF)) && ( whole & ONE_U )) {
+    if ( !(diff < FL_DOUBLE_HALF) && !(diff > FL_DOUBLE_HALF) && (whole & ONE_U) ) {
       // exactly 0.5 and ODD, then round up
       // 1.5 -> 2, but 2.5 -> 2
       ++whole;
     }
   }
-  else {
+
+  // Start filling the buf with our fractional-part and whole-part.
+  // We are filling the buf in reverse order.
+
+  if (prec > 0U) {
+    // Output trailing 0s for the excess precision.
+    while ((len < PRINTF_FTOA_BUFFER_SIZE) && (excess_prec > 0)) {
+      buf[len++] = '0';
+      excess_prec--;
+    }
+
     unsigned int count = prec;
     // now do fractional part, as an unsigned number
     while (len < PRINTF_FTOA_BUFFER_SIZE) {
