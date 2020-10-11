@@ -408,13 +408,6 @@ static size_t _etoa(out_fct_type out, char* buffer, size_t idx, size_t maxlen, d
 // internal ftoa for fixed decimal floating point
 static size_t _ftoa(out_fct_type out, char* buffer, size_t idx, size_t maxlen, double value, unsigned int prec, unsigned int width, unsigned int flags)
 {
-  char buf[PRINTF_FTOA_BUFFER_SIZE];
-  size_t len  = 0U;
-  double diff = 0.0;
-
-  // powers of 10
-  static const double pow10[] = { 1, I_10, I_100, I_1000, I_10000, I_100000, I_1000000, I_10000000, I_100000000, I_1000000000 };
-
 #if 0
   // test for special values
   if ( std::isnan(value) ) {
@@ -426,23 +419,28 @@ static size_t _ftoa(out_fct_type out, char* buffer, size_t idx, size_t maxlen, d
   if ( (std::isinf(value) && (value > 0)) || (value > +DBL_MAX) ) {
     return _out_rev(out, buffer, idx, maxlen, (flags & FLAGS_PLUS) ? "fni+" : "fni", (flags & FLAGS_PLUS) ? 4U : 3U, width, flags);
   }
-#endif
 
   // test for very large values
   // standard printf behavior is to print EVERY whole number digit -- which could be 100s of characters overflowing your buffers == bad
-  if ((value > PRINTF_MAX_FLOAT) || (value < -PRINTF_MAX_FLOAT)) {
 #if defined(PRINTF_SUPPORT_EXPONENTIAL)
-    return _etoa(out, buffer, idx, maxlen, value, prec, width, flags);
+  idx = _etoa(out, buffer, idx, maxlen, value, precision, width, flags);
 #else
-    return 0U;
+  idx = 0U;
 #endif
-  }
 
-  // test for negative
-  bool negative = false;
-  if (value < 0) {
-    negative = true;
-    value = 0 - value;
+#endif
+
+  char buf[PRINTF_FTOA_BUFFER_SIZE];
+  size_t len  = 0U;
+  double diff = 0.0;
+
+  // powers of 10
+  static const double pow10[] = { 1, I_10, I_100, I_1000, I_10000, I_100000, I_1000000, I_10000000, I_100000000, I_1000000000 };
+
+  // determine the sign
+  const bool negative = value < 0;
+  if (negative) {
+    value = -value;
   }
 
   // set default precision, if not set explicitly
@@ -450,10 +448,12 @@ static size_t _ftoa(out_fct_type out, char* buffer, size_t idx, size_t maxlen, d
     prec = PRINTF_DEFAULT_FLOAT_PRECISION;
   }
   // limit precision to 9, cause a prec >= 10 can lead to overflow errors
+  unsigned int excess_prec = prec;
   while ((len < PRINTF_FTOA_BUFFER_SIZE) && (prec > I_9U)) {
     buf[len++] = '0';
     prec--;
   }
+  excess_prec -= prec;
 
   unsigned whole = static_cast<unsigned>(value);
   // run cppcheck (see cmd-line at top of file)
@@ -543,6 +543,7 @@ static size_t _ftoa(out_fct_type out, char* buffer, size_t idx, size_t maxlen, d
 // internal ftoa variant for exponential floating-point type, contributed by Martijn Jasperse <m.jasperse@gmail.com>
 static size_t _etoa(out_fct_type out, char* buffer, size_t idx, size_t maxlen, double value, unsigned int prec, unsigned int width, unsigned int flags)
 {
+#if 0
   // check for NaN and special values
   if ( std::isnan(value) ) {
     return _ftoa(out, buffer, idx, maxlen, value, prec, width, flags);
@@ -553,6 +554,7 @@ static size_t _etoa(out_fct_type out, char* buffer, size_t idx, size_t maxlen, d
   if ( (std::isinf(value) && (value < 0)) || (value < -DBL_MAX) ) {
     return _ftoa(out, buffer, idx, maxlen, value, prec, width, flags);
   }
+#endif
 
   // determine the sign
   const bool negative = value < 0;
@@ -855,7 +857,31 @@ static int _vsnprintf(out_fct_type out, char* buffer, const size_t maxlen, const
         if (*format == 'F') {
           flags |= FLAGS_UPPERCASE;
         }
-        idx = _ftoa(out, buffer, idx, maxlen, va_arg(va, double), precision, width, flags);
+        {
+          double value = va_arg(va, double);
+          // test for special values
+          if ( std::isnan(value) ) {
+            idx = _out_rev(out, buffer, idx, maxlen, "nan", 3U, width, flags);
+          }
+          else if ( (std::isinf(value) && (value < 0)) || (value < -DBL_MAX) ) {
+            idx = _out_rev(out, buffer, idx, maxlen, "fni-", 4U, width, flags);
+          }
+          else if ( (std::isinf(value) && (value > 0)) || (value > +DBL_MAX) ) {
+            idx = _out_rev(out, buffer, idx, maxlen, (flags & FLAGS_PLUS) ? "fni+" : "fni", (flags & FLAGS_PLUS) ? 4U : 3U, width, flags);
+          }
+          else if ((value > PRINTF_MAX_FLOAT) || (value < -PRINTF_MAX_FLOAT)) {
+            // test for very large values
+            // standard printf behavior is to print EVERY whole number digit -- which could be 100s of characters overflowing your buffers == bad
+#if defined(PRINTF_SUPPORT_EXPONENTIAL)
+            idx = _etoa(out, buffer, idx, maxlen, value, precision, width, flags);
+#else
+            idx = 0U;
+#endif
+          }
+          else {
+            idx = _ftoa(out, buffer, idx, maxlen, value, precision, width, flags);
+          }
+        }
         format++;
         break;
 #if defined(PRINTF_SUPPORT_EXPONENTIAL)
@@ -871,7 +897,19 @@ static int _vsnprintf(out_fct_type out, char* buffer, const size_t maxlen, const
         }
         {
           double value = va_arg(va, double);
-          idx = _etoa(out, buffer, idx, maxlen, value, precision, width, flags);
+          // test for special values
+          if ( std::isnan(value) ) {
+            idx = _out_rev(out, buffer, idx, maxlen, "nan", 3U, width, flags);
+          }
+          else if ( (std::isinf(value) && (value < 0)) || (value < -DBL_MAX) ) {
+            idx = _out_rev(out, buffer, idx, maxlen, "fni-", 4U, width, flags);
+          }
+          else if ( (std::isinf(value) && (value > 0)) || (value > +DBL_MAX) ) {
+            idx = _out_rev(out, buffer, idx, maxlen, (flags & FLAGS_PLUS) ? "fni+" : "fni", (flags & FLAGS_PLUS) ? 4U : 3U, width, flags);
+          }
+          else {
+            idx = _etoa(out, buffer, idx, maxlen, value, precision, width, flags);
+          }
         }
         format++;
         break;
