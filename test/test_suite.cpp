@@ -1259,6 +1259,43 @@ TEST_CASE("float", "[]" ) {
 
   test::sprintf(buffer, "%+.3E", 1.23e+308);
   REQUIRE(!strcmp(buffer, "+1.230E+308"));
+
+  test::sprintf(buffer, "%7.0g", static_cast<double>(8.34f));
+  REQUIRE(!strcmp(buffer, "      8"));
+
+  test::sprintf(buffer, "%7.0g", static_cast<double>(8.34e1f));
+  REQUIRE(!strcmp(buffer, "  8e+01"));
+
+  test::sprintf(buffer, "%7.0g", static_cast<double>(8.34e2f));
+  REQUIRE(!strcmp(buffer, "  8e+02"));
+
+  test::sprintf(buffer, "%7.1g", static_cast<double>(8.34f));
+  REQUIRE(!strcmp(buffer, "      8"));
+
+  test::sprintf(buffer, "%7.1g", static_cast<double>(8.34e1f));
+  REQUIRE(!strcmp(buffer, "  8e+01"));
+
+  test::sprintf(buffer, "%7.1g", static_cast<double>(8.34e2f));
+  REQUIRE(!strcmp(buffer, "  8e+02"));
+
+  test::sprintf(buffer, "%7.2g", static_cast<double>(8.34f));
+  REQUIRE(!strcmp(buffer, "    8.3"));
+
+  test::sprintf(buffer, "%7.2g", static_cast<double>(8.34e1f));
+  REQUIRE(!strcmp(buffer, "     83"));
+
+  test::sprintf(buffer, "%7.2g", static_cast<double>(8.34e2f));
+  REQUIRE(!strcmp(buffer, "8.3e+02"));
+
+  test::sprintf(buffer, "%7.3g", static_cast<double>(8.34f));
+  REQUIRE(!strcmp(buffer, "   8.34"));
+
+  test::sprintf(buffer, "%7.3g", static_cast<double>(8.34e1f));
+  REQUIRE(!strcmp(buffer, "   83.4"));
+
+  test::sprintf(buffer, "%7.3g", static_cast<double>(8.34e2f));
+  REQUIRE(!strcmp(buffer, "    834"));
+
 #endif
 
   // out of range for float: should switch to exp notation if supported, else empty
@@ -1307,7 +1344,7 @@ TEST_CASE("float", "[]" ) {
   // brute force exp
   fail = false;
   str.setf(std::ios::scientific, std::ios::floatfield);
-  for (float i = (float)-1e17; i < (float)+1e17; i+= (float)0.9e15) {
+  for (float i = -1e17f; i < +1e17f; i+= 0.9e15f) {
     test::sprintf(buffer, "%.5f", (double)i);
     str.str("");
     str << i;
@@ -1320,7 +1357,7 @@ TEST_CASE("float", "[]" ) {
   // brute force exp
   fail = false;
   str.setf(std::ios::scientific, std::ios::floatfield);
-  for (float i = (float)-1e20; i < (float)+1e20; i+= (float)1e15) {
+  for (float i = -1e20f; i < +1e20f; i+= 1e15f) {
     test::sprintf(buffer, "%.5f", (double)i);
     str.str("");
     str << i;

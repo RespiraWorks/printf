@@ -314,18 +314,6 @@ static size_t _ntoa_format(out_fct_type out, char* buffer, size_t idx, size_t ma
       }
     }
 
-    /*
-    if ((base == BASE_16U) && !(flags & FLAGS_UPPERCASE) && (len < PRINTF_NTOA_BUFFER_SIZE)) {
-      buf[len++] = 'x';
-    }
-    else if ((base == BASE_16U) && (flags & FLAGS_UPPERCASE) && (len < PRINTF_NTOA_BUFFER_SIZE)) {
-      buf[len++] = 'X';
-    }
-    else if ((base == BASE_2U) && (len < PRINTF_NTOA_BUFFER_SIZE)) {
-      buf[len++] = 'b';
-    }
-    */
-
     if (len < PRINTF_NTOA_BUFFER_SIZE) {
       buf[len++] = '0';
     }
@@ -477,7 +465,6 @@ static size_t _ftoa(out_fct_type out, char* buffer, size_t idx, size_t maxlen, d
   }
   if (prec == 0U) {
     diff = value - static_cast<double>(whole);
-    //if ((!(diff < FL_DOUBLE_HALF) || (diff > FL_DOUBLE_HALF)) && ( whole & ONE_U )) {
     if ( !(diff < FL_DOUBLE_HALF) && !(diff > FL_DOUBLE_HALF) && (whole & ONE_U) ) {
       // exactly 0.5 and ODD, then round up
       // 1.5 -> 2, but 2.5 -> 2
@@ -552,19 +539,6 @@ static size_t _ftoa(out_fct_type out, char* buffer, size_t idx, size_t maxlen, d
 // internal ftoa variant for exponential floating-point type, contributed by Martijn Jasperse <m.jasperse@gmail.com>
 static size_t _etoa(out_fct_type out, char* buffer, size_t idx, size_t maxlen, double value, unsigned int prec, unsigned int width, unsigned int flags)
 {
-#if 0
-  // check for NaN and special values
-  if ( std::isnan(value) ) {
-    return _ftoa(out, buffer, idx, maxlen, value, prec, width, flags);
-  }
-  if ( (std::isinf(value) && (value > 0)) || (value > +DBL_MAX) ) {
-    return _ftoa(out, buffer, idx, maxlen, value, prec, width, flags);
-  }
-  if ( (std::isinf(value) && (value < 0)) || (value < -DBL_MAX) ) {
-    return _ftoa(out, buffer, idx, maxlen, value, prec, width, flags);
-  }
-#endif
-
   // determine the sign
   const bool negative = value < 0;
   if (negative) {
