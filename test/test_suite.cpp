@@ -1108,6 +1108,90 @@ TEST_CASE("length", "[]" ) {
 }
 
 
+TEST_CASE("float: %g: precision vs exponent", "[]" ) {
+  char buffer[100];
+
+  bool fail = false;
+  bool fail1 = false;
+  const char * s = "";
+  {
+    test::sprintf(buffer, "%7.0g", static_cast<double>(8.34f));
+    s = "      8";
+    fail1 = !!strcmp( buffer, s );
+    std::cout << __LINE__ << " good:'" << s << "'" << " code:'" << buffer << "' " << (fail1? "MISMATCH" : "" ) << std::endl;
+    fail = fail || fail1;
+
+    test::sprintf(buffer, "%7.0g", static_cast<double>(8.34e1f));
+    s = "  8e+01";
+    fail1 = !!strcmp( buffer, s );
+    std::cout << __LINE__ << " good:'" << s << "'" << " code:'" << buffer << "' " << (fail1? "MISMATCH" : "" ) << std::endl;
+    fail = fail || fail1;
+
+    test::sprintf(buffer, "%7.0g", static_cast<double>(8.34e2f));
+    s = "  8e+02";
+    fail1 = !!strcmp( buffer, s );
+    std::cout << __LINE__ << " good:'" << s << "'" << " code:'" << buffer << "' " << (fail1? "MISMATCH" : "" ) << std::endl;
+    fail = fail || fail1;
+
+    test::sprintf(buffer, "%7.1g", static_cast<double>(8.34f));
+    s = "      8";
+    fail1 = !!strcmp( buffer, s );
+    std::cout << __LINE__ << " good:'" << s << "'" << " code:'" << buffer << "' " << (fail1? "MISMATCH" : "" ) << std::endl;
+    fail = fail || fail1;
+
+    test::sprintf(buffer, "%7.1g", static_cast<double>(8.34e1f));
+    s = "  8e+01";
+    fail1 = !!strcmp( buffer, s );
+    std::cout << __LINE__ << " good:'" << s << "'" << " code:'" << buffer << "' " << (fail1? "MISMATCH" : "" ) << std::endl;
+    fail = fail || fail1;
+
+    test::sprintf(buffer, "%7.1g", static_cast<double>(8.34e2f));
+    s = "  8e+02";
+    fail1 = !!strcmp( buffer, s );
+    std::cout << __LINE__ << " good:'" << s << "'" << " code:'" << buffer << "' " << (fail1? "MISMATCH" : "" ) << std::endl;
+    fail = fail || fail1;
+
+    test::sprintf(buffer, "%7.2g", static_cast<double>(8.34f));
+    s = "    8.3";
+    fail1 = !!strcmp( buffer, s );
+    std::cout << __LINE__ << " good:'" << s << "'" << " code:'" << buffer << "' " << (fail1? "MISMATCH" : "" ) << std::endl;
+    fail = fail || fail1;
+
+    test::sprintf(buffer, "%7.2g", static_cast<double>(8.34e1f));
+    s = "     83";
+    fail1 = !!strcmp( buffer, s );
+    std::cout << __LINE__ << " good:'" << s << "'" << " code:'" << buffer << "' " << (fail1? "MISMATCH" : "" ) << std::endl;
+    fail = fail || fail1;
+
+    test::sprintf(buffer, "%7.2g", static_cast<double>(8.34e2f));
+    s = "8.3e+02";
+    fail1 = !!strcmp( buffer, s );
+    std::cout << __LINE__ << " good:'" << s << "'" << " code:'" << buffer << "' " << (fail1? "MISMATCH" : "" ) << std::endl;
+    fail = fail || fail1;
+
+    test::sprintf(buffer, "%7.3g", static_cast<double>(8.34f));
+    s = "   8.34";
+    fail1 = !!strcmp( buffer, s );
+    std::cout << __LINE__ << " good:'" << s << "'" << " code:'" << buffer << "' " << (fail1? "MISMATCH" : "" ) << std::endl;
+    fail = fail || fail1;
+
+    test::sprintf(buffer, "%7.3g", static_cast<double>(8.34e1f));
+    s = "   83.4";
+    fail1 = !!strcmp( buffer, s );
+    std::cout << __LINE__ << " good:'" << s << "'" << " code:'" << buffer << "' " << (fail1? "MISMATCH" : "" ) << std::endl;
+    fail = fail || fail1;
+
+    test::sprintf(buffer, "%7.3g", static_cast<double>(8.34e2f));
+    s = "    834";
+    fail1 = !!strcmp( buffer, s );
+    std::cout << __LINE__ << " good:'" << s << "'" << " code:'" << buffer << "' " << (fail1? "MISMATCH" : "" ) << std::endl;
+    fail = fail || fail1;
+
+  }
+  REQUIRE(!fail);
+
+}
+
 TEST_CASE("float", "[]" ) {
   char buffer[100];
 
@@ -1259,42 +1343,6 @@ TEST_CASE("float", "[]" ) {
 
   test::sprintf(buffer, "%+.3E", 1.23e+308);
   REQUIRE(!strcmp(buffer, "+1.230E+308"));
-
-  test::sprintf(buffer, "%7.0g", static_cast<double>(8.34f));
-  REQUIRE(!strcmp(buffer, "      8"));
-
-  test::sprintf(buffer, "%7.0g", static_cast<double>(8.34e1f));
-  REQUIRE(!strcmp(buffer, "  8e+01"));
-
-  test::sprintf(buffer, "%7.0g", static_cast<double>(8.34e2f));
-  REQUIRE(!strcmp(buffer, "  8e+02"));
-
-  test::sprintf(buffer, "%7.1g", static_cast<double>(8.34f));
-  REQUIRE(!strcmp(buffer, "      8"));
-
-  test::sprintf(buffer, "%7.1g", static_cast<double>(8.34e1f));
-  REQUIRE(!strcmp(buffer, "  8e+01"));
-
-  test::sprintf(buffer, "%7.1g", static_cast<double>(8.34e2f));
-  REQUIRE(!strcmp(buffer, "  8e+02"));
-
-  test::sprintf(buffer, "%7.2g", static_cast<double>(8.34f));
-  REQUIRE(!strcmp(buffer, "    8.3"));
-
-  test::sprintf(buffer, "%7.2g", static_cast<double>(8.34e1f));
-  REQUIRE(!strcmp(buffer, "     83"));
-
-  test::sprintf(buffer, "%7.2g", static_cast<double>(8.34e2f));
-  REQUIRE(!strcmp(buffer, "8.3e+02"));
-
-  test::sprintf(buffer, "%7.3g", static_cast<double>(8.34f));
-  REQUIRE(!strcmp(buffer, "   8.34"));
-
-  test::sprintf(buffer, "%7.3g", static_cast<double>(8.34e1f));
-  REQUIRE(!strcmp(buffer, "   83.4"));
-
-  test::sprintf(buffer, "%7.3g", static_cast<double>(8.34e2f));
-  REQUIRE(!strcmp(buffer, "    834"));
 
 #endif
 
