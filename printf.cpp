@@ -587,7 +587,8 @@ static size_t _etoa(out_fct_type out, char* buffer, size_t idx, size_t maxlen, d
     // do we want to fall-back to "%f" mode?
     if ((value >= FL_DOUBLE_1eminus4) && (value < FL_DOUBLE_1e6)) {
       if (static_cast<int>(prec) > exp10) {
-        prec = static_cast<unsigned>(static_cast<int>(prec) - exp10 - 1);
+        //prec = static_cast<unsigned>(static_cast<int>(prec) - exp10 - 1);
+        prec = static_cast<unsigned>(static_cast<int>(prec) - exp10);
       }
       else {
         prec = 0;
