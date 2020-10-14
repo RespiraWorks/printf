@@ -118,38 +118,14 @@ constexpr unsigned FLAGS_PRECISION = (1U << 10U);
 constexpr unsigned FLAGS_ADAPT_EXP = (1U << 11U);
 
 // math constants
-const unsigned BASE_2U         =  2U;
-const unsigned BASE_8U         =  8U;
-const unsigned BASE_10U        = 10U;
-const unsigned BASE_16U        = 16U;
-const unsigned SHIFT_52U       = 52U;
-const double FL_DOUBLE_HALF         = 0.5;    // lack of appended fFlL indicates double
-const double FL_DOUBLE_ONE_AND_HALF = 1.5;
-const double FL_DOUBLE_1eminus4     = 1e-4;
-const double FL_DOUBLE_1e6          = 1e6;
-const unsigned           ONE_U     = 1U;
-const unsigned long long ONE_ULL   = 1ULL;
-const int       I_2        = 2;
-const unsigned  I_4U       = 4U;
-const unsigned  I_5U       = 5U;
-const int       I_6        = 6;
-const unsigned  I_9U       = 9U;
-const int       I_14       = 14;
-const int       I_1023     = 1023;
-const unsigned  I_1023U    = 1023U;
-const unsigned long long I_1023ULL  = 1023ULL;
-const unsigned           X_0x07FFU  = 0x07FFU;
-const unsigned long long X_0x07FFULL= 0x07FFULL;
-const int       I_1           = 1;
-const int       I_10          = 10;
-const int       I_100         = 100;
-const int       I_1000        = 1000;
-const int       I_10000       = 10000;
-const int       I_100000      = 100000;
-const int       I_1000000     = 1000000;
-const int       I_10000000    = 10000000;
-const int       I_100000000   = 100000000;
-const int       I_1000000000  = 1000000000;
+const unsigned BASE_2U        =  2U;
+const unsigned BASE_8U        =  8U;
+const unsigned BASE_10U       = 10U;
+const unsigned BASE_16U       = 16U;
+const unsigned SHIFT_52U      = 52U;
+const double FL_DOUBLE_HALF       = 0.5;    // lack of appended fFlL indicates double
+const unsigned           ONE_U    = 1U;
+const unsigned long long ONE_ULL  = 1ULL;
 
 // import float.h for DBL_MAX
 #if defined(PRINTF_SUPPORT_FLOAT)
@@ -335,7 +311,7 @@ static size_t _ntoa_long(out_fct_type out, char* buffer, size_t idx, size_t maxl
   if (!(flags & FLAGS_PRECISION) || value) {
     do {
       const unsigned long digit = (value % base);
-      buf[len++] = static_cast<char>(digit < I_10 ? '0' + digit : ((flags & FLAGS_UPPERCASE) ? 'A' : 'a') + digit - I_10);
+      buf[len++] = static_cast<char>(digit < 10 ? '0' + digit : ((flags & FLAGS_UPPERCASE) ? 'A' : 'a') + digit - 10);
       value /= base;
     } while (value && (len < PRINTF_NTOA_BUFFER_SIZE));
   }
@@ -360,7 +336,7 @@ static size_t _ntoa_long_long(out_fct_type out, char* buffer, size_t idx, size_t
   if (!(flags & FLAGS_PRECISION) || value) {
     do {
       const unsigned long long digit = value % base;
-      buf[len++] = static_cast<char>(digit < I_10 ? '0' + digit : ((flags & FLAGS_UPPERCASE) ? 'A' : 'a') + digit - I_10);
+      buf[len++] = static_cast<char>(digit < 10 ? '0' + digit : ((flags & FLAGS_UPPERCASE) ? 'A' : 'a') + digit - 10);
       value /= base;
     } while (value && (len < PRINTF_NTOA_BUFFER_SIZE));
   }
@@ -408,6 +384,15 @@ static size_t _ftoa(out_fct_type out, char* buffer, size_t idx, size_t maxlen, d
   double diff = 0.0;
 
   // powers of 10
+  const int       I_10          = 10;
+  const int       I_100         = 100;
+  const int       I_1000        = 1000;
+  const int       I_10000       = 10000;
+  const int       I_100000      = 100000;
+  const int       I_1000000     = 1000000;
+  const int       I_10000000    = 10000000;
+  const int       I_100000000   = 100000000;
+  const int       I_1000000000  = 1000000000;
   static const double pow10[] = { 1, I_10, I_100, I_1000, I_10000, I_100000, I_1000000, I_10000000, I_100000000, I_1000000000 };
 
   // determine the sign
@@ -422,9 +407,9 @@ static size_t _ftoa(out_fct_type out, char* buffer, size_t idx, size_t maxlen, d
   }
   // limit precision to 9, cause a prec >= 10 can lead to overflow errors
   unsigned int excess_prec = 0;
-  if( prec > I_9U ) {
-    excess_prec = prec - I_9U;
-    prec = I_9U;
+  if( prec > 9U ) {
+    excess_prec = prec - 9U;
+    prec = 9U;
   }
 
   unsigned whole = static_cast<unsigned>(value);
@@ -488,8 +473,8 @@ static size_t _ftoa(out_fct_type out, char* buffer, size_t idx, size_t maxlen, d
 
   // do whole part, number is reversed
   while (len < PRINTF_FTOA_BUFFER_SIZE) {
-    buf[len++] = static_cast<char>(static_cast<unsigned>('0') + (whole % I_10));
-    if (!(whole /= I_10)) {
+    buf[len++] = static_cast<char>(static_cast<unsigned>('0') + (whole % 10));
+    if (!(whole /= 10)) {
       break;
     }
   }
@@ -520,6 +505,9 @@ static size_t _ftoa(out_fct_type out, char* buffer, size_t idx, size_t maxlen, d
 }
 
 
+const int       I_1023     = 1023;
+const unsigned long long I_1023ULL  = 1023ULL;
+const unsigned           X_0x07FFU  = 0x07FFU;
 static constexpr double  LN_OF_10                = (log(10.0));            // FL_DOUBLE_2_302585092994046
 static constexpr double  LN_OF_2                 = (log(2.0));             // FL_DOUBLE_0_6931471805599453
 static constexpr double  LN_OF_2_over_LN_OF_10   = (log(2.0)/log(10.0));   // FL_DOUBLE_0_301029995663981
@@ -554,7 +542,7 @@ static size_t _etoa(out_fct_type out, char* buffer, size_t idx, size_t maxlen, d
   conv.U = (conv.U & ((ONE_ULL << SHIFT_52U) - ONE_U)) | (I_1023ULL << SHIFT_52U);  // drop the exponent so conv.F is now in [1,2)
 
   // now approximate log10 from the log2 integer part and an expansion of ln around 1.5
-  int exp10 = static_cast<int>(LN_OF_1_5_over_LN_OF_10 + exp2 * LN_OF_2_over_LN_OF_10 + (conv.F - FL_DOUBLE_ONE_AND_HALF) * ONE_over_1_5_LN_OF_10);
+  int exp10 = static_cast<int>(LN_OF_1_5_over_LN_OF_10 + exp2 * LN_OF_2_over_LN_OF_10 + (conv.F - 1.5) * ONE_over_1_5_LN_OF_10);
 
   // now we want to compute 10^exp10 but we want to be sure it won't overflow
   exp2 = static_cast<int>(exp10 * LN_OF_10_over_LN_OF_2 + FL_DOUBLE_HALF);
@@ -563,7 +551,7 @@ static size_t _etoa(out_fct_type out, char* buffer, size_t idx, size_t maxlen, d
   const double z2 = z * z;
   conv.U = (uint64_t)(exp2 + I_1023) << SHIFT_52U;
   // compute exp(z) using continued fractions, see https://en.wikipedia.org/wiki/Exponential_function#Continued_fractions_for_ex
-  conv.F *= I_1 + I_2 * z / (I_2 - z + (z2 / (I_6 + (z2 / (I_10 + z2 / I_14)))));
+  conv.F *= 1 + 2 * z / (2 - z + (z2 / (6 + (z2 / (10 + z2 / 14)))));
 
   // correct for rounding errors
   if (value < conv.F) {
@@ -571,8 +559,8 @@ static size_t _etoa(out_fct_type out, char* buffer, size_t idx, size_t maxlen, d
     conv.F /= BASE_10U;
   }
 
-  // the exponent format is "%+03d" and largest value is "307", so set aside 4-5 characters
-  unsigned int minwidth = ((exp10 < I_100) && (exp10 > -I_100)) ? I_4U : I_5U;
+  // the exponent format is "%+03d" and largest value is "308", so set aside 4 characters for e+nn (or 5 for e+nnn).
+  unsigned int minwidth = ((exp10 < 100) && (exp10 > -100)) ? 4U : 5U;
   bool printAsSciNot = true;
 
   // in "%g" mode, "prec" is the number of *significant figures* not decimals
@@ -632,7 +620,7 @@ static size_t _etoa(out_fct_type out, char* buffer, size_t idx, size_t maxlen, d
       // output the exponential symbol
       out((flags & FLAGS_UPPERCASE) ? 'E' : 'e', buffer, idx++, maxlen);
       // output the exponent value
-      idx = _ntoa_long(out, buffer, idx, maxlen, static_cast<unsigned long> ((exp10 < 0) ? -exp10 : exp10), exp10 < 0, I_10, 0, minwidth-1, FLAGS_ZEROPAD | FLAGS_PLUS);
+      idx = _ntoa_long(out, buffer, idx, maxlen, static_cast<unsigned long> ((exp10 < 0) ? -exp10 : exp10), exp10 < 0, 10, 0, minwidth-1, FLAGS_ZEROPAD | FLAGS_PLUS);
       // might need to right-pad spaces
       if (flags & FLAGS_LEFT) {
       while (idx - start_idx < width) {
