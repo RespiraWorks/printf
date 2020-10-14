@@ -33,6 +33,10 @@
 #include <string.h>
 #include <sstream>
 #include <math.h>
+#include <limits>
+
+static constexpr double nan_double = std::numeric_limits<double>::quiet_NaN();
+static constexpr float nan_float = std::numeric_limits<float>::quiet_NaN();
 
 
 namespace test {
@@ -374,7 +378,7 @@ TEST_CASE("float: prelim %g,%f cases, part 2", "[]" ) {
       str.setf(std::ios::scientific, std::ios::floatfield);
     }
     str.precision(5);
-    test::sprintf(buffer, "%.5f", (double)f);
+    test::sprintf(buffer, "%.5f", static_cast<double>(f));
     str.str("");
     if( i >= 9 ) {
       str << f;
@@ -384,7 +388,7 @@ TEST_CASE("float: prelim %g,%f cases, part 2", "[]" ) {
     fail1 = !!strcmp(buffer, str.str().c_str());
     std::cout << "line " << __LINE__ << "... should-be:'" << str.str().c_str() << "'" << " code-said:'" << buffer << "' " << (fail1? "MISMATCH" : "SAME" ) << std::endl;
     fail = fail || fail1;
-    f *= (float)10.0;
+    f *= 10.0f;
   }
   REQUIRE(!fail);
 
@@ -675,7 +679,7 @@ TEST_CASE("# flag", "[]" ) {
   REQUIRE(!strcmp(buffer, ""));
   test::sprintf(buffer, "%#.1x", 0);
   REQUIRE(!strcmp(buffer, "0"));
-  test::sprintf(buffer, "%#.0llx", (long long)0);
+  test::sprintf(buffer, "%#.0llx", 0LL);
   REQUIRE(!strcmp(buffer, ""));
   test::sprintf(buffer, "%#.8x", 0x614e);
   REQUIRE(!strcmp(buffer, "0x0000614e"));
@@ -1382,36 +1386,30 @@ TEST_CASE("length", "[]" ) {
 TEST_CASE("float, set 1", "[]" ) {
   char buffer[100];
 
-  // test special-case floats using math.h macros
-  test::sprintf(buffer, "%8f", nan(""));
+  // test special-case floats using std::numeric_limits.
+  test::sprintf(buffer, "%8f", nan_double );
   REQUIRE(!strcmp(buffer, "     nan"));
 
-  test::sprintf(buffer, "%8f", (double)nanf(""));
+  test::sprintf(buffer, "%8f", static_cast<double>( nan_float ));
   REQUIRE(!strcmp(buffer, "     nan"));
 
-  test::sprintf(buffer, "%8f", NAN);
-  REQUIRE(!strcmp(buffer, "     nan"));
-
-  test::sprintf(buffer, "%8f", INFINITY);
+  test::sprintf(buffer, "%8f", std::numeric_limits<double>::infinity() /* INFINITY */ );
   REQUIRE(!strcmp(buffer, "     inf"));
 
-  test::sprintf(buffer, "%-8f", (double)-INFINITY);
+  test::sprintf(buffer, "%-8f", -std::numeric_limits<double>::infinity() /* -INFINITY */ );
   REQUIRE(!strcmp(buffer, "-inf    "));
 
 #ifndef PRINTF_DISABLE_SUPPORT_EXPONENTIAL
-  test::sprintf(buffer, "%8e", nan(""));
+  test::sprintf(buffer, "%8e", nan_double );
   REQUIRE(!strcmp(buffer, "     nan"));
 
-  test::sprintf(buffer, "%8e", (double)nanf(""));
+  test::sprintf(buffer, "%8e", static_cast<double>( nan_float ));
   REQUIRE(!strcmp(buffer, "     nan"));
 
-  test::sprintf(buffer, "%8e", NAN);
-  REQUIRE(!strcmp(buffer, "     nan"));
-
-  test::sprintf(buffer, "%+8e", INFINITY);
+  test::sprintf(buffer, "%+8e", std::numeric_limits<double>::infinity() /* INFINITY */ );
   REQUIRE(!strcmp(buffer, "    +inf"));
 
-  test::sprintf(buffer, "%-8e", (double)-INFINITY);
+  test::sprintf(buffer, "%-8e", -std::numeric_limits<double>::infinity() /* -INFINITY */ );
   REQUIRE(!strcmp(buffer, "-inf    "));
 #endif
 
@@ -1623,7 +1621,6 @@ TEST_CASE("float, set 4", "[]" ) {
   char buffer[100];
   bool fail = false;
   bool fail1 = false;
-  const char * s = "";
 
 #ifndef PRINTF_DISABLE_SUPPORT_EXPONENTIAL
 
@@ -1633,7 +1630,7 @@ TEST_CASE("float, set 4", "[]" ) {
   str.precision(5);
   for (int i = -100000; i < 100000; i += 1) {
     float fi = i;
-    test::sprintf(buffer, "%.5f", (double)(fi / 10000));
+    test::sprintf(buffer, "%.5f", static_cast<double>(fi) / 10000);
     str.str("");
     str << std::fixed << fi / 10000;
     fail1 = !!strcmp(buffer, str.str().c_str());
@@ -1646,7 +1643,7 @@ TEST_CASE("float, set 4", "[]" ) {
   fail = false;
   str.setf(std::ios::scientific, std::ios::floatfield);
   for (float i = -1e17f; i < +1e17f; i+= 0.9e15f) {
-    test::sprintf(buffer, "%.5f", (double)i);
+    test::sprintf(buffer, "%.5f", static_cast<double>(i));
     str.str("");
     str << i;
     fail1 = !!strcmp(buffer, str.str().c_str());
@@ -1659,7 +1656,7 @@ TEST_CASE("float, set 4", "[]" ) {
   fail = false;
   str.setf(std::ios::scientific, std::ios::floatfield);
   for (float i = -1e20f; i < +1e20f; i+= 1e15f) {
-    test::sprintf(buffer, "%.5f", (double)i);
+    test::sprintf(buffer, "%.5f", static_cast<double>(i));
     str.str("");
     str << i;
     fail1 = !!strcmp(buffer, str.str().c_str());

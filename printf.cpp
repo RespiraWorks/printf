@@ -587,7 +587,7 @@ static size_t _etoa(out_fct_type out, char* buffer, size_t idx, size_t maxlen, d
   if (flags & FLAGS_ADAPT_EXP) {
     // prec and exp10 determinte whether we want to fall-back to "%f" mode.
     // printAsSciNot records that fact.
-    int prec_compute = prec;
+    int prec_compute = static_cast<int>(prec);
     if (prec_compute == 0) {
       prec_compute = 1;
     }
@@ -598,7 +598,7 @@ static size_t _etoa(out_fct_type out, char* buffer, size_t idx, size_t maxlen, d
       printAsSciNot = true;
       prec_compute--;
     }
-    prec = (prec_compute > 0)? prec_compute : 0;
+    prec = static_cast<unsigned int>( (prec_compute > 0)? prec_compute : 0 );
   }
 
   if (! printAsSciNot) {
