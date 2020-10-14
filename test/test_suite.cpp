@@ -137,12 +137,180 @@ TEST_CASE("vsnprintf", "[]" ) {
 
 #ifndef PRINTF_DISABLE_SUPPORT_EXPONENTIAL
 
-TEST_CASE("float: prelim cases", "[]" ) {
+TEST_CASE("float: debugging %g,%f cases", "[]" ) {
+  char buffer[100];
+  bool fail = false;
+  bool fail1 = false;
+  const char * s = "";
+
+  {
+    test::sprintf(buffer, "%7.3g", static_cast<double>(8.34e-1f));
+    s = "  0.834";
+    fail1 = !!strcmp( buffer, s );
+    std::cout << __LINE__ << " good:'" << s << "'" << " code:'" << buffer << "' " << (fail1? "MISMATCH" : "" ) << std::endl;
+    fail = fail || fail1;
+
+    test::sprintf(buffer, "%7.3g", static_cast<double>(8.34e-2f));
+    s = " 0.0834";
+    fail1 = !!strcmp( buffer, s );
+    std::cout << __LINE__ << " good:'" << s << "'" << " code:'" << buffer << "' " << (fail1? "MISMATCH" : "" ) << std::endl;
+    fail = fail || fail1;
+
+    test::sprintf(buffer, "%7.3g", static_cast<double>(8.34e-3f));
+    s = "0.00834";
+    fail1 = !!strcmp( buffer, s );
+    std::cout << __LINE__ << " good:'" << s << "'" << " code:'" << buffer << "' " << (fail1? "MISMATCH" : "" ) << std::endl;
+    fail = fail || fail1;
+
+    test::sprintf(buffer, "%7.4g", static_cast<double>(8.34e-1f));
+    s = " 0.8340";
+    fail1 = !!strcmp( buffer, s );
+    std::cout << __LINE__ << " good:'" << s << "'" << " code:'" << buffer << "' " << (fail1? "MISMATCH" : "" ) << std::endl;
+    fail = fail || fail1;
+
+    test::sprintf(buffer, "%7.4g", static_cast<double>(8.34e-2f));
+    s = "0.08340";
+    fail1 = !!strcmp( buffer, s );
+    std::cout << __LINE__ << " good:'" << s << "'" << " code:'" << buffer << "' " << (fail1? "MISMATCH" : "" ) << std::endl;
+    fail = fail || fail1;
+
+    test::sprintf(buffer, "%7.4g", static_cast<double>(8.34e-3f));
+    s = "0.008340";
+    fail1 = !!strcmp( buffer, s );
+    std::cout << __LINE__ << " good:'" << s << "'" << " code:'" << buffer << "' " << (fail1? "MISMATCH" : "" ) << std::endl;
+    fail = fail || fail1;
+
+  }
+  REQUIRE(!fail);
+}
+#endif
+
+#ifndef PRINTF_DISABLE_SUPPORT_EXPONENTIAL
+TEST_CASE("float: %g: precision vs exponent", "[]" ) {
+  char buffer[100];
+  bool fail = false;
+  bool fail1 = false;
+  const char * s = "";
+
+  {
+    test::sprintf(buffer, "%7.0g", static_cast<double>(8.34f));
+    s = "      8";
+    fail1 = !!strcmp( buffer, s );
+    std::cout << __LINE__ << " good:'" << s << "'" << " code:'" << buffer << "' " << (fail1? "MISMATCH" : "" ) << std::endl;
+    fail = fail || fail1;
+
+    test::sprintf(buffer, "%7.0g", static_cast<double>(8.34e1f));
+    s = "  8e+01";
+    fail1 = !!strcmp( buffer, s );
+    std::cout << __LINE__ << " good:'" << s << "'" << " code:'" << buffer << "' " << (fail1? "MISMATCH" : "" ) << std::endl;
+    fail = fail || fail1;
+
+    test::sprintf(buffer, "%7.0g", static_cast<double>(8.34e2f));
+    s = "  8e+02";
+    fail1 = !!strcmp( buffer, s );
+    std::cout << __LINE__ << " good:'" << s << "'" << " code:'" << buffer << "' " << (fail1? "MISMATCH" : "" ) << std::endl;
+    fail = fail || fail1;
+
+    test::sprintf(buffer, "%7.1g", static_cast<double>(8.34f));
+    s = "      8";
+    fail1 = !!strcmp( buffer, s );
+    std::cout << __LINE__ << " good:'" << s << "'" << " code:'" << buffer << "' " << (fail1? "MISMATCH" : "" ) << std::endl;
+    fail = fail || fail1;
+
+    test::sprintf(buffer, "%7.1g", static_cast<double>(8.34e1f));
+    s = "  8e+01";
+    fail1 = !!strcmp( buffer, s );
+    std::cout << __LINE__ << " good:'" << s << "'" << " code:'" << buffer << "' " << (fail1? "MISMATCH" : "" ) << std::endl;
+    fail = fail || fail1;
+
+    test::sprintf(buffer, "%7.1g", static_cast<double>(8.34e2f));
+    s = "  8e+02";
+    fail1 = !!strcmp( buffer, s );
+    std::cout << __LINE__ << " good:'" << s << "'" << " code:'" << buffer << "' " << (fail1? "MISMATCH" : "" ) << std::endl;
+    fail = fail || fail1;
+
+    test::sprintf(buffer, "%7.2g", static_cast<double>(8.34f));
+    s = "    8.3";
+    fail1 = !!strcmp( buffer, s );
+    std::cout << __LINE__ << " good:'" << s << "'" << " code:'" << buffer << "' " << (fail1? "MISMATCH" : "" ) << std::endl;
+    fail = fail || fail1;
+
+    test::sprintf(buffer, "%7.2g", static_cast<double>(8.34e1f));
+    s = "     83";
+    fail1 = !!strcmp( buffer, s );
+    std::cout << __LINE__ << " good:'" << s << "'" << " code:'" << buffer << "' " << (fail1? "MISMATCH" : "" ) << std::endl;
+    fail = fail || fail1;
+
+    test::sprintf(buffer, "%7.2g", static_cast<double>(8.34e2f));
+    s = "8.3e+02";
+    fail1 = !!strcmp( buffer, s );
+    std::cout << __LINE__ << " good:'" << s << "'" << " code:'" << buffer << "' " << (fail1? "MISMATCH" : "" ) << std::endl;
+    fail = fail || fail1;
+
+    test::sprintf(buffer, "%7.3g", static_cast<double>(8.34f));
+    s = "   8.34";
+    fail1 = !!strcmp( buffer, s );
+    std::cout << __LINE__ << " good:'" << s << "'" << " code:'" << buffer << "' " << (fail1? "MISMATCH" : "" ) << std::endl;
+    fail = fail || fail1;
+
+    test::sprintf(buffer, "%7.3g", static_cast<double>(8.34e1f));
+    s = "   83.4";
+    fail1 = !!strcmp( buffer, s );
+    std::cout << __LINE__ << " good:'" << s << "'" << " code:'" << buffer << "' " << (fail1? "MISMATCH" : "" ) << std::endl;
+    fail = fail || fail1;
+
+    test::sprintf(buffer, "%7.3g", static_cast<double>(8.34e2f));
+    s = "    834";
+    fail1 = !!strcmp( buffer, s );
+    std::cout << __LINE__ << " good:'" << s << "'" << " code:'" << buffer << "' " << (fail1? "MISMATCH" : "" ) << std::endl;
+    fail = fail || fail1;
+
+  }
+  REQUIRE(!fail);
+}
+#endif
+
+
+
+TEST_CASE("float: prelim %g,%f cases, part 1", "[]" ) {
+  char buffer[100];
+  bool fail = false;
+  bool fail1 = false;
+  const char * s = "";
+
+  fail = false;
+  {
+    test::sprintf(buffer, "%0-15.3g", -0.042);
+#ifndef PRINTF_DISABLE_SUPPORT_EXPONENTIAL
+    s = "-0.0420        ";
+#else
+    s = "g";
+#endif
+    fail1 = !!strcmp( buffer, s );
+    std::cout << __LINE__ << " good:'" << s << "'" << " code:'" << buffer << "' " << (fail1? "MISMATCH" : "" ) << std::endl;
+    fail = fail || fail1;
+
+    test::sprintf(buffer, "%0-15.4g", -0.042);
+#ifndef PRINTF_DISABLE_SUPPORT_EXPONENTIAL
+    s = "-0.04200       ";
+#else
+    s = "g";
+#endif
+    fail1 = !!strcmp( buffer, s );
+    std::cout << __LINE__ << " good:'" << s << "'" << " code:'" << buffer << "' " << (fail1? "MISMATCH" : "" ) << std::endl;
+    fail = fail || fail1;
+  }
+  REQUIRE(!fail);
+}
+
+#ifndef PRINTF_DISABLE_SUPPORT_EXPONENTIAL
+TEST_CASE("float: prelim %g,%f cases, part 2", "[]" ) {
   char buffer[100];
   bool fail = false;
   bool fail1 = false;
   std::stringstream str;
 
+  fail = false;
   float f = -9.999999;
   for( int i=0; i<20; i++ ) {
     if( i >= 9 ) {
@@ -344,11 +512,8 @@ TEST_CASE("0 flag", "[]" ) {
 }
 
 
-TEST_CASE("- flag", "[]" ) {
+TEST_CASE("- flag, part 1", "[]" ) {
   char buffer[100];
-  bool fail = false;
-  bool fail1 = false;
-  const char * s = "";
 
   test::sprintf(buffer, "%-d", 42);
   REQUIRE(!strcmp(buffer, "42"));
@@ -410,62 +575,38 @@ TEST_CASE("- flag", "[]" ) {
 #else
   REQUIRE(!strcmp(buffer, "e"));
 #endif
+}
+
+
+TEST_CASE("- flag, part 2", "[]" ) {
+  char buffer[100];
+  bool fail = false;
+  bool fail1 = false;
+  const char * s = "";
 
   fail = false;
-  test::sprintf(buffer, "%0-15.3g", -42.);
-#ifndef PRINTF_DISABLE_SUPPORT_EXPONENTIAL
   {
+    test::sprintf(buffer, "%0-15.3g", -42.);
+#ifndef PRINTF_DISABLE_SUPPORT_EXPONENTIAL
     s = "-42.0          ";
+#else
+    s = "g";
+#endif
     fail1 = !!strcmp( buffer, s );
     std::cout << __LINE__ << " good:'" << s << "'" << " code:'" << buffer << "' " << (fail1? "MISMATCH" : "" ) << std::endl;
     fail = fail || fail1;
-  }
-  REQUIRE(!fail);
-#else
-  REQUIRE(!strcmp(buffer, "g"));
-#endif
 
-  fail = false;
-  test::sprintf(buffer, "%0-15.4g", -42.);
+    test::sprintf(buffer, "%0-15.4g", -42.);
 #ifndef PRINTF_DISABLE_SUPPORT_EXPONENTIAL
-  {
     s = "-42.00         ";
+#else
+    s = "g";
+#endif
     fail1 = !!strcmp( buffer, s );
     std::cout << __LINE__ << " good:'" << s << "'" << " code:'" << buffer << "' " << (fail1? "MISMATCH" : "" ) << std::endl;
     fail = fail || fail1;
   }
   REQUIRE(!fail);
-#else
-  REQUIRE(!strcmp(buffer, "g"));
-#endif
-
-  fail = false;
-  test::sprintf(buffer, "%0-15.3g", -0.042);
-#ifndef PRINTF_DISABLE_SUPPORT_EXPONENTIAL
-  {
-    s = "-0.042         ";
-    fail1 = !!strcmp( buffer, s );
-    std::cout << __LINE__ << " good:'" << s << "'" << " code:'" << buffer << "' " << (fail1? "MISMATCH" : "" ) << std::endl;
-    fail = fail || fail1;
-  }
-  REQUIRE(!fail);
-#else
-  REQUIRE(!strcmp(buffer, "g"));
-#endif
-
-  fail = false;
-  test::sprintf(buffer, "%0-15.4g", -0.042);
-#ifndef PRINTF_DISABLE_SUPPORT_EXPONENTIAL
-  {
-    s = "-0.042         ";
-    fail1 = !!strcmp( buffer, s );
-    std::cout << __LINE__ << " good:'" << s << "'" << " code:'" << buffer << "' " << (fail1? "MISMATCH" : "" ) << std::endl;
-    fail = fail || fail1;
-  }
-  REQUIRE(!fail);
-#else
-  REQUIRE(!strcmp(buffer, "g"));
-#endif
 
 }
 
@@ -1022,11 +1163,8 @@ TEST_CASE("padding neg numbers", "[]" ) {
 }
 
 
-TEST_CASE("float padding neg numbers", "[]" ) {
+TEST_CASE("float padding neg numbers, part 1", "[]" ) {
   char buffer[100];
-  bool fail = false;
-  bool fail1 = false;
-  const char * s = "";
 
   // space padding
   test::sprintf(buffer, "% 3.1f", -5.);
@@ -1039,15 +1177,6 @@ TEST_CASE("float padding neg numbers", "[]" ) {
   REQUIRE(!strcmp(buffer, " -5.0"));
 
 #ifndef PRINTF_DISABLE_SUPPORT_EXPONENTIAL
-  fail = false;
-  test::sprintf(buffer, "% 6.1g", -5.);
-  {
-    s = "    -5";
-    fail1 = !!strcmp( buffer, s );
-    std::cout << __LINE__ << " good:'" << s << "'" << " code:'" << buffer << "' " << (fail1? "MISMATCH" : "" ) << std::endl;
-    fail = fail || fail1;
-  }
-  REQUIRE(!fail);
 
   test::sprintf(buffer, "% 6.1e", -5.);
   REQUIRE(!strcmp(buffer, "-5.0e+00"));
@@ -1082,17 +1211,32 @@ TEST_CASE("float padding neg numbers", "[]" ) {
 
   test::sprintf(buffer, "%07.0E", -5.);
   REQUIRE(!strcmp(buffer, "-05E+00"));
+#endif
+}
+
+TEST_CASE("float padding neg numbers, part 2", "[]" ) {
+  char buffer[100];
+  bool fail = false;
+  bool fail1 = false;
+  const char * s = "";
 
   fail = false;
-  test::sprintf(buffer, "%03.0g", -5.);
   {
+#ifndef PRINTF_DISABLE_SUPPORT_EXPONENTIAL
+    test::sprintf(buffer, "% 6.1g", -5.);
+    s = "    -5";
+    fail1 = !!strcmp( buffer, s );
+    std::cout << __LINE__ << " good:'" << s << "'" << " code:'" << buffer << "' " << (fail1? "MISMATCH" : "" ) << std::endl;
+    fail = fail || fail1;
+
+    test::sprintf(buffer, "%03.0g", -5.);
     s = "-05";
     fail1 = !!strcmp( buffer, s );
     std::cout << __LINE__ << " good:'" << s << "'" << " code:'" << buffer << "' " << (fail1? "MISMATCH" : "" ) << std::endl;
     fail = fail || fail1;
+#endif
   }
   REQUIRE(!fail);
-#endif
 }
 
 TEST_CASE("length", "[]" ) {
@@ -1178,94 +1322,8 @@ TEST_CASE("length", "[]" ) {
 }
 
 
-TEST_CASE("float: %g: precision vs exponent", "[]" ) {
+TEST_CASE("float, set 1", "[]" ) {
   char buffer[100];
-  bool fail = false;
-  bool fail1 = false;
-  const char * s = "";
-  {
-    test::sprintf(buffer, "%7.0g", static_cast<double>(8.34f));
-    s = "      8";
-    fail1 = !!strcmp( buffer, s );
-    std::cout << __LINE__ << " good:'" << s << "'" << " code:'" << buffer << "' " << (fail1? "MISMATCH" : "" ) << std::endl;
-    fail = fail || fail1;
-
-    test::sprintf(buffer, "%7.0g", static_cast<double>(8.34e1f));
-    s = "     83";
-    fail1 = !!strcmp( buffer, s );
-    std::cout << __LINE__ << " good:'" << s << "'" << " code:'" << buffer << "' " << (fail1? "MISMATCH" : "" ) << std::endl;
-    fail = fail || fail1;
-
-    test::sprintf(buffer, "%7.0g", static_cast<double>(8.34e2f));
-    s = "    834";
-    fail1 = !!strcmp( buffer, s );
-    std::cout << __LINE__ << " good:'" << s << "'" << " code:'" << buffer << "' " << (fail1? "MISMATCH" : "" ) << std::endl;
-    fail = fail || fail1;
-
-    test::sprintf(buffer, "%7.1g", static_cast<double>(8.34f));
-    s = "      8";
-    fail1 = !!strcmp( buffer, s );
-    std::cout << __LINE__ << " good:'" << s << "'" << " code:'" << buffer << "' " << (fail1? "MISMATCH" : "" ) << std::endl;
-    fail = fail || fail1;
-
-    test::sprintf(buffer, "%7.1g", static_cast<double>(8.34e1f));
-    s = "     83";
-    fail1 = !!strcmp( buffer, s );
-    std::cout << __LINE__ << " good:'" << s << "'" << " code:'" << buffer << "' " << (fail1? "MISMATCH" : "" ) << std::endl;
-    fail = fail || fail1;
-
-    test::sprintf(buffer, "%7.1g", static_cast<double>(8.34e2f));
-    s = "    834";
-    fail1 = !!strcmp( buffer, s );
-    std::cout << __LINE__ << " good:'" << s << "'" << " code:'" << buffer << "' " << (fail1? "MISMATCH" : "" ) << std::endl;
-    fail = fail || fail1;
-
-    test::sprintf(buffer, "%7.2g", static_cast<double>(8.34f));
-    s = "    8.3";
-    fail1 = !!strcmp( buffer, s );
-    std::cout << __LINE__ << " good:'" << s << "'" << " code:'" << buffer << "' " << (fail1? "MISMATCH" : "" ) << std::endl;
-    fail = fail || fail1;
-
-    test::sprintf(buffer, "%7.2g", static_cast<double>(8.34e1f));
-    s = "     83";
-    fail1 = !!strcmp( buffer, s );
-    std::cout << __LINE__ << " good:'" << s << "'" << " code:'" << buffer << "' " << (fail1? "MISMATCH" : "" ) << std::endl;
-    fail = fail || fail1;
-
-    test::sprintf(buffer, "%7.2g", static_cast<double>(8.34e2f));
-    s = "    834";
-    fail1 = !!strcmp( buffer, s );
-    std::cout << __LINE__ << " good:'" << s << "'" << " code:'" << buffer << "' " << (fail1? "MISMATCH" : "" ) << std::endl;
-    fail = fail || fail1;
-
-    test::sprintf(buffer, "%7.3g", static_cast<double>(8.34f));
-    s = "   8.34";
-    fail1 = !!strcmp( buffer, s );
-    std::cout << __LINE__ << " good:'" << s << "'" << " code:'" << buffer << "' " << (fail1? "MISMATCH" : "" ) << std::endl;
-    fail = fail || fail1;
-
-    test::sprintf(buffer, "%7.3g", static_cast<double>(8.34e1f));
-    s = "   83.4";
-    fail1 = !!strcmp( buffer, s );
-    std::cout << __LINE__ << " good:'" << s << "'" << " code:'" << buffer << "' " << (fail1? "MISMATCH" : "" ) << std::endl;
-    fail = fail || fail1;
-
-    test::sprintf(buffer, "%7.3g", static_cast<double>(8.34e2f));
-    s = "    834";
-    fail1 = !!strcmp( buffer, s );
-    std::cout << __LINE__ << " good:'" << s << "'" << " code:'" << buffer << "' " << (fail1? "MISMATCH" : "" ) << std::endl;
-    fail = fail || fail1;
-
-  }
-  REQUIRE(!fail);
-
-}
-
-TEST_CASE("float", "[]" ) {
-  char buffer[100];
-  bool fail = false;
-  bool fail1 = false;
-  const char * s = "";
 
   // test special-case floats using math.h macros
   test::sprintf(buffer, "%8f", nan(""));
@@ -1385,84 +1443,6 @@ TEST_CASE("float", "[]" ) {
   test::sprintf(buffer, "a%-5.1fend", 0.5);
   REQUIRE(!strcmp(buffer, "a0.5  end"));
 
-#ifndef PRINTF_DISABLE_SUPPORT_EXPONENTIAL
-  fail = false;
-  test::sprintf(buffer, "%G", 12345.678);
-  {
-    s = "12345.7";
-    fail1 = !!strcmp( buffer, s );
-    std::cout << __LINE__ << " good:'" << s << "'" << " code:'" << buffer << "' " << (fail1? "MISMATCH" : "" ) << std::endl;
-    fail = fail || fail1;
-  }
-  REQUIRE(!fail);
-
-  fail = false;
-  test::sprintf(buffer, "%.4G", 12345.678);
-  {
-    s = "12346";
-    fail1 = !!strcmp( buffer, s );
-    std::cout << __LINE__ << " good:'" << s << "'" << " code:'" << buffer << "' " << (fail1? "MISMATCH" : "" ) << std::endl;
-    fail = fail || fail1;
-  }
-  REQUIRE(!fail);
-
-  fail = false;
-  test::sprintf(buffer, "%.5G", 12345.678);
-  {
-    s = "12346";
-    fail1 = !!strcmp( buffer, s );
-    std::cout << __LINE__ << " good:'" << s << "'" << " code:'" << buffer << "' " << (fail1? "MISMATCH" : "" ) << std::endl;
-    fail = fail || fail1;
-  }
-  REQUIRE(!fail);
-
-  fail = false;
-  test::sprintf(buffer, "%.6G", 12345.678);
-  {
-    s = "12345.7";
-    fail1 = !!strcmp( buffer, s );
-    std::cout << __LINE__ << " good:'" << s << "'" << " code:'" << buffer << "' " << (fail1? "MISMATCH" : "" ) << std::endl;
-    fail = fail || fail1;
-  }
-  REQUIRE(!fail);
-
-  fail = false;
-  test::sprintf(buffer, "%.7G", 12345.678);
-  {
-    s = "12345.68";
-    fail1 = !!strcmp( buffer, s );
-    std::cout << __LINE__ << " good:'" << s << "'" << " code:'" << buffer << "' " << (fail1? "MISMATCH" : "" ) << std::endl;
-    fail = fail || fail1;
-  }
-  REQUIRE(!fail);
-
-
-  test::sprintf(buffer, "%.5G", 123456789.);
-  REQUIRE(!strcmp(buffer, "1.2346E+08"));
-
-  test::sprintf(buffer, "%.6G", 12345.);
-  REQUIRE(!strcmp(buffer, "12345.0"));
-
-  test::sprintf(buffer, "%+12.4g", 123456789.);
-  REQUIRE(!strcmp(buffer, "  +1.235e+08"));
-
-  test::sprintf(buffer, "%.2G", 0.001234);
-  REQUIRE(!strcmp(buffer, "0.0012"));
-
-  test::sprintf(buffer, "%+10.4G", 0.001234);
-  REQUIRE(!strcmp(buffer, " +0.001234"));
-
-  test::sprintf(buffer, "%+012.4g", 0.00001234);
-  REQUIRE(!strcmp(buffer, "+001.234e-05"));
-
-  test::sprintf(buffer, "%.3g", -1.2345e-308);
-  REQUIRE(!strcmp(buffer, "-1.23e-308"));
-
-  test::sprintf(buffer, "%+.3E", 1.23e+308);
-  REQUIRE(!strcmp(buffer, "+1.230E+308"));
-
-#endif
-
   // out of range for float: should switch to exp notation if supported, else empty
   test::sprintf(buffer, "%.1f", 1E20);
 #ifndef PRINTF_DISABLE_SUPPORT_EXPONENTIAL
@@ -1470,10 +1450,128 @@ TEST_CASE("float", "[]" ) {
 #else
   REQUIRE(!strcmp(buffer, ""));
 #endif
+}
+
+
+TEST_CASE("float, set 2", "[]" ) {
+  char buffer[100];
+  bool fail = false;
+  bool fail1 = false;
+  const char * s = "";
+
+#ifndef PRINTF_DISABLE_SUPPORT_EXPONENTIAL
+  fail = false;
+  {
+    test::sprintf(buffer, "%G", 12345.678);
+    s = "12345.7";
+    fail1 = !!strcmp( buffer, s );
+    std::cout << __LINE__ << " good:'" << s << "'" << " code:'" << buffer << "' " << (fail1? "MISMATCH" : "" ) << std::endl;
+    fail = fail || fail1;
+
+    test::sprintf(buffer, "%.4G", 12345.678);
+    s = "1.235E+04";
+    fail1 = !!strcmp( buffer, s );
+    std::cout << __LINE__ << " good:'" << s << "'" << " code:'" << buffer << "' " << (fail1? "MISMATCH" : "" ) << std::endl;
+    fail = fail || fail1;
+
+    test::sprintf(buffer, "%.5G", 12345.678);
+    s = "12346";
+    fail1 = !!strcmp( buffer, s );
+    std::cout << __LINE__ << " good:'" << s << "'" << " code:'" << buffer << "' " << (fail1? "MISMATCH" : "" ) << std::endl;
+    fail = fail || fail1;
+
+    test::sprintf(buffer, "%.6G", 12345.678);
+    s = "12345.7";
+    fail1 = !!strcmp( buffer, s );
+    std::cout << __LINE__ << " good:'" << s << "'" << " code:'" << buffer << "' " << (fail1? "MISMATCH" : "" ) << std::endl;
+    fail = fail || fail1;
+
+    test::sprintf(buffer, "%.7G", 12345.678);
+    s = "12345.68";
+    fail1 = !!strcmp( buffer, s );
+    std::cout << __LINE__ << " good:'" << s << "'" << " code:'" << buffer << "' " << (fail1? "MISMATCH" : "" ) << std::endl;
+    fail = fail || fail1;
+
+    test::sprintf(buffer, "%.5G", 123456789.);
+    s = "1.2346E+08";
+    fail1 = !!strcmp( buffer, s );
+    std::cout << __LINE__ << " good:'" << s << "'" << " code:'" << buffer << "' " << (fail1? "MISMATCH" : "" ) << std::endl;
+    fail = fail || fail1;
+
+    test::sprintf(buffer, "%.6G", 12345.);
+    s = "12345.0";
+    fail1 = !!strcmp( buffer, s );
+    std::cout << __LINE__ << " good:'" << s << "'" << " code:'" << buffer << "' " << (fail1? "MISMATCH" : "" ) << std::endl;
+    fail = fail || fail1;
+
+    test::sprintf(buffer, "%+12.4g", 123456789.);
+    s = "  +1.235e+08";
+    fail1 = !!strcmp( buffer, s );
+    std::cout << __LINE__ << " good:'" << s << "'" << " code:'" << buffer << "' " << (fail1? "MISMATCH" : "" ) << std::endl;
+    fail = fail || fail1;
+
+    test::sprintf(buffer, "%.2G", 0.001234);
+    s = "0.0012";
+    fail1 = !!strcmp( buffer, s );
+    std::cout << __LINE__ << " good:'" << s << "'" << " code:'" << buffer << "' " << (fail1? "MISMATCH" : "" ) << std::endl;
+    fail = fail || fail1;
+
+  }
+  REQUIRE(!fail);
+#endif
+}
+
+TEST_CASE("float, set 3", "[]" ) {
+  char buffer[100];
+  bool fail = false;
+  bool fail1 = false;
+  const char * s = "";
+
+#ifndef PRINTF_DISABLE_SUPPORT_EXPONENTIAL
+  fail = false;
+  {
+    test::sprintf(buffer, "%+012.4g", 0.00001234);
+    s = "+001.234e-05";
+    fail1 = !!strcmp( buffer, s );
+    std::cout << __LINE__ << " good:'" << s << "'" << " code:'" << buffer << "' " << (fail1? "MISMATCH" : "" ) << std::endl;
+    fail = fail || fail1;
+
+    test::sprintf(buffer, "%.3g", -1.2345e-308);
+    s = "-1.23e-308";
+    fail1 = !!strcmp( buffer, s );
+    std::cout << __LINE__ << " good:'" << s << "'" << " code:'" << buffer << "' " << (fail1? "MISMATCH" : "" ) << std::endl;
+    fail = fail || fail1;
+
+    test::sprintf(buffer, "%+.3E", 1.23e+308);
+    s = "+1.230E+308";
+    fail1 = !!strcmp( buffer, s );
+    std::cout << __LINE__ << " good:'" << s << "'" << " code:'" << buffer << "' " << (fail1? "MISMATCH" : "" ) << std::endl;
+    fail = fail || fail1;
+
+    test::sprintf(buffer, "%+10.4G", 0.001234);
+    s = " +0.001234";
+    fail1 = !!strcmp( buffer, s );
+    std::cout << __LINE__ << " good:'" << s << "'" << " code:'" << buffer << "' " << (fail1? "MISMATCH" : "" ) << std::endl;
+    fail = fail || fail1;
+
+  }
+  REQUIRE(!fail);
+
+#endif
+
+}
+
+
+TEST_CASE("float, set 4", "[]" ) {
+  char buffer[100];
+  bool fail = false;
+  bool fail1 = false;
+  const char * s = "";
+
+#ifndef PRINTF_DISABLE_SUPPORT_EXPONENTIAL
 
   // brute force float
   fail = false;
-  //bool fail1 = false;
   std::stringstream str;
   str.precision(5);
   for (int i = -100000; i < 100000; i += 1) {
@@ -1487,27 +1585,7 @@ TEST_CASE("float", "[]" ) {
   }
   REQUIRE(!fail);
 
-
-#ifndef PRINTF_DISABLE_SUPPORT_EXPONENTIAL
-#if 0
   // brute force exp
-  fail = false;
-  str.setf(std::ios::scientific, std::ios::floatfield);
-  for (int i = -100000; i < 100000; i++) {
-    double fi = (double)i * 1e15;
-    test::sprintf(buffer, "%.5f", fi);
-    str.str("");
-    str << fi;
-    // snw 2020-09-29: The output of this test looks good, but fails.
-    fail1 = !!strcmp(buffer, str.str().c_str());
-    //std::cout << __LINE__ << " '" << str.str().c_str() << "'" << " '" << buffer << "' " << (fail1? "MISMATCH" : "" ) << std::endl;
-    fail = fail || fail1;
-  }
-  REQUIRE(!fail);
-#endif
-
-  // brute force exp
-  //fail = false;
   fail = false;
   str.setf(std::ios::scientific, std::ios::floatfield);
   for (float i = -1e17f; i < +1e17f; i+= 0.9e15f) {
@@ -1521,21 +1599,19 @@ TEST_CASE("float", "[]" ) {
   REQUIRE(!fail);
 
   // brute force exp
-  //fail = false;
   fail = false;
   str.setf(std::ios::scientific, std::ios::floatfield);
   for (float i = -1e20f; i < +1e20f; i+= 1e15f) {
     test::sprintf(buffer, "%.5f", (double)i);
     str.str("");
     str << i;
-    // snw 2020-09-29: This test passes, but some output looks wrong.
     fail1 = !!strcmp(buffer, str.str().c_str());
     std::cout << __LINE__ << " '" << str.str().c_str() << "'" << " '" << buffer << "' " << (fail1? "MISMATCH" : "" ) << std::endl;
     fail = fail || fail1;
   }
   REQUIRE(!fail);
-
 #endif
+
 }
 
 
@@ -1779,24 +1855,11 @@ TEST_CASE("ret value", "[]" ) {
 }
 
 
-TEST_CASE("misc", "[]" ) {
+TEST_CASE("misc, part 1", "[]" ) {
   char buffer[100];
-  bool fail = false;
-  bool fail1 = false;
-  const char * s = "";
 
   test::sprintf(buffer, "%u%u%ctest%d %s", 5, 3000, 'a', -20, "bit");
   REQUIRE(!strcmp(buffer, "53000atest-20 bit"));
-
-  fail = false;
-  test::sprintf(buffer, "%.*f", 2, 0.33333333);
-  {
-    s = "0.33";
-    fail1 = !!strcmp( buffer, s );
-    std::cout << __LINE__ << " good:'" << s << "'" << " code:'" << buffer << "' " << (fail1? "MISMATCH" : "" ) << std::endl;
-    fail = fail || fail1;
-  }
-  REQUIRE(!fail);
 
   test::sprintf(buffer, "%.*d", -1, 1);
   REQUIRE(!strcmp(buffer, "1"));
@@ -1812,19 +1875,37 @@ TEST_CASE("misc", "[]" ) {
 
   test::sprintf(buffer, "%*sx", -3, "hi");
   REQUIRE(!strcmp(buffer, "hi x"));
+}
+
+
+TEST_CASE("misc, part 2", "[]" ) {
+  char buffer[100];
+  bool fail = false;
+  bool fail1 = false;
+  const char * s = "";
 
 #ifndef PRINTF_DISABLE_SUPPORT_EXPONENTIAL
   fail = false;
-  test::sprintf(buffer, "%.*g", 2, 0.33333333);
   {
+    test::sprintf(buffer, "%.*f", 2, 0.33333333);
     s = "0.33";
     fail1 = !!strcmp( buffer, s );
     std::cout << __LINE__ << " good:'" << s << "'" << " code:'" << buffer << "' " << (fail1? "MISMATCH" : "" ) << std::endl;
     fail = fail || fail1;
+
+    test::sprintf(buffer, "%.*g", 2, 0.33333333);
+    s = "0.33";
+    fail1 = !!strcmp( buffer, s );
+    std::cout << __LINE__ << " good:'" << s << "'" << " code:'" << buffer << "' " << (fail1? "MISMATCH" : "" ) << std::endl;
+    fail = fail || fail1;
+
+    test::sprintf(buffer, "%.*e", 2, 0.33333333);
+    s = "3.33e-01";
+    fail1 = !!strcmp( buffer, s );
+    std::cout << __LINE__ << " good:'" << s << "'" << " code:'" << buffer << "' " << (fail1? "MISMATCH" : "" ) << std::endl;
+    fail = fail || fail1;
+
   }
   REQUIRE(!fail);
-
-  test::sprintf(buffer, "%.*e", 2, 0.33333333);
-  REQUIRE(!strcmp(buffer, "3.33e-01"));
 #endif
 }

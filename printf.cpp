@@ -545,7 +545,7 @@ static size_t _etoa(out_fct_type out, char* buffer, size_t idx, size_t maxlen, d
     value = -value;
   }
 
-  // default precision
+  // set default precision, if not set explicitly
   if (!(flags & FLAGS_PRECISION)) {
     prec = PRINTF_DEFAULT_FLOAT_PRECISION;
   }
@@ -581,32 +581,31 @@ static size_t _etoa(out_fct_type out, char* buffer, size_t idx, size_t maxlen, d
 
   // the exponent format is "%+03d" and largest value is "307", so set aside 4-5 characters
   unsigned int minwidth = ((exp10 < I_100) && (exp10 > -I_100)) ? I_4U : I_5U;
+  bool printAsSciNot = true;
 
   // in "%g" mode, "prec" is the number of *significant figures* not decimals
   if (flags & FLAGS_ADAPT_EXP) {
-    // do we want to fall-back to "%f" mode?
-    if ((value >= FL_DOUBLE_1eminus4) && (value < FL_DOUBLE_1e6)) {
-      if (exp10 >= 0) {
-        if (static_cast<int>(prec) > exp10) {
-          prec = static_cast<unsigned>(static_cast<int>(prec) - exp10 - 1);
-        }
-        else {
-          prec = 0;
-        }
-      } else {
-        ;  // leave prec alone.
-      }
-      flags |= FLAGS_PRECISION;   // make sure _ftoa respects precision
-      // no characters in exponent
-      minwidth = 0U;
-      exp10   = 0;
+    // prec and exp10 determinte whether we want to fall-back to "%f" mode.
+    // printAsSciNot records that fact.
+    int prec_compute = prec;
+    if (prec_compute == 0) {
+      prec_compute = 1;
     }
-    else {
-      // we use one sigfig for the whole part
-      if ((prec > 0) && (flags & FLAGS_PRECISION)) {
-        --prec;
-      }
+    if ( (prec_compute > exp10) && (exp10 >= -4) ) {
+      printAsSciNot = false;
+      prec_compute -= exp10 + 1;
+    } else {
+      printAsSciNot = true;
+      prec_compute--;
     }
+    prec = (prec_compute > 0)? prec_compute : 0;
+  }
+
+  if (! printAsSciNot) {
+    flags |= FLAGS_PRECISION;   // make sure _ftoa respects precision
+    // no characters in exponent
+    minwidth = 0U;
+    exp10   = 0;
   }
 
   // rescale the float value
@@ -628,20 +627,25 @@ static size_t _etoa(out_fct_type out, char* buffer, size_t idx, size_t maxlen, d
     fwidth = 0U;
   }
 
-  // output the floating part
   const size_t start_idx = idx;
-  idx = _ftoa(out, buffer, idx, maxlen, negative ? -value : value, prec, fwidth, flags & ~FLAGS_ADAPT_EXP);
+  if (! printAsSciNot) {
+    // output the floating part
+    idx = _ftoa(out, buffer, idx, maxlen, negative ? -value : value, prec, fwidth, flags & ~FLAGS_ADAPT_EXP);
+  } else {
+    // output the floating part
+    idx = _ftoa(out, buffer, idx, maxlen, negative ? -value : value, prec, fwidth, flags & ~FLAGS_ADAPT_EXP);
 
-  // output the exponent part
-  if (minwidth) {
-    // output the exponential symbol
-    out((flags & FLAGS_UPPERCASE) ? 'E' : 'e', buffer, idx++, maxlen);
-    // output the exponent value
-    idx = _ntoa_long(out, buffer, idx, maxlen, static_cast<unsigned long> ((exp10 < 0) ? -exp10 : exp10), exp10 < 0, I_10, 0, minwidth-1, FLAGS_ZEROPAD | FLAGS_PLUS);
-    // might need to right-pad spaces
-    if (flags & FLAGS_LEFT) {
+    // output the exponent part
+    if (minwidth) {
+      // output the exponential symbol
+      out((flags & FLAGS_UPPERCASE) ? 'E' : 'e', buffer, idx++, maxlen);
+      // output the exponent value
+      idx = _ntoa_long(out, buffer, idx, maxlen, static_cast<unsigned long> ((exp10 < 0) ? -exp10 : exp10), exp10 < 0, I_10, 0, minwidth-1, FLAGS_ZEROPAD | FLAGS_PLUS);
+      // might need to right-pad spaces
+      if (flags & FLAGS_LEFT) {
       while (idx - start_idx < width) {
-        out(' ', buffer, idx++, maxlen);
+          out(' ', buffer, idx++, maxlen);
+        }
       }
     }
   }
