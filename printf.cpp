@@ -150,21 +150,6 @@ const int       I_1000000     = 1000000;
 const int       I_10000000    = 10000000;
 const int       I_100000000   = 100000000;
 const int       I_1000000000  = 1000000000;
-// The following FL_DOUBLEs should use constexpr and make the formulas explicit.
-/*
-const double    FL_DOUBLE_0_1760912590558    = 0.1760912590558;     // lack of appended fFlL indicates double
-const double    FL_DOUBLE_0_301029995663981  = 0.301029995663981;
-const double    FL_DOUBLE_0_289529654602168  = 0.289529654602168;
-const double    FL_DOUBLE_3_321928094887362  = 3.321928094887362;
-const double    FL_DOUBLE_2_302585092994046  = 2.302585092994046;
-const double    FL_DOUBLE_0_6931471805599453 = 0.6931471805599453;
-*/
-constexpr double    FL_DOUBLE_0_1760912590558    = (log(1.5)/log(10.0));
-constexpr double    FL_DOUBLE_0_301029995663981  = (log(2.0)/log(10.0));
-constexpr double    FL_DOUBLE_0_289529654602168  = (1.0/(1.5*log(10.0)));
-constexpr double    FL_DOUBLE_3_321928094887362  = (log(10.0)/log(2.0));
-constexpr double    FL_DOUBLE_2_302585092994046  = (log(10.0));
-constexpr double    FL_DOUBLE_0_6931471805599453 = (log(2.0));
 
 // import float.h for DBL_MAX
 #if defined(PRINTF_SUPPORT_FLOAT)
@@ -535,6 +520,13 @@ static size_t _ftoa(out_fct_type out, char* buffer, size_t idx, size_t maxlen, d
 }
 
 
+static constexpr double  LN_OF_10                = (log(10.0));            // FL_DOUBLE_2_302585092994046
+static constexpr double  LN_OF_2                 = (log(2.0));             // FL_DOUBLE_0_6931471805599453
+static constexpr double  LN_OF_2_over_LN_OF_10   = (log(2.0)/log(10.0));   // FL_DOUBLE_0_301029995663981
+static constexpr double  LN_OF_10_over_LN_OF_2   = (log(10.0)/log(2.0));   // FL_DOUBLE_3_321928094887362
+static constexpr double  LN_OF_1_5_over_LN_OF_10 = (log(1.5)/log(10.0));   // FL_DOUBLE_0_1760912590558
+static constexpr double  ONE_over_1_5_LN_OF_10   = (1.0/(1.5*log(10.0)));  // FL_DOUBLE_0_289529654602168
+
 #if defined(PRINTF_SUPPORT_EXPONENTIAL)
 // internal ftoa variant for exponential floating-point type, contributed by Martijn Jasperse <m.jasperse@gmail.com>
 static size_t _etoa(out_fct_type out, char* buffer, size_t idx, size_t maxlen, double value, unsigned int prec, unsigned int width, unsigned int flags)
@@ -562,12 +554,12 @@ static size_t _etoa(out_fct_type out, char* buffer, size_t idx, size_t maxlen, d
   conv.U = (conv.U & ((ONE_ULL << SHIFT_52U) - ONE_U)) | (I_1023ULL << SHIFT_52U);  // drop the exponent so conv.F is now in [1,2)
 
   // now approximate log10 from the log2 integer part and an expansion of ln around 1.5
-  int exp10 = static_cast<int>(FL_DOUBLE_0_1760912590558 + exp2 * FL_DOUBLE_0_301029995663981 + (conv.F - FL_DOUBLE_ONE_AND_HALF) * FL_DOUBLE_0_289529654602168);
+  int exp10 = static_cast<int>(LN_OF_1_5_over_LN_OF_10 + exp2 * LN_OF_2_over_LN_OF_10 + (conv.F - FL_DOUBLE_ONE_AND_HALF) * ONE_over_1_5_LN_OF_10);
 
   // now we want to compute 10^exp10 but we want to be sure it won't overflow
-  exp2 = static_cast<int>(exp10 * FL_DOUBLE_3_321928094887362 + FL_DOUBLE_HALF);
+  exp2 = static_cast<int>(exp10 * LN_OF_10_over_LN_OF_2 + FL_DOUBLE_HALF);
 
-  const double z  = exp10 * FL_DOUBLE_2_302585092994046 - exp2 * FL_DOUBLE_0_6931471805599453;
+  const double z  = exp10 * LN_OF_10 - exp2 * LN_OF_2;
   const double z2 = z * z;
   conv.U = (uint64_t)(exp2 + I_1023) << SHIFT_52U;
   // compute exp(z) using continued fractions, see https://en.wikipedia.org/wiki/Exponential_function#Continued_fractions_for_ex
