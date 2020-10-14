@@ -147,37 +147,37 @@ TEST_CASE("float: debugging %g,%f cases", "[]" ) {
     test::sprintf(buffer, "%7.3g", static_cast<double>(8.34e-1f));
     s = "  0.834";
     fail1 = !!strcmp( buffer, s );
-    std::cout << __LINE__ << " good:'" << s << "'" << " code:'" << buffer << "' " << (fail1? "MISMATCH" : "" ) << std::endl;
+    std::cout << "line " << __LINE__ << "... should-be:'" << s << "'" << " code-said:'" << buffer << "' " << (fail1? "MISMATCH" : "SAME" ) << std::endl;
     fail = fail || fail1;
 
     test::sprintf(buffer, "%7.3g", static_cast<double>(8.34e-2f));
     s = " 0.0834";
     fail1 = !!strcmp( buffer, s );
-    std::cout << __LINE__ << " good:'" << s << "'" << " code:'" << buffer << "' " << (fail1? "MISMATCH" : "" ) << std::endl;
+    std::cout << "line " << __LINE__ << "... should-be:'" << s << "'" << " code-said:'" << buffer << "' " << (fail1? "MISMATCH" : "SAME" ) << std::endl;
     fail = fail || fail1;
 
     test::sprintf(buffer, "%7.3g", static_cast<double>(8.34e-3f));
     s = "0.00834";
     fail1 = !!strcmp( buffer, s );
-    std::cout << __LINE__ << " good:'" << s << "'" << " code:'" << buffer << "' " << (fail1? "MISMATCH" : "" ) << std::endl;
+    std::cout << "line " << __LINE__ << "... should-be:'" << s << "'" << " code-said:'" << buffer << "' " << (fail1? "MISMATCH" : "SAME" ) << std::endl;
     fail = fail || fail1;
 
     test::sprintf(buffer, "%7.4g", static_cast<double>(8.34e-1f));
     s = " 0.8340";
     fail1 = !!strcmp( buffer, s );
-    std::cout << __LINE__ << " good:'" << s << "'" << " code:'" << buffer << "' " << (fail1? "MISMATCH" : "" ) << std::endl;
+    std::cout << "line " << __LINE__ << "... should-be:'" << s << "'" << " code-said:'" << buffer << "' " << (fail1? "MISMATCH" : "SAME" ) << std::endl;
     fail = fail || fail1;
 
     test::sprintf(buffer, "%7.4g", static_cast<double>(8.34e-2f));
     s = "0.08340";
     fail1 = !!strcmp( buffer, s );
-    std::cout << __LINE__ << " good:'" << s << "'" << " code:'" << buffer << "' " << (fail1? "MISMATCH" : "" ) << std::endl;
+    std::cout << "line " << __LINE__ << "... should-be:'" << s << "'" << " code-said:'" << buffer << "' " << (fail1? "MISMATCH" : "SAME" ) << std::endl;
     fail = fail || fail1;
 
     test::sprintf(buffer, "%7.4g", static_cast<double>(8.34e-3f));
     s = "0.008340";
     fail1 = !!strcmp( buffer, s );
-    std::cout << __LINE__ << " good:'" << s << "'" << " code:'" << buffer << "' " << (fail1? "MISMATCH" : "" ) << std::endl;
+    std::cout << "line " << __LINE__ << "... should-be:'" << s << "'" << " code-said:'" << buffer << "' " << (fail1? "MISMATCH" : "SAME" ) << std::endl;
     fail = fail || fail1;
 
   }
@@ -195,73 +195,73 @@ TEST_CASE("float: %g: precision vs exponent, part 1", "[]" ) {
     test::sprintf(buffer, "%7.0g", static_cast<double>(8.34f));
     s = "      8";
     fail1 = !!strcmp( buffer, s );
-    std::cout << __LINE__ << " good:'" << s << "'" << " code:'" << buffer << "' " << (fail1? "MISMATCH" : "" ) << std::endl;
+    std::cout << "line " << __LINE__ << "... should-be:'" << s << "'" << " code-said:'" << buffer << "' " << (fail1? "MISMATCH" : "SAME" ) << std::endl;
     fail = fail || fail1;
 
     test::sprintf(buffer, "%7.0g", static_cast<double>(8.34e1f));
     s = "  8e+01";
     fail1 = !!strcmp( buffer, s );
-    std::cout << __LINE__ << " good:'" << s << "'" << " code:'" << buffer << "' " << (fail1? "MISMATCH" : "" ) << std::endl;
+    std::cout << "line " << __LINE__ << "... should-be:'" << s << "'" << " code-said:'" << buffer << "' " << (fail1? "MISMATCH" : "SAME" ) << std::endl;
     fail = fail || fail1;
 
     test::sprintf(buffer, "%7.0g", static_cast<double>(8.34e2f));
     s = "  8e+02";
     fail1 = !!strcmp( buffer, s );
-    std::cout << __LINE__ << " good:'" << s << "'" << " code:'" << buffer << "' " << (fail1? "MISMATCH" : "" ) << std::endl;
+    std::cout << "line " << __LINE__ << "... should-be:'" << s << "'" << " code-said:'" << buffer << "' " << (fail1? "MISMATCH" : "SAME" ) << std::endl;
     fail = fail || fail1;
 
     test::sprintf(buffer, "%7.1g", static_cast<double>(8.34f));
     s = "      8";
     fail1 = !!strcmp( buffer, s );
-    std::cout << __LINE__ << " good:'" << s << "'" << " code:'" << buffer << "' " << (fail1? "MISMATCH" : "" ) << std::endl;
+    std::cout << "line " << __LINE__ << "... should-be:'" << s << "'" << " code-said:'" << buffer << "' " << (fail1? "MISMATCH" : "SAME" ) << std::endl;
     fail = fail || fail1;
 
     test::sprintf(buffer, "%7.1g", static_cast<double>(8.34e1f));
     s = "  8e+01";
     fail1 = !!strcmp( buffer, s );
-    std::cout << __LINE__ << " good:'" << s << "'" << " code:'" << buffer << "' " << (fail1? "MISMATCH" : "" ) << std::endl;
+    std::cout << "line " << __LINE__ << "... should-be:'" << s << "'" << " code-said:'" << buffer << "' " << (fail1? "MISMATCH" : "SAME" ) << std::endl;
     fail = fail || fail1;
 
     test::sprintf(buffer, "%7.1g", static_cast<double>(8.34e2f));
     s = "  8e+02";
     fail1 = !!strcmp( buffer, s );
-    std::cout << __LINE__ << " good:'" << s << "'" << " code:'" << buffer << "' " << (fail1? "MISMATCH" : "" ) << std::endl;
+    std::cout << "line " << __LINE__ << "... should-be:'" << s << "'" << " code-said:'" << buffer << "' " << (fail1? "MISMATCH" : "SAME" ) << std::endl;
     fail = fail || fail1;
 
     test::sprintf(buffer, "%7.2g", static_cast<double>(8.34f));
     s = "    8.3";
     fail1 = !!strcmp( buffer, s );
-    std::cout << __LINE__ << " good:'" << s << "'" << " code:'" << buffer << "' " << (fail1? "MISMATCH" : "" ) << std::endl;
+    std::cout << "line " << __LINE__ << "... should-be:'" << s << "'" << " code-said:'" << buffer << "' " << (fail1? "MISMATCH" : "SAME" ) << std::endl;
     fail = fail || fail1;
 
     test::sprintf(buffer, "%7.2g", static_cast<double>(8.34e1f));
     s = "     83";
     fail1 = !!strcmp( buffer, s );
-    std::cout << __LINE__ << " good:'" << s << "'" << " code:'" << buffer << "' " << (fail1? "MISMATCH" : "" ) << std::endl;
+    std::cout << "line " << __LINE__ << "... should-be:'" << s << "'" << " code-said:'" << buffer << "' " << (fail1? "MISMATCH" : "SAME" ) << std::endl;
     fail = fail || fail1;
 
     test::sprintf(buffer, "%7.2g", static_cast<double>(8.34e2f));
     s = "8.3e+02";
     fail1 = !!strcmp( buffer, s );
-    std::cout << __LINE__ << " good:'" << s << "'" << " code:'" << buffer << "' " << (fail1? "MISMATCH" : "" ) << std::endl;
+    std::cout << "line " << __LINE__ << "... should-be:'" << s << "'" << " code-said:'" << buffer << "' " << (fail1? "MISMATCH" : "SAME" ) << std::endl;
     fail = fail || fail1;
 
     test::sprintf(buffer, "%7.3g", static_cast<double>(8.34f));
     s = "   8.34";
     fail1 = !!strcmp( buffer, s );
-    std::cout << __LINE__ << " good:'" << s << "'" << " code:'" << buffer << "' " << (fail1? "MISMATCH" : "" ) << std::endl;
+    std::cout << "line " << __LINE__ << "... should-be:'" << s << "'" << " code-said:'" << buffer << "' " << (fail1? "MISMATCH" : "SAME" ) << std::endl;
     fail = fail || fail1;
 
     test::sprintf(buffer, "%7.3g", static_cast<double>(8.34e1f));
     s = "   83.4";
     fail1 = !!strcmp( buffer, s );
-    std::cout << __LINE__ << " good:'" << s << "'" << " code:'" << buffer << "' " << (fail1? "MISMATCH" : "" ) << std::endl;
+    std::cout << "line " << __LINE__ << "... should-be:'" << s << "'" << " code-said:'" << buffer << "' " << (fail1? "MISMATCH" : "SAME" ) << std::endl;
     fail = fail || fail1;
 
     test::sprintf(buffer, "%7.3g", static_cast<double>(8.34e2f));
     s = "    834";
     fail1 = !!strcmp( buffer, s );
-    std::cout << __LINE__ << " good:'" << s << "'" << " code:'" << buffer << "' " << (fail1? "MISMATCH" : "" ) << std::endl;
+    std::cout << "line " << __LINE__ << "... should-be:'" << s << "'" << " code-said:'" << buffer << "' " << (fail1? "MISMATCH" : "SAME" ) << std::endl;
     fail = fail || fail1;
 
   }
@@ -279,49 +279,49 @@ TEST_CASE("float: %g: precision vs exponent, part 2", "[]" ) {
     test::sprintf(buffer, "%7.3g", static_cast<double>(8.34e9f));
     s = "8.34e+09";
     fail1 = !!strcmp( buffer, s );
-    std::cout << __LINE__ << " good:'" << s << "'" << " code:'" << buffer << "' " << (fail1? "MISMATCH" : "" ) << std::endl;
+    std::cout << "line " << __LINE__ << "... should-be:'" << s << "'" << " code-said:'" << buffer << "' " << (fail1? "MISMATCH" : "SAME" ) << std::endl;
     fail = fail || fail1;
 
     test::sprintf(buffer, "%7.3g", static_cast<double>(8.34e3f));
     s = "8.34e+03";
     fail1 = !!strcmp( buffer, s );
-    std::cout << __LINE__ << " good:'" << s << "'" << " code:'" << buffer << "' " << (fail1? "MISMATCH" : "" ) << std::endl;
+    std::cout << "line " << __LINE__ << "... should-be:'" << s << "'" << " code-said:'" << buffer << "' " << (fail1? "MISMATCH" : "SAME" ) << std::endl;
     fail = fail || fail1;
 
     test::sprintf(buffer, "%7.3g", static_cast<double>(8.34e-2f));
     s = " 0.0834";
     fail1 = !!strcmp( buffer, s );
-    std::cout << __LINE__ << " good:'" << s << "'" << " code:'" << buffer << "' " << (fail1? "MISMATCH" : "" ) << std::endl;
+    std::cout << "line " << __LINE__ << "... should-be:'" << s << "'" << " code-said:'" << buffer << "' " << (fail1? "MISMATCH" : "SAME" ) << std::endl;
     fail = fail || fail1;
 
     test::sprintf(buffer, "%7.3g", static_cast<double>(8.34e-7f));
     s = "8.34e-07";
     fail1 = !!strcmp( buffer, s );
-    std::cout << __LINE__ << " good:'" << s << "'" << " code:'" << buffer << "' " << (fail1? "MISMATCH" : "" ) << std::endl;
+    std::cout << "line " << __LINE__ << "... should-be:'" << s << "'" << " code-said:'" << buffer << "' " << (fail1? "MISMATCH" : "SAME" ) << std::endl;
     fail = fail || fail1;
 
     test::sprintf(buffer, "%10.7g", static_cast<double>(8.34e9f));
     s = "8.340000e+09";
     fail1 = !!strcmp( buffer, s );
-    std::cout << __LINE__ << " good:'" << s << "'" << " code:'" << buffer << "' " << (fail1? "MISMATCH" : "" ) << std::endl;
+    std::cout << "line " << __LINE__ << "... should-be:'" << s << "'" << " code-said:'" << buffer << "' " << (fail1? "MISMATCH" : "SAME" ) << std::endl;
     fail = fail || fail1;
 
     test::sprintf(buffer, "%10.7g", static_cast<double>(8.34e3f));
     s = "  8340.000";
     fail1 = !!strcmp( buffer, s );
-    std::cout << __LINE__ << " good:'" << s << "'" << " code:'" << buffer << "' " << (fail1? "MISMATCH" : "" ) << std::endl;
+    std::cout << "line " << __LINE__ << "... should-be:'" << s << "'" << " code-said:'" << buffer << "' " << (fail1? "MISMATCH" : "SAME" ) << std::endl;
     fail = fail || fail1;
 
     test::sprintf(buffer, "%10.7g", static_cast<double>(8.34e-2f));
     s = "0.08340000";
     fail1 = !!strcmp( buffer, s );
-    std::cout << __LINE__ << " good:'" << s << "'" << " code:'" << buffer << "' " << (fail1? "MISMATCH" : "" ) << std::endl;
+    std::cout << "line " << __LINE__ << "... should-be:'" << s << "'" << " code-said:'" << buffer << "' " << (fail1? "MISMATCH" : "SAME" ) << std::endl;
     fail = fail || fail1;
 
     test::sprintf(buffer, "%10.7g", static_cast<double>(8.34e-7f));
     s = "8.340000e-07";
     fail1 = !!strcmp( buffer, s );
-    std::cout << __LINE__ << " good:'" << s << "'" << " code:'" << buffer << "' " << (fail1? "MISMATCH" : "" ) << std::endl;
+    std::cout << "line " << __LINE__ << "... should-be:'" << s << "'" << " code-said:'" << buffer << "' " << (fail1? "MISMATCH" : "SAME" ) << std::endl;
     fail = fail || fail1;
 
   }
@@ -344,7 +344,7 @@ TEST_CASE("float: prelim %g,%f cases, part 1", "[]" ) {
     s = "g";
 #endif
     fail1 = !!strcmp( buffer, s );
-    std::cout << __LINE__ << " good:'" << s << "'" << " code:'" << buffer << "' " << (fail1? "MISMATCH" : "" ) << std::endl;
+    std::cout << "line " << __LINE__ << "... should-be:'" << s << "'" << " code-said:'" << buffer << "' " << (fail1? "MISMATCH" : "SAME" ) << std::endl;
     fail = fail || fail1;
 
     test::sprintf(buffer, "%0-15.4g", -0.042);
@@ -354,7 +354,7 @@ TEST_CASE("float: prelim %g,%f cases, part 1", "[]" ) {
     s = "g";
 #endif
     fail1 = !!strcmp( buffer, s );
-    std::cout << __LINE__ << " good:'" << s << "'" << " code:'" << buffer << "' " << (fail1? "MISMATCH" : "" ) << std::endl;
+    std::cout << "line " << __LINE__ << "... should-be:'" << s << "'" << " code-said:'" << buffer << "' " << (fail1? "MISMATCH" : "SAME" ) << std::endl;
     fail = fail || fail1;
   }
   REQUIRE(!fail);
@@ -382,7 +382,7 @@ TEST_CASE("float: prelim %g,%f cases, part 2", "[]" ) {
       str << std::fixed << f;
     }
     fail1 = !!strcmp(buffer, str.str().c_str());
-    std::cout << __LINE__ << " '" << str.str().c_str() << "'" << " '" << buffer << "' " << (fail1? "MISMATCH" : "" ) << std::endl;
+    std::cout << "line " << __LINE__ << "... should-be:'" << str.str().c_str() << "'" << " code-said:'" << buffer << "' " << (fail1? "MISMATCH" : "SAME" ) << std::endl;
     fail = fail || fail1;
     f *= (float)10.0;
   }
@@ -650,7 +650,7 @@ TEST_CASE("- flag, part 2", "[]" ) {
     s = "g";
 #endif
     fail1 = !!strcmp( buffer, s );
-    std::cout << __LINE__ << " good:'" << s << "'" << " code:'" << buffer << "' " << (fail1? "MISMATCH" : "" ) << std::endl;
+    std::cout << "line " << __LINE__ << "... should-be:'" << s << "'" << " code-said:'" << buffer << "' " << (fail1? "MISMATCH" : "SAME" ) << std::endl;
     fail = fail || fail1;
 
     test::sprintf(buffer, "%0-15.4g", -42.);
@@ -660,7 +660,7 @@ TEST_CASE("- flag, part 2", "[]" ) {
     s = "g";
 #endif
     fail1 = !!strcmp( buffer, s );
-    std::cout << __LINE__ << " good:'" << s << "'" << " code:'" << buffer << "' " << (fail1? "MISMATCH" : "" ) << std::endl;
+    std::cout << "line " << __LINE__ << "... should-be:'" << s << "'" << " code-said:'" << buffer << "' " << (fail1? "MISMATCH" : "SAME" ) << std::endl;
     fail = fail || fail1;
   }
   REQUIRE(!fail);
@@ -1283,13 +1283,13 @@ TEST_CASE("float padding neg numbers, part 2", "[]" ) {
     test::sprintf(buffer, "% 6.1g", -5.);
     s = "    -5";
     fail1 = !!strcmp( buffer, s );
-    std::cout << __LINE__ << " good:'" << s << "'" << " code:'" << buffer << "' " << (fail1? "MISMATCH" : "" ) << std::endl;
+    std::cout << "line " << __LINE__ << "... should-be:'" << s << "'" << " code-said:'" << buffer << "' " << (fail1? "MISMATCH" : "SAME" ) << std::endl;
     fail = fail || fail1;
 
     test::sprintf(buffer, "%03.0g", -5.);
     s = "-05";
     fail1 = !!strcmp( buffer, s );
-    std::cout << __LINE__ << " good:'" << s << "'" << " code:'" << buffer << "' " << (fail1? "MISMATCH" : "" ) << std::endl;
+    std::cout << "line " << __LINE__ << "... should-be:'" << s << "'" << " code-said:'" << buffer << "' " << (fail1? "MISMATCH" : "SAME" ) << std::endl;
     fail = fail || fail1;
 #endif
   }
@@ -1522,55 +1522,55 @@ TEST_CASE("float, set 2", "[]" ) {
     test::sprintf(buffer, "%G", 12345.678);
     s = "12345.7";
     fail1 = !!strcmp( buffer, s );
-    std::cout << __LINE__ << " good:'" << s << "'" << " code:'" << buffer << "' " << (fail1? "MISMATCH" : "" ) << std::endl;
+    std::cout << "line " << __LINE__ << "... should-be:'" << s << "'" << " code-said:'" << buffer << "' " << (fail1? "MISMATCH" : "SAME" ) << std::endl;
     fail = fail || fail1;
 
     test::sprintf(buffer, "%.4G", 12345.678);
     s = "1.235E+04";
     fail1 = !!strcmp( buffer, s );
-    std::cout << __LINE__ << " good:'" << s << "'" << " code:'" << buffer << "' " << (fail1? "MISMATCH" : "" ) << std::endl;
+    std::cout << "line " << __LINE__ << "... should-be:'" << s << "'" << " code-said:'" << buffer << "' " << (fail1? "MISMATCH" : "SAME" ) << std::endl;
     fail = fail || fail1;
 
     test::sprintf(buffer, "%.5G", 12345.678);
     s = "12346";
     fail1 = !!strcmp( buffer, s );
-    std::cout << __LINE__ << " good:'" << s << "'" << " code:'" << buffer << "' " << (fail1? "MISMATCH" : "" ) << std::endl;
+    std::cout << "line " << __LINE__ << "... should-be:'" << s << "'" << " code-said:'" << buffer << "' " << (fail1? "MISMATCH" : "SAME" ) << std::endl;
     fail = fail || fail1;
 
     test::sprintf(buffer, "%.6G", 12345.678);
     s = "12345.7";
     fail1 = !!strcmp( buffer, s );
-    std::cout << __LINE__ << " good:'" << s << "'" << " code:'" << buffer << "' " << (fail1? "MISMATCH" : "" ) << std::endl;
+    std::cout << "line " << __LINE__ << "... should-be:'" << s << "'" << " code-said:'" << buffer << "' " << (fail1? "MISMATCH" : "SAME" ) << std::endl;
     fail = fail || fail1;
 
     test::sprintf(buffer, "%.7G", 12345.678);
     s = "12345.68";
     fail1 = !!strcmp( buffer, s );
-    std::cout << __LINE__ << " good:'" << s << "'" << " code:'" << buffer << "' " << (fail1? "MISMATCH" : "" ) << std::endl;
+    std::cout << "line " << __LINE__ << "... should-be:'" << s << "'" << " code-said:'" << buffer << "' " << (fail1? "MISMATCH" : "SAME" ) << std::endl;
     fail = fail || fail1;
 
     test::sprintf(buffer, "%.5G", 123456789.);
     s = "1.2346E+08";
     fail1 = !!strcmp( buffer, s );
-    std::cout << __LINE__ << " good:'" << s << "'" << " code:'" << buffer << "' " << (fail1? "MISMATCH" : "" ) << std::endl;
+    std::cout << "line " << __LINE__ << "... should-be:'" << s << "'" << " code-said:'" << buffer << "' " << (fail1? "MISMATCH" : "SAME" ) << std::endl;
     fail = fail || fail1;
 
     test::sprintf(buffer, "%.6G", 12345.);
     s = "12345.0";
     fail1 = !!strcmp( buffer, s );
-    std::cout << __LINE__ << " good:'" << s << "'" << " code:'" << buffer << "' " << (fail1? "MISMATCH" : "" ) << std::endl;
+    std::cout << "line " << __LINE__ << "... should-be:'" << s << "'" << " code-said:'" << buffer << "' " << (fail1? "MISMATCH" : "SAME" ) << std::endl;
     fail = fail || fail1;
 
     test::sprintf(buffer, "%+12.4g", 123456789.);
     s = "  +1.235e+08";
     fail1 = !!strcmp( buffer, s );
-    std::cout << __LINE__ << " good:'" << s << "'" << " code:'" << buffer << "' " << (fail1? "MISMATCH" : "" ) << std::endl;
+    std::cout << "line " << __LINE__ << "... should-be:'" << s << "'" << " code-said:'" << buffer << "' " << (fail1? "MISMATCH" : "SAME" ) << std::endl;
     fail = fail || fail1;
 
     test::sprintf(buffer, "%.2G", 0.001234);
     s = "0.0012";
     fail1 = !!strcmp( buffer, s );
-    std::cout << __LINE__ << " good:'" << s << "'" << " code:'" << buffer << "' " << (fail1? "MISMATCH" : "" ) << std::endl;
+    std::cout << "line " << __LINE__ << "... should-be:'" << s << "'" << " code-said:'" << buffer << "' " << (fail1? "MISMATCH" : "SAME" ) << std::endl;
     fail = fail || fail1;
 
   }
@@ -1590,25 +1590,25 @@ TEST_CASE("float, set 3", "[]" ) {
     test::sprintf(buffer, "%+012.4g", 0.00001234);
     s = "+001.234e-05";
     fail1 = !!strcmp( buffer, s );
-    std::cout << __LINE__ << " good:'" << s << "'" << " code:'" << buffer << "' " << (fail1? "MISMATCH" : "" ) << std::endl;
+    std::cout << "line " << __LINE__ << "... should-be:'" << s << "'" << " code-said:'" << buffer << "' " << (fail1? "MISMATCH" : "SAME" ) << std::endl;
     fail = fail || fail1;
 
     test::sprintf(buffer, "%.3g", -1.2345e-308);
     s = "-1.23e-308";
     fail1 = !!strcmp( buffer, s );
-    std::cout << __LINE__ << " good:'" << s << "'" << " code:'" << buffer << "' " << (fail1? "MISMATCH" : "" ) << std::endl;
+    std::cout << "line " << __LINE__ << "... should-be:'" << s << "'" << " code-said:'" << buffer << "' " << (fail1? "MISMATCH" : "SAME" ) << std::endl;
     fail = fail || fail1;
 
     test::sprintf(buffer, "%+.3E", 1.23e+308);
     s = "+1.230E+308";
     fail1 = !!strcmp( buffer, s );
-    std::cout << __LINE__ << " good:'" << s << "'" << " code:'" << buffer << "' " << (fail1? "MISMATCH" : "" ) << std::endl;
+    std::cout << "line " << __LINE__ << "... should-be:'" << s << "'" << " code-said:'" << buffer << "' " << (fail1? "MISMATCH" : "SAME" ) << std::endl;
     fail = fail || fail1;
 
     test::sprintf(buffer, "%+10.4G", 0.001234);
     s = " +0.001234";
     fail1 = !!strcmp( buffer, s );
-    std::cout << __LINE__ << " good:'" << s << "'" << " code:'" << buffer << "' " << (fail1? "MISMATCH" : "" ) << std::endl;
+    std::cout << "line " << __LINE__ << "... should-be:'" << s << "'" << " code-said:'" << buffer << "' " << (fail1? "MISMATCH" : "SAME" ) << std::endl;
     fail = fail || fail1;
 
   }
@@ -1637,7 +1637,7 @@ TEST_CASE("float, set 4", "[]" ) {
     str.str("");
     str << std::fixed << fi / 10000;
     fail1 = !!strcmp(buffer, str.str().c_str());
-    //std::cout << __LINE__ << " '" << str.str().c_str() << "'" << " '" << buffer << "' " << (fail1? "MISMATCH" : "" ) << std::endl;
+    //std::cout << "line " << __LINE__ << "... should-be:'" << str.str().c_str() << "'" << " code-said:'" << buffer << "' " << (fail1? "MISMATCH" : "SAME" ) << std::endl;
     fail = fail || fail1;
   }
   REQUIRE(!fail);
@@ -1650,7 +1650,7 @@ TEST_CASE("float, set 4", "[]" ) {
     str.str("");
     str << i;
     fail1 = !!strcmp(buffer, str.str().c_str());
-    std::cout << __LINE__ << " '" << str.str().c_str() << "'" << " '" << buffer << "' " << (fail1? "MISMATCH" : "" ) << std::endl;
+    std::cout << "line " << __LINE__ << "... should-be:'" << str.str().c_str() << "'" << " code-said:'" << buffer << "' " << (fail1? "MISMATCH" : "SAME" ) << std::endl;
     fail = fail || fail1;
   }
   REQUIRE(!fail);
@@ -1663,7 +1663,7 @@ TEST_CASE("float, set 4", "[]" ) {
     str.str("");
     str << i;
     fail1 = !!strcmp(buffer, str.str().c_str());
-    std::cout << __LINE__ << " '" << str.str().c_str() << "'" << " '" << buffer << "' " << (fail1? "MISMATCH" : "" ) << std::endl;
+    std::cout << "line " << __LINE__ << "... should-be:'" << str.str().c_str() << "'" << " code-said:'" << buffer << "' " << (fail1? "MISMATCH" : "SAME" ) << std::endl;
     fail = fail || fail1;
   }
   REQUIRE(!fail);
@@ -1947,19 +1947,19 @@ TEST_CASE("misc, part 2", "[]" ) {
     test::sprintf(buffer, "%.*f", 2, 0.33333333);
     s = "0.33";
     fail1 = !!strcmp( buffer, s );
-    std::cout << __LINE__ << " good:'" << s << "'" << " code:'" << buffer << "' " << (fail1? "MISMATCH" : "" ) << std::endl;
+    std::cout << "line " << __LINE__ << "... should-be:'" << s << "'" << " code-said:'" << buffer << "' " << (fail1? "MISMATCH" : "SAME" ) << std::endl;
     fail = fail || fail1;
 
     test::sprintf(buffer, "%.*g", 2, 0.33333333);
     s = "0.33";
     fail1 = !!strcmp( buffer, s );
-    std::cout << __LINE__ << " good:'" << s << "'" << " code:'" << buffer << "' " << (fail1? "MISMATCH" : "" ) << std::endl;
+    std::cout << "line " << __LINE__ << "... should-be:'" << s << "'" << " code-said:'" << buffer << "' " << (fail1? "MISMATCH" : "SAME" ) << std::endl;
     fail = fail || fail1;
 
     test::sprintf(buffer, "%.*e", 2, 0.33333333);
     s = "3.33e-01";
     fail1 = !!strcmp( buffer, s );
-    std::cout << __LINE__ << " good:'" << s << "'" << " code:'" << buffer << "' " << (fail1? "MISMATCH" : "" ) << std::endl;
+    std::cout << "line " << __LINE__ << "... should-be:'" << s << "'" << " code-said:'" << buffer << "' " << (fail1? "MISMATCH" : "SAME" ) << std::endl;
     fail = fail || fail1;
 
   }
