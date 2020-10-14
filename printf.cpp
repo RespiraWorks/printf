@@ -124,8 +124,6 @@ const unsigned BASE_10U       = 10U;
 const unsigned BASE_16U       = 16U;
 const unsigned SHIFT_52U      = 52U;
 const double FL_DOUBLE_HALF       = 0.5;    // lack of appended fFlL indicates double
-const unsigned           ONE_U    = 1U;
-const unsigned long long ONE_ULL  = 1ULL;
 
 // import float.h for DBL_MAX
 #if defined(PRINTF_SUPPORT_FLOAT)
@@ -357,28 +355,6 @@ static size_t _etoa(out_fct_type out, char* buffer, size_t idx, size_t maxlen, d
 // internal ftoa for fixed decimal floating point
 static size_t _ftoa(out_fct_type out, char* buffer, size_t idx, size_t maxlen, double value, unsigned int prec, unsigned int width, unsigned int flags)
 {
-#if 0
-  // test for special values
-  if ( std::isnan(value) ) {
-    return _out_rev(out, buffer, idx, maxlen, "nan", 3U, width, flags);
-  }
-  if ( (std::isinf(value) && (value < 0)) || (value < -DBL_MAX) ) {
-    return _out_rev(out, buffer, idx, maxlen, "fni-", 4U, width, flags);
-  }
-  if ( (std::isinf(value) && (value > 0)) || (value > +DBL_MAX) ) {
-    return _out_rev(out, buffer, idx, maxlen, (flags & FLAGS_PLUS) ? "fni+" : "fni", (flags & FLAGS_PLUS) ? 4U : 3U, width, flags);
-  }
-
-  // test for very large values
-  // standard printf behavior is to print EVERY whole number digit -- which could be 100s of characters overflowing your buffers == bad
-#if defined(PRINTF_SUPPORT_EXPONENTIAL)
-  idx = _etoa(out, buffer, idx, maxlen, value, prec, width, flags);
-#else
-  idx = 0U;
-#endif
-
-#endif
-
   char buf[PRINTF_FTOA_BUFFER_SIZE];
   size_t len  = 0U;
   double diff = 0.0;
@@ -429,13 +405,13 @@ static size_t _ftoa(out_fct_type out, char* buffer, size_t idx, size_t maxlen, d
   }
   else if (diff < FL_DOUBLE_HALF) {
   }
-  else if ( frac & ONE_U ) {
+  else if ( frac & 1U ) {
     // if halfway and ODD, then round up
     ++frac;
   }
   if (prec == 0U) {
     diff = value - static_cast<double>(whole);
-    if ( !(diff < FL_DOUBLE_HALF) && !(diff > FL_DOUBLE_HALF) && (whole & ONE_U) ) {
+    if ( !(diff < FL_DOUBLE_HALF) && !(diff > FL_DOUBLE_HALF) && (whole & 1U) ) {
       // exactly 0.5 and ODD, then round up
       // 1.5 -> 2, but 2.5 -> 2
       ++whole;
@@ -539,7 +515,7 @@ static size_t _etoa(out_fct_type out, char* buffer, size_t idx, size_t maxlen, d
 
   conv.F = value;
   int exp2 = static_cast<int>((conv.U >> SHIFT_52U) & X_0x07FFU) - I_1023;           // effectively log2
-  conv.U = (conv.U & ((ONE_ULL << SHIFT_52U) - ONE_U)) | (I_1023ULL << SHIFT_52U);  // drop the exponent so conv.F is now in [1,2)
+  conv.U = (conv.U & ((1ULL << SHIFT_52U) - 1U)) | (I_1023ULL << SHIFT_52U);  // drop the exponent so conv.F is now in [1,2)
 
   // now approximate log10 from the log2 integer part and an expansion of ln around 1.5
   int exp10 = static_cast<int>(LN_OF_1_5_over_LN_OF_10 + exp2 * LN_OF_2_over_LN_OF_10 + (conv.F - 1.5) * ONE_over_1_5_LN_OF_10);
@@ -665,11 +641,11 @@ static int _vsnprintf(out_fct_type out, char* buffer, const size_t maxlen, const
     flags = 0U;
     do {
       switch (*format) {
-        case '0': flags |= FLAGS_ZEROPAD; format++; n = ONE_U; break;
-        case '-': flags |= FLAGS_LEFT;    format++; n = ONE_U; break;
-        case '+': flags |= FLAGS_PLUS;    format++; n = ONE_U; break;
-        case ' ': flags |= FLAGS_SPACE;   format++; n = ONE_U; break;
-        case '#': flags |= FLAGS_HASH;    format++; n = ONE_U; break;
+        case '0': flags |= FLAGS_ZEROPAD; format++; n = 1U; break;
+        case '-': flags |= FLAGS_LEFT;    format++; n = 1U; break;
+        case '+': flags |= FLAGS_PLUS;    format++; n = 1U; break;
+        case ' ': flags |= FLAGS_SPACE;   format++; n = 1U; break;
+        case '#': flags |= FLAGS_HASH;    format++; n = 1U; break;
         default :                                   n = 0U; break;
       }
     } while (n);
@@ -887,7 +863,7 @@ static int _vsnprintf(out_fct_type out, char* buffer, const size_t maxlen, const
 #endif  // PRINTF_SUPPORT_EXPONENTIAL
 #endif  // PRINTF_SUPPORT_FLOAT
       case 'c' : {
-        unsigned int l = ONE_U;
+        unsigned int l = 1U;
         // pre padding
         if (!(flags & FLAGS_LEFT)) {
           while (l++ < width) {
@@ -965,7 +941,7 @@ static int _vsnprintf(out_fct_type out, char* buffer, const size_t maxlen, const
   }
 
   // termination
-  out(static_cast<char>(0), buffer, idx < maxlen ? idx : maxlen - ONE_U, maxlen);
+  out(static_cast<char>(0), buffer, idx < maxlen ? idx : maxlen - 1U, maxlen);
 
   // return written chars without terminating \0
   return static_cast<int>(idx);
