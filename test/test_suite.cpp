@@ -608,16 +608,15 @@ TEST_CASE("float: %f-to-%e, case 1", "[]" ) {
   float f = -9.999999;
   for( int i=0; i<20; i++ ) {
     if( i >= 5 ) {
-      str.setf(std::ios::scientific, std::ios::floatfield);
+      str.setf(std::ios::scientific);
+    } else {
+      str.setf(std::ios::floatfield);
+      str.setf(std::ios::fixed);
     }
-    str.precision(4);
+    str.precision(5);
     test::sprintf(buffer, "%.5f", static_cast<double>(f));
     str.str("");
-    if( i >= 5 ) {
-      str << f;
-    } else {
-      str << std::fixed << f;
-    }
+    str << f;
     fail1 = !!strcmp(buffer, str.str().c_str());
     std::cout << "line " << __LINE__ << "... should-be:'" << str.str().c_str() << "'" << " code-said:'" << buffer << "' " << (fail1? "MISMATCH" : "SAME" ) << std::endl;
     fail = fail || fail1;
@@ -662,8 +661,8 @@ TEST_CASE("float, %f-to-%e, case 2b", "[]" ) {
 
   // brute force exp
   fail = false;
-  str.setf(std::ios::scientific, std::ios::floatfield);
-  str.precision(4);
+  str.setf(std::ios::scientific);
+  str.precision(5);
   for (float i = -1e17f; i < +1e17f; i+= 0.9e15f) {
     test::sprintf(buffer, "%.5f", static_cast<double>(i));
     str.str("");
@@ -688,16 +687,15 @@ TEST_CASE("float: %g-to-%e, case 1", "[]" ) {
   float f = -9.999999;
   for( int i=0; i<20; i++ ) {
     if( i >= 5 ) {
-      str.setf(std::ios::scientific, std::ios::floatfield);
+      str.setf(std::ios::scientific);
+    } else {
+      str.setf(std::ios::floatfield);
+      str.setf(std::ios::fixed);
     }
-    str.precision(4);
+    str.precision(5);
     test::sprintf(buffer, "%.5g", static_cast<double>(f));
     str.str("");
-    if( i >= 5 ) {
-      str << f;
-    } else {
-      str << std::fixed << f;
-    }
+    str << f;
     fail1 = !!strcmp(buffer, str.str().c_str());
     std::cout << "line " << __LINE__ << "... should-be:'" << str.str().c_str() << "'" << " code-said:'" << buffer << "' " << (fail1? "MISMATCH" : "SAME" ) << std::endl;
     fail = fail || fail1;
@@ -742,8 +740,8 @@ TEST_CASE("float, %g-to-%e, case 2b", "[]" ) {
 
   // brute force exp
   fail = false;
-  str.setf(std::ios::scientific, std::ios::floatfield);
-  str.precision(4);
+  str.setf(std::ios::scientific);
+  str.precision(5);
   for (float i = -1e17f; i < +1e17f; i+= 0.9e15f) {
     test::sprintf(buffer, "%.5g", static_cast<double>(i));
     str.str("");
