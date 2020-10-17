@@ -387,17 +387,17 @@ const int       I_1000000000  = 1000000000;
 const double FL_DOUBLE_HALF = 0.5;
 const unsigned int ONE_U = 1U;
 
-bool calc_frac( double value, unsigned int prec, unsigned long &frac, unsigned &whole ) {
+bool calc_frac( double value_abs, unsigned int prec, unsigned long &frac, unsigned &whole ) {
 	double diff = 0.0;
 	bool rollover = false;
 
   // powers of 10
   static const double pow10[] = { 1, I_10, I_100, I_1000, I_10000, I_100000, I_1000000, I_10000000, I_100000000, I_1000000000 };
 
-  whole = static_cast<unsigned>(value);
+  whole = static_cast<unsigned>(value_abs);
   // run cppcheck (see cmd-line at top of file)
   // cppcheck-suppress arrayIndexOutOfBoundsCond
-  double tmp = (value - static_cast<double>(whole)) * pow10[prec];
+  double tmp = (value_abs - static_cast<double>(whole)) * pow10[prec];
   frac = static_cast<unsigned long>(tmp);
   diff = tmp - static_cast<double>(frac);
 
@@ -417,7 +417,7 @@ bool calc_frac( double value, unsigned int prec, unsigned long &frac, unsigned &
     ++frac;
   }
   if (prec == 0U) {
-    diff = value - static_cast<double>(whole);
+    diff = value_abs - static_cast<double>(whole);
     if ( !(diff < FL_DOUBLE_HALF) && !(diff > FL_DOUBLE_HALF) && (whole & 1U) ) {
       // exactly 0.5 and ODD, then round up
       // 1.5 -> 2, but 2.5 -> 2
@@ -500,8 +500,7 @@ static size_t _ftoa(out_fct_type out, char* buffer, size_t idx, size_t maxlen, d
 #if 0
   char buf[PRINTF_FTOA_BUFFER_SIZE];
 #endif
-  size_t len  = 0U;
-  double diff = 0.0;
+
 #if 0
   // powers of 10
   const int       I_10          = 10;
@@ -517,9 +516,10 @@ static size_t _ftoa(out_fct_type out, char* buffer, size_t idx, size_t maxlen, d
 #endif
 
   // determine the sign
+  double value_abs = value;
   const bool negative = value < 0;
   if (negative) {
-    value = -value;
+    value_abs = -value;
   }
 
   // set default precision, if not set explicitly
@@ -564,8 +564,10 @@ static size_t _ftoa(out_fct_type out, char* buffer, size_t idx, size_t maxlen, d
   }
 #endif
 		// calc frac, whole ......
-		bool ro = calc_frac( (negative? -value : value), prec, frac, whole );
-		//cout << "calc_frac...processed: value=" << value << ", prec=" << prec << ", frac=" << frac << ", whole=" << whole << ", ro=" << ro << endl;
+    unsigned long frac = 0;
+    unsigned whole = 0;
+		bool ro = calc_frac( value_abs, prec, frac, whole );
+		//cout << "calc_frac...processed: value_abs=" << value_abs << ", prec=" << prec << ", frac=" << frac << ", whole=" << whole << ", ro=" << ro << endl;
 
 #if 0
   // Start filling the buf with our fractional-part and whole-part.
@@ -645,7 +647,7 @@ typedef union {
   double   F;
 } fconv_t;
 
-void calc_exp10 ( double value, int &exp10, fconv_t &conv ) {
+void calc_exp10 ( double value_abs, int &exp10, fconv_t &conv ) {
 
 	static constexpr double  LN_OF_10                = (log(10.0));            // FL_DOUBLE_2_302585092994046
 	static constexpr double  LN_OF_2                 = (log(2.0));             // FL_DOUBLE_0_6931471805599453
@@ -654,7 +656,7 @@ void calc_exp10 ( double value, int &exp10, fconv_t &conv ) {
 	static constexpr double  LN_OF_1_5_over_LN_OF_10 = (log(1.5)/log(10.0));   // FL_DOUBLE_0_1760912590558
 	static constexpr double  ONE_over_1_5_LN_OF_10   = (1.0/(1.5*log(10.0)));  // FL_DOUBLE_0_289529654602168
 
-  conv.F = value;
+  conv.F = value_abs;
   int exp2 = static_cast<int>((conv.U >> SHIFT_52U) & X_0x07FFU) - I_1023;           // effectively log2
   conv.U = (conv.U & ((1ULL << SHIFT_52U) - 1U)) | (I_1023ULL << SHIFT_52U);  // drop the exponent so conv.F is now in [1,2)
 
@@ -671,7 +673,7 @@ void calc_exp10 ( double value, int &exp10, fconv_t &conv ) {
   conv.F *= 1 + 2 * z / (2 - z + (z2 / (6 + (z2 / (10 + z2 / 14)))));
 
   // correct for rounding errors
-  if (value < conv.F) {
+  if (value_abs < conv.F) {
     exp10--;
     conv.F /= BASE_10U;
   }
@@ -695,9 +697,10 @@ static constexpr double  ONE_over_1_5_LN_OF_10   = (1.0/(1.5*log(10.0)));  // FL
 static size_t _etoa(out_fct_type out, char* buffer, size_t idx, size_t maxlen, double value, unsigned int prec, unsigned int width, unsigned int flags)
 {
   // determine the sign
+  double value_abs = value;
   const bool negative = value < 0;
   if (negative) {
-    value = -value;
+    value_abs = -value;
   }
 
   // set default precision, if not set explicitly
@@ -736,9 +739,11 @@ static size_t _etoa(out_fct_type out, char* buffer, size_t idx, size_t maxlen, d
   }
 #endif
 		// calc exp10 ......
-		calc_exp10( (negative? -value : value), exp10, conv );
+    int exp10 = 0;
+    fconv_t conv;
+		calc_exp10( value_abs, exp10, conv );
   	//int log2 = static_cast<int>((conv.U >> SHIFT_52U) & X_0x07FFU) - I_1023;           // effectively log2
-		//cout << "calc_exp10...processed: value=" << value << ", exp10=" << exp10 << ", conv.F=" << conv.F << ", conv.U i.e. log2=" << log2 << endl;
+		//cout << "calc_exp10...processed: value_abs=" << value_abs << ", exp10=" << exp10 << ", conv.F=" << conv.F << ", conv.U i.e. log2=" << log2 << endl;
 
   // the exponent format is "%+03d" and largest value is "308", so set aside 4 characters for e+nn (or 5 for e+nnn).
   unsigned int minwidth = ((exp10 < 100) && (exp10 > -100)) ? 4U : 5U;
@@ -769,9 +774,9 @@ static size_t _etoa(out_fct_type out, char* buffer, size_t idx, size_t maxlen, d
     exp10   = 0;
   }
 
-  // rescale the float value
+  // rescale the float value_abs
   if (exp10) {
-    value /= conv.F;
+    value_abs /= conv.F;
   }
 
   // will everything fit?
@@ -791,10 +796,10 @@ static size_t _etoa(out_fct_type out, char* buffer, size_t idx, size_t maxlen, d
   const size_t start_idx = idx;
   if (! printAsSciNot) {
     // output the floating part
-    idx = _ftoa(out, buffer, idx, maxlen, negative ? -value : value, prec, fwidth, flags & ~FLAGS_ADAPT_EXP);
+    idx = _ftoa(out, buffer, idx, maxlen, negative ? -value_abs : value_abs, prec, fwidth, flags & ~FLAGS_ADAPT_EXP);
   } else {
     // output the floating part
-    idx = _ftoa(out, buffer, idx, maxlen, negative ? -value : value, prec, fwidth, flags & ~FLAGS_ADAPT_EXP);
+    idx = _ftoa(out, buffer, idx, maxlen, negative ? -value_abs : value_abs, prec, fwidth, flags & ~FLAGS_ADAPT_EXP);
 
     // output the exponent part
     if (minwidth) {

@@ -139,6 +139,101 @@ TEST_CASE("vsnprintf", "[]" ) {
 }
 
 
+TEST_CASE("various to start with", "[]" ) {
+  char buffer[100];
+  bool fail = false;
+  bool fail1 = false;
+  const char * s = "";
+
+#ifndef PRINTF_DISABLE_SUPPORT_EXPONENTIAL
+  fail = false;
+  {
+    test::sprintf(buffer, "%f", 42167.0);
+    s = "42167.000000";
+    fail1 = !!strcmp( buffer, s );
+    std::cout << "line " << __LINE__ << "... should-be:'" << s << "'" << " code-said:'" << buffer << "' " << (fail1? "MISMATCH" : "SAME" ) << std::endl;
+    fail = fail || fail1;
+
+    test::sprintf(buffer, "%10.3f", 42167.0);
+    s = " 42167.000";
+    fail1 = !!strcmp( buffer, s );
+    std::cout << "line " << __LINE__ << "... should-be:'" << s << "'" << " code-said:'" << buffer << "' " << (fail1? "MISMATCH" : "SAME" ) << std::endl;
+    fail = fail || fail1;
+
+    test::sprintf(buffer, "%10.3f", -42167.0);
+    s = "-42167.000";
+    fail1 = !!strcmp( buffer, s );
+    std::cout << "line " << __LINE__ << "... should-be:'" << s << "'" << " code-said:'" << buffer << "' " << (fail1? "MISMATCH" : "SAME" ) << std::endl;
+    fail = fail || fail1;
+
+    test::sprintf(buffer, "%e", 42167.0);
+    s = "4.216700e+04";
+    fail1 = !!strcmp( buffer, s );
+    std::cout << "line " << __LINE__ << "... should-be:'" << s << "'" << " code-said:'" << buffer << "' " << (fail1? "MISMATCH" : "SAME" ) << std::endl;
+    fail = fail || fail1;
+
+    test::sprintf(buffer, "%+10.3e", 42167.0);
+    s = "+4.217e+04";
+    fail1 = !!strcmp( buffer, s );
+    std::cout << "line " << __LINE__ << "... should-be:'" << s << "'" << " code-said:'" << buffer << "' " << (fail1? "MISMATCH" : "SAME" ) << std::endl;
+    fail = fail || fail1;
+
+    test::sprintf(buffer, "%10.3e", -42167.0);
+    s = "-4.217e+04";
+    fail1 = !!strcmp( buffer, s );
+    std::cout << "line " << __LINE__ << "... should-be:'" << s << "'" << " code-said:'" << buffer << "' " << (fail1? "MISMATCH" : "SAME" ) << std::endl;
+    fail = fail || fail1;
+
+    test::sprintf(buffer, "%g", 42167.0);
+    s = "42167.0";
+    fail1 = !!strcmp( buffer, s );
+    std::cout << "line " << __LINE__ << "... should-be:'" << s << "'" << " code-said:'" << buffer << "' " << (fail1? "MISMATCH" : "SAME" ) << std::endl;
+    fail = fail || fail1;
+
+    test::sprintf(buffer, "%+10.3g", 42167.0);
+    s = " +4.22e+04";
+    fail1 = !!strcmp( buffer, s );
+    std::cout << "line " << __LINE__ << "... should-be:'" << s << "'" << " code-said:'" << buffer << "' " << (fail1? "MISMATCH" : "SAME" ) << std::endl;
+    fail = fail || fail1;
+
+    test::sprintf(buffer, "%10.3g", -42167.0);
+    s = " -4.22e+04";
+    fail1 = !!strcmp( buffer, s );
+    std::cout << "line " << __LINE__ << "... should-be:'" << s << "'" << " code-said:'" << buffer << "' " << (fail1? "MISMATCH" : "SAME" ) << std::endl;
+    fail = fail || fail1;
+
+    test::sprintf(buffer, "%+012.4g", 0.00001234);
+    s = "+001.234e-05";
+    fail1 = !!strcmp( buffer, s );
+    std::cout << "line " << __LINE__ << "... should-be:'" << s << "'" << " code-said:'" << buffer << "' " << (fail1? "MISMATCH" : "SAME" ) << std::endl;
+    fail = fail || fail1;
+
+    test::sprintf(buffer, "%.3g", -1.2345e-308);
+    s = "-1.23e-308";
+    fail1 = !!strcmp( buffer, s );
+    std::cout << "line " << __LINE__ << "... should-be:'" << s << "'" << " code-said:'" << buffer << "' " << (fail1? "MISMATCH" : "SAME" ) << std::endl;
+    fail = fail || fail1;
+
+    test::sprintf(buffer, "%+.3E", 1.23e+308);
+    s = "+1.230E+308";
+    fail1 = !!strcmp( buffer, s );
+    std::cout << "line " << __LINE__ << "... should-be:'" << s << "'" << " code-said:'" << buffer << "' " << (fail1? "MISMATCH" : "SAME" ) << std::endl;
+    fail = fail || fail1;
+
+    test::sprintf(buffer, "%+10.4G", 0.001234);
+    s = " +0.001234";
+    fail1 = !!strcmp( buffer, s );
+    std::cout << "line " << __LINE__ << "... should-be:'" << s << "'" << " code-said:'" << buffer << "' " << (fail1? "MISMATCH" : "SAME" ) << std::endl;
+    fail = fail || fail1;
+
+  }
+  REQUIRE(!fail);
+
+#endif
+
+}
+
+
 TEST_CASE("float, set 1", "[]" ) {
   char buffer[100];
 
