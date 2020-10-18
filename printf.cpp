@@ -567,6 +567,7 @@ static size_t _ftoa(out_fct_type out, char* buffer, size_t idx, size_t maxlen, d
     unsigned long frac = 0;
     unsigned whole = 0;
 		bool ro = calc_frac( value_abs, prec, frac, whole );
+    ro = ro;
 		//cout << "calc_frac...processed: value_abs=" << value_abs << ", prec=" << prec << ", frac=" << frac << ", whole=" << whole << ", ro=" << ro << endl;
 
 #if 0
@@ -708,6 +709,12 @@ static size_t _etoa(out_fct_type out, char* buffer, size_t idx, size_t maxlen, d
     prec = PRINTF_DEFAULT_FLOAT_PRECISION;
   }
 
+  // limit precision to 9, cause a prec >= 10 can lead to overflow errors
+  unsigned int excess_prec = 0;
+  if( prec > 9U ) {
+    excess_prec = prec - 9U;
+    prec = 9U;
+  }
 #if 0
   // determine the decimal exponent
   // based on the algorithm by David Gay (https://www.ampl.com/netlib/fp/dtoa.c)
@@ -753,18 +760,18 @@ static size_t _etoa(out_fct_type out, char* buffer, size_t idx, size_t maxlen, d
   if (flags & FLAGS_ADAPT_EXP) {
     // prec and exp10 determinte whether we want to fall-back to "%f" mode.
     // printAsSciNot records that fact.
-    int prec_compute = static_cast<int>(prec);
-    if (prec_compute == 0) {
-      prec_compute = 1;
+    int prec_tmp = static_cast<int>(prec);
+    if (prec_tmp == 0) {
+      prec_tmp = 1;
     }
-    if ( (prec_compute > exp10) && (exp10 >= -4) ) {
+    if ( (prec_tmp > exp10) && (exp10 >= -4) ) {
       printAsSciNot = false;
-      prec_compute -= exp10 + 1;
+      prec_tmp -= exp10 + 1;
     } else {
       printAsSciNot = true;
-      prec_compute--;
+      prec_tmp--;
     }
-    prec = static_cast<unsigned int>( (prec_compute > 0)? prec_compute : 0 );
+    prec = static_cast<unsigned int>( (prec_tmp > 0)? prec_tmp : 0 );
   }
 
   if (! printAsSciNot) {
@@ -795,12 +802,45 @@ static size_t _etoa(out_fct_type out, char* buffer, size_t idx, size_t maxlen, d
 
   const size_t start_idx = idx;
   if (! printAsSciNot) {
-    // output the floating part
-    idx = _ftoa(out, buffer, idx, maxlen, negative ? -value_abs : value_abs, prec, fwidth, flags & ~FLAGS_ADAPT_EXP);
-  } else {
-    // output the floating part
-    idx = _ftoa(out, buffer, idx, maxlen, negative ? -value_abs : value_abs, prec, fwidth, flags & ~FLAGS_ADAPT_EXP);
+    // output the floating part:
 
+		// calc frac, whole.
+    unsigned long frac = 0;
+    unsigned whole = 0;
+		bool ro = calc_frac( value_abs, prec, frac, whole );
+    // Ignore the ro (rollover) flag in non-sci-notat case.
+
+    // fill this buffer with the number to be output, and output it.
+		char buf[PRINTF_FTOA_BUFFER_SIZE];
+		size_t len = 0U;
+		idx = fill_mantissa( idx, buf, len, negative, frac, whole, excess_prec, prec, fwidth, flags & ~FLAGS_ADAPT_EXP );
+    return _out_rev(out, buffer, idx, maxlen, buf, len, fwidth, flags);
+
+    //idx = _ftoa(out, buffer, idx, maxlen, negative ? -value_abs : value_abs, prec, fwidth, flags & ~FLAGS_ADAPT_EXP);
+
+  } else {
+    // output the floating part:
+
+		// calc frac, whole.
+    unsigned long frac = 0;
+    unsigned whole = 0;
+		bool ro = calc_frac( value_abs, prec, frac, whole );
+    // In sci-notat case, the ro (rollover) flag tells us to increment exp10.
+    if( ro ) {
+      if( frac >= 10.0 ) {
+        frac /= 10.0;
+        exp10++;
+      }
+    }
+    // fill this buffer with the mantissa to be output, and output it.
+		char buf[PRINTF_FTOA_BUFFER_SIZE];
+		size_t len = 0U;
+		idx = fill_mantissa( idx, buf, len, negative, frac, whole, excess_prec, prec, fwidth, flags & ~FLAGS_ADAPT_EXP );
+    idx = _out_rev(out, buffer, idx, maxlen, buf, len, fwidth, flags);
+
+    //idx = _ftoa(out, buffer, idx, maxlen, negative ? -value_abs : value_abs, prec, fwidth, flags & ~FLAGS_ADAPT_EXP);
+
+    // Now, proceed to the exponent.
     // output the exponent part
     if (minwidth) {
       // output the exponential symbol
