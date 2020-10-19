@@ -827,8 +827,8 @@ static size_t _etoa(out_fct_type out, char* buffer, size_t idx, size_t maxlen, d
 		bool ro = calc_frac( value_abs, prec, frac, whole );
     // In sci-notat case, the ro (rollover) flag tells us to increment exp10.
     if( ro ) {
-      if( frac >= 10.0 ) {
-        frac /= 10.0;
+      if( whole >= 10.0 ) {
+        whole /= 10.0;
         exp10++;
       }
     }

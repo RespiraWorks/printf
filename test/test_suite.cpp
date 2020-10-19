@@ -142,6 +142,7 @@ TEST_CASE("vsnprintf", "[]" ) {
 }
 
 
+
 TEST_CASE("various to start with", "[]" ) {
   char buffer[100];
   bool fail = false;
@@ -151,6 +152,12 @@ TEST_CASE("various to start with", "[]" ) {
 #ifndef PRINTF_DISABLE_SUPPORT_EXPONENTIAL
   fail = false;
   {
+    test::sprintf(buffer, "%9.3f", 1e17);
+    s = "  1.0e+17";
+    fail1 = !!strcmp( buffer, s );
+    std::cout << "line " << __LINE__ << "... should-be:'" << s << "'" << " code-said:'" << buffer << "' " << (fail1? "MISMATCH" : "SAME" ) << std::endl;
+    fail = fail || fail1;
+
     test::sprintf(buffer, "%f", 42167.0);
     s = "42167.000000";
     fail1 = !!strcmp( buffer, s );
