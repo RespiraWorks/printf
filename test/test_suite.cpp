@@ -935,8 +935,6 @@ TEST_CASE("space flag", "[]" ) {
   REQUIRE(!strcmp(buffer, "x"));
 }
 
-// DEBUGGING
-#if 0
 TEST_CASE("+ flag", "[]" ) {
   char buffer[100];
 
@@ -2144,6 +2142,3 @@ TEST_CASE("misc, part 2", "[]" ) {
   REQUIRE(!fail);
 #endif
 }
-
-#endif
-// DEBUGGING
