@@ -66,6 +66,51 @@ void _out_fct(char character, void* arg)
 } // namespace test
 
 
+/***********
+* Utilities
+***********/
+std::string adjust_sigfigs( const std::string &in, unsigned desired_sigfigs ) {
+  std::string out(in);
+  // Find positions of exponent and decimal point.
+  size_t pos_exponent = out.find_first_of( "eEgG" );
+  if( pos_exponent == std::string::npos ) {
+    return in;
+  }
+  size_t pos_decimal = out.find( '.' );
+  if( pos_decimal == std::string::npos ) {
+    out.insert( pos_exponent, "." );
+  }
+  // Find positions again.
+  pos_exponent = out.find_first_of( "eEgG" );
+  pos_decimal = out.find( '.' );
+  size_t decimal_places_found = pos_exponent - pos_decimal - 1;
+  size_t needed_sigfigs = desired_sigfigs - decimal_places_found;
+  needed_sigfigs = (needed_sigfigs < 0)? 0 : needed_sigfigs;
+  std::cout << "needed_sigfigs=" << needed_sigfigs << ", desired_sigfigs=" << desired_sigfigs << ", decimal_places_found=" << decimal_places_found << ", pos_exponent=" << pos_exponent << ", pos_decimal=" << pos_decimal << std::endl;
+  size_t i = 0;
+  while( out.length() > 0 && out[0] == ' ' ) {
+    if( i >= needed_sigfigs ) break;
+    out.erase(0,1);
+    i++;
+  }
+  // Find positions again.
+  pos_exponent = out.find_first_of( "eEgG" );
+  pos_decimal = out.find( '.' );
+  decimal_places_found = pos_exponent - pos_decimal - 1;
+  needed_sigfigs = desired_sigfigs - decimal_places_found;
+  needed_sigfigs = (needed_sigfigs < 0)? 0 : needed_sigfigs;
+  std::cout << "needed_sigfigs=" << needed_sigfigs << ", desired_sigfigs=" << desired_sigfigs << ", decimal_places_found=" << decimal_places_found << ", pos_exponent=" << pos_exponent << ", pos_decimal=" << pos_decimal << std::endl;
+  for( size_t j = 0; j < needed_sigfigs; j++ ) {
+    out.insert( pos_exponent, "0" );
+  }
+  return out;
+}
+
+
+/***********
+* Test Cases
+***********/
+
 TEST_CASE("printf", "[]" ) {
   test::printf_idx = 0U;
   memset(test::printf_buffer, 0xCC, 100U);
@@ -707,23 +752,24 @@ TEST_CASE("float: %f-to-%e, case 1", "[]" ) {
   char buffer[100];
   bool fail = false;
   bool fail1 = false;
-  std::stringstream str;
+  std::stringstream sstr;
 
   fail = false;
   float f = -9.999999;
   for( int i=0; i<20; i++ ) {
-    str.str("");
-    str.unsetf(std::ios::floatfield);
-    str.precision(3);
+    sstr.str("");
+    sstr.unsetf(std::ios::floatfield);
+    sstr.precision(3);
     if( i >= 5 ) {
-      str.setf(std::ios::scientific);
+      sstr.setf(std::ios::scientific);
     } else {
-      str.setf(std::ios::fixed);
+      sstr.setf(std::ios::fixed);
     }
     test::sprintf(buffer, "%10.3f", static_cast<double>(f));
-    str << std::setw(10) << f;
-    fail1 = !!strcmp(buffer, str.str().c_str());
-    std::cout << "line " << __LINE__ << "... should-be:'" << str.str().c_str() << "'" << " code-said:'" << buffer << "' " << (fail1? "MISMATCH" : "SAME" ) << std::endl;
+    sstr << std::setw(10) << f;
+    std::string str2 = adjust_sigfigs( sstr.str(), 3 );
+    fail1 = !!strcmp(buffer, str2.c_str());
+    std::cout << "line " << __LINE__ << "... should-be:'" << str2.c_str() << "'" << " code-said:'" << buffer << "' " << (fail1? "MISMATCH" : "SAME" ) << std::endl;
     fail = fail || fail1;
     f *= 10.0f;
   }
@@ -738,18 +784,19 @@ TEST_CASE("float, %f-to-%e, case 2a", "[]" ) {
   bool fail = false;
   bool fail1 = false;
   std::stringstream str;
-  str.str("");
+  sstr.str("");
 
   // brute force float
   fail = false;
-  str.precision(5);
+  sstr.precision(5);
   for (int i = -100000; i < 100000; i += 1) {
     float fi = i;
     test::sprintf(buffer, "%.5f", static_cast<double>(fi) / 10000);
-    str.str("");
-    str << std::fixed << fi / 10000;
-    fail1 = !!strcmp(buffer, str.str().c_str());
-    std::cout << "line " << __LINE__ << "... should-be:'" << str.str().c_str() << "'" << " code-said:'" << buffer << "' " << (fail1? "MISMATCH" : "SAME" ) << std::endl;
+    sstr.str("");
+    sstr << std::fixed << fi / 10000;
+    std::string str2 = adjust_sigfigs( sstr.str(), 3 );
+    fail1 = !!strcmp(buffer, str2.c_str());
+    std::cout << "line " << __LINE__ << "... should-be:'" << str2.c_str() << "'" << " code-said:'" << buffer << "' " << (fail1? "MISMATCH" : "SAME" ) << std::endl;
     fail = fail || fail1;
   }
   REQUIRE(!fail);
@@ -763,18 +810,19 @@ TEST_CASE("float, %f-to-%e, case 2b", "[]" ) {
   char buffer[100];
   bool fail = false;
   bool fail1 = false;
-  std::stringstream str;
+  std::stringstream sstr;
 
   // brute force exp
   fail = false;
   for (float f = -1e17f; f < +1e17f; f+= 0.9e15f) {
     test::sprintf(buffer, "%10.2f", static_cast<double>(f));
-    str.str("");
-    str.unsetf(std::ios::floatfield);
-    str.precision(3);
-    str << std::setw(10) << f;
-    fail1 = !!strcmp(buffer, str.str().c_str());
-    std::cout << "line " << __LINE__ << "... should-be:'" << str.str().c_str() << "'" << " code-said:'" << buffer << "' " << (fail1? "MISMATCH" : "SAME" ) << std::endl;
+    sstr.str("");
+    sstr.unsetf(std::ios::floatfield);
+    sstr.precision(3);
+    sstr << std::setw(10) << f;
+    std::string str2 = adjust_sigfigs( sstr.str(), 3 );
+    fail1 = !!strcmp(buffer, str2.c_str());
+    std::cout << "line " << __LINE__ << "... should-be:'" << str2.c_str() << "'" << " code-said:'" << buffer << "' " << (fail1? "MISMATCH" : "SAME" ) << std::endl;
     fail = fail || fail1;
   }
   REQUIRE(!fail);
@@ -787,23 +835,24 @@ TEST_CASE("float: %g-to-%e, case 1", "[]" ) {
   char buffer[100];
   bool fail = false;
   bool fail1 = false;
-  std::stringstream str;
+  std::stringstream sstr;
 
   fail = false;
   float f = -9.999999;
   for( int i=0; i<20; i++ ) {
-    str.str("");
-    str.unsetf(std::ios::floatfield);
-    str.precision(3);
+    sstr.str("");
+    sstr.unsetf(std::ios::floatfield);
+    sstr.precision(3);
     if( i >= 5 ) {
-      str.setf(std::ios::scientific);
+      sstr.setf(std::ios::scientific);
     } else {
-      str.setf(std::ios::fixed);
+      sstr.setf(std::ios::fixed);
     }
     test::sprintf(buffer, "%10.2g", static_cast<double>(f));
-    str << std::setw(10) << f;
-    fail1 = !!strcmp(buffer, str.str().c_str());
-    std::cout << "line " << __LINE__ << "... should-be:'" << str.str().c_str() << "'" << " code-said:'" << buffer << "' " << (fail1? "MISMATCH" : "SAME" ) << std::endl;
+    sstr << std::setw(10) << f;
+    std::string str2 = adjust_sigfigs( sstr.str(), 3 );
+    fail1 = !!strcmp(buffer, str2.c_str());
+    std::cout << "line " << __LINE__ << "... should-be:'" << str2.c_str() << "'" << " code-said:'" << buffer << "' " << (fail1? "MISMATCH" : "SAME" ) << std::endl;
     fail = fail || fail1;
     f *= 10.0f;
   }
@@ -817,19 +866,20 @@ TEST_CASE("float, %g-to-%e, case 2a", "[]" ) {
   char buffer[100];
   bool fail = false;
   bool fail1 = false;
-  std::stringstream str;
-  str.str("");
+  std::stringstream sstr;
+  sstr.str("");
 
   // brute force float
   fail = false;
-  str.precision(5);
+  sstr.precision(5);
   for (int i = -100000; i < 100000; i += 1) {
     float fi = i;
     test::sprintf(buffer, "%.5g", static_cast<double>(fi) / 10000);
-    str.str("");
-    str << std::fixed << fi / 10000;
-    fail1 = !!strcmp(buffer, str.str().c_str());
-    std::cout << "line " << __LINE__ << "... should-be:'" << str.str().c_str() << "'" << " code-said:'" << buffer << "' " << (fail1? "MISMATCH" : "SAME" ) << std::endl;
+    sstr.str("");
+    sstr << std::fixed << fi / 10000;
+    std::string str2 = adjust_sigfigs( sstr.str(), 3 );
+    fail1 = !!strcmp(buffer, str2.c_str());
+    std::cout << "line " << __LINE__ << "... should-be:'" << str2.c_str() << "'" << " code-said:'" << buffer << "' " << (fail1? "MISMATCH" : "SAME" ) << std::endl;
     fail = fail || fail1;
   }
   REQUIRE(!fail);
@@ -843,18 +893,19 @@ TEST_CASE("float, %g-to-%e, case 2b", "[]" ) {
   char buffer[100];
   bool fail = false;
   bool fail1 = false;
-  std::stringstream str;
+  std::stringstream sstr;
 
   // brute force exp
   fail = false;
   for (float f = -1e17f; f < +1e17f; f+= 0.9e15f) {
     test::sprintf(buffer, "%10.3g", static_cast<double>(f));
-    str.str("");
-    str.unsetf(std::ios::floatfield);
-    str.precision(3);
-    str << std::setw(10) << f;
-    fail1 = !!strcmp(buffer, str.str().c_str());
-    std::cout << "line " << __LINE__ << "... should-be:'" << str.str().c_str() << "'" << " code-said:'" << buffer << "' " << (fail1? "MISMATCH" : "SAME" ) << std::endl;
+    sstr.str("");
+    sstr.unsetf(std::ios::floatfield);
+    sstr.precision(3);
+    sstr << std::setw(10) << f;
+    std::string str2 = adjust_sigfigs( sstr.str(), 3 );
+    fail1 = !!strcmp(buffer, str2.c_str());
+    std::cout << "line " << __LINE__ << "... should-be:'" << str2.c_str() << "'" << " code-said:'" << buffer << "' " << (fail1? "MISMATCH" : "SAME" ) << std::endl;
     fail = fail || fail1;
   }
   REQUIRE(!fail);

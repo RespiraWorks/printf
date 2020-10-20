@@ -493,6 +493,7 @@ static size_t _ftoa(out_fct_type out, char* buffer, size_t idx, size_t maxlen, d
   unsigned whole = 0;
   bool ro = calc_frac( value_abs, prec, frac, whole );
   ro = ro;
+  // Ignore the ro (rollover) flag.
   //cout << "calc_frac...processed: value_abs=" << value_abs << ", prec=" << prec << ", frac=" << frac << ", whole=" << whole << ", ro=" << ro << endl;
 
   // given frac and whole, we can now express (into buf) the number to be printed.
@@ -633,6 +634,7 @@ static size_t _etoa(out_fct_type out, char* buffer, size_t idx, size_t maxlen, d
     unsigned long frac = 0;
     unsigned whole = 0;
 		bool ro = calc_frac( value_abs, prec, frac, whole );
+    ro = ro;
     // Ignore the ro (rollover) flag in non-sci-notat case.
 
     // fill this buffer with the number to be output, and output it.
