@@ -69,39 +69,63 @@ void _out_fct(char character, void* arg)
 /***********
 * Utilities
 ***********/
-std::string adjust_sigfigs( const std::string &in, unsigned desired_sigfigs ) {
+
+std::string adjust_sigfigs( const std::string &in, unsigned desired_sigfigs, unsigned desired_width ) {
   std::string out(in);
   // Find positions of exponent and decimal point.
   size_t pos_exponent = out.find_first_of( "eEgG" );
+  size_t pos_decimal = out.find( '.' );
   if( pos_exponent == std::string::npos ) {
     return in;
   }
-  size_t pos_decimal = out.find( '.' );
+
+  // Insert decimal point if needed.
   if( pos_decimal == std::string::npos ) {
     out.insert( pos_exponent, "." );
   }
+
   // Find positions again.
   pos_exponent = out.find_first_of( "eEgG" );
   pos_decimal = out.find( '.' );
-  size_t decimal_places_found = pos_exponent - pos_decimal - 1;
-  size_t needed_sigfigs = desired_sigfigs - decimal_places_found;
-  needed_sigfigs = (needed_sigfigs < 0)? 0 : needed_sigfigs;
-  std::cout << "needed_sigfigs=" << needed_sigfigs << ", desired_sigfigs=" << desired_sigfigs << ", decimal_places_found=" << decimal_places_found << ", pos_exponent=" << pos_exponent << ", pos_decimal=" << pos_decimal << std::endl;
-  size_t i = 0;
+  size_t decimal_places_found = (pos_exponent < (pos_decimal + 1))? 0 : (pos_exponent - (pos_decimal + 1));
+  size_t current_sigfigs = decimal_places_found + 1;
+  size_t needed_sigfigs = (desired_sigfigs < current_sigfigs)? 0 : (desired_sigfigs - current_sigfigs);
+  std::cout << "aft insrt '.'::  needed_sigfigs=" << needed_sigfigs << ", desired_sigfigs=" << desired_sigfigs << ", current_sigfigs=" << current_sigfigs << ", decimal_places_found=" << decimal_places_found << ", pos_exponent=" << pos_exponent << ", pos_decimal=" << pos_decimal << std::endl;
+
+  // Remove just enough leading spaces to make room for desired sigfigs.
+  // Remove the leading spaces, if any.
+  //size_t i = 0;
   while( out.length() > 0 && out[0] == ' ' ) {
-    if( i >= needed_sigfigs ) break;
+    //if( i >= needed_sigfigs ) break;
     out.erase(0,1);
-    i++;
+    //i++;
   }
+
   // Find positions again.
   pos_exponent = out.find_first_of( "eEgG" );
   pos_decimal = out.find( '.' );
-  decimal_places_found = pos_exponent - pos_decimal - 1;
-  needed_sigfigs = desired_sigfigs - decimal_places_found;
-  needed_sigfigs = (needed_sigfigs < 0)? 0 : needed_sigfigs;
-  std::cout << "needed_sigfigs=" << needed_sigfigs << ", desired_sigfigs=" << desired_sigfigs << ", decimal_places_found=" << decimal_places_found << ", pos_exponent=" << pos_exponent << ", pos_decimal=" << pos_decimal << std::endl;
-  for( size_t j = 0; j < needed_sigfigs; j++ ) {
-    out.insert( pos_exponent, "0" );
+  decimal_places_found = (pos_exponent < (pos_decimal + 1))? 0 : (pos_exponent - (pos_decimal + 1));
+  current_sigfigs = decimal_places_found + 1;
+  std::cout << "aft rm spaces::  needed_sigfigs=" << needed_sigfigs << ", desired_sigfigs=" << desired_sigfigs << ", current_sigfigs=" << current_sigfigs << ", decimal_places_found=" << decimal_places_found << ", pos_exponent=" << pos_exponent << ", pos_decimal=" << pos_decimal << std::endl;
+
+  if( current_sigfigs > desired_sigfigs ) {
+    // Remove just enough 0's to achieve desired_sigfigs.
+    size_t iz = 1;
+    while( out.length() > 0 && out[pos_exponent-iz] == '0' ) {
+      if( iz > (current_sigfigs - desired_sigfigs) ) break;
+      out.erase(pos_exponent-iz,1);
+      iz++;
+    }
+  } else if( current_sigfigs < desired_sigfigs ) {
+    // Insert just enough 0's to achieve desired_sigfigs.
+    for( size_t j = 0; j < desired_sigfigs - current_sigfigs; j++ ) {
+      out.insert( pos_exponent, "0" );
+    }
+  }
+
+  // Insert just enough leading spaces to achieve desired_width.
+  while( out.length() < desired_width ) {
+    out.insert( 0, " " );
   }
   return out;
 }
@@ -198,7 +222,7 @@ TEST_CASE("various to start with", "[]" ) {
   fail = false;
   {
     test::sprintf(buffer, "%9.3f", 1e17);
-    s = "  1.0e+17";
+    s = "1.000e+17";
     fail1 = !!strcmp( buffer, s );
     std::cout << "line " << __LINE__ << "... should-be:'" << s << "'" << " code-said:'" << buffer << "' " << (fail1? "MISMATCH" : "SAME" ) << std::endl;
     fail = fail || fail1;
@@ -756,18 +780,19 @@ TEST_CASE("float: %f-to-%e, case 1", "[]" ) {
 
   fail = false;
   float f = -9.999999;
-  for( int i=0; i<20; i++ ) {
+  for( int i=1; i<20; i++ ) {
     sstr.str("");
     sstr.unsetf(std::ios::floatfield);
-    sstr.precision(3);
-    if( i >= 5 ) {
+    if( i >= 9 ) {
+      sstr.precision(4);
       sstr.setf(std::ios::scientific);
     } else {
+      sstr.precision(3);
       sstr.setf(std::ios::fixed);
     }
     test::sprintf(buffer, "%10.3f", static_cast<double>(f));
     sstr << std::setw(10) << f;
-    std::string str2 = adjust_sigfigs( sstr.str(), 3 );
+    std::string str2 = adjust_sigfigs( sstr.str(), 4, 10 );
     fail1 = !!strcmp(buffer, str2.c_str());
     std::cout << "line " << __LINE__ << "... should-be:'" << str2.c_str() << "'" << " code-said:'" << buffer << "' " << (fail1? "MISMATCH" : "SAME" ) << std::endl;
     fail = fail || fail1;
@@ -820,7 +845,7 @@ TEST_CASE("float, %f-to-%e, case 2b", "[]" ) {
     sstr.unsetf(std::ios::floatfield);
     sstr.precision(3);
     sstr << std::setw(10) << f;
-    std::string str2 = adjust_sigfigs( sstr.str(), 3 );
+    std::string str2 = adjust_sigfigs( sstr.str(), 3, 10 );
     fail1 = !!strcmp(buffer, str2.c_str());
     std::cout << "line " << __LINE__ << "... should-be:'" << str2.c_str() << "'" << " code-said:'" << buffer << "' " << (fail1? "MISMATCH" : "SAME" ) << std::endl;
     fail = fail || fail1;
@@ -838,19 +863,19 @@ TEST_CASE("float: %g-to-%e, case 1", "[]" ) {
   std::stringstream sstr;
 
   fail = false;
-  float f = -9.999999;
-  for( int i=0; i<20; i++ ) {
+  float f = -999.9999;
+  for( int i=3; i<20; i++ ) {
     sstr.str("");
     sstr.unsetf(std::ios::floatfield);
     sstr.precision(3);
-    if( i >= 5 ) {
+    if( i >= 3 ) {
       sstr.setf(std::ios::scientific);
     } else {
       sstr.setf(std::ios::fixed);
     }
     test::sprintf(buffer, "%10.2g", static_cast<double>(f));
     sstr << std::setw(10) << f;
-    std::string str2 = adjust_sigfigs( sstr.str(), 3 );
+    std::string str2 = adjust_sigfigs( sstr.str(), 2, 10 );
     fail1 = !!strcmp(buffer, str2.c_str());
     std::cout << "line " << __LINE__ << "... should-be:'" << str2.c_str() << "'" << " code-said:'" << buffer << "' " << (fail1? "MISMATCH" : "SAME" ) << std::endl;
     fail = fail || fail1;
@@ -903,7 +928,7 @@ TEST_CASE("float, %g-to-%e, case 2b", "[]" ) {
     sstr.unsetf(std::ios::floatfield);
     sstr.precision(3);
     sstr << std::setw(10) << f;
-    std::string str2 = adjust_sigfigs( sstr.str(), 3 );
+    std::string str2 = adjust_sigfigs( sstr.str(), 3, 10 );
     fail1 = !!strcmp(buffer, str2.c_str());
     std::cout << "line " << __LINE__ << "... should-be:'" << str2.c_str() << "'" << " code-said:'" << buffer << "' " << (fail1? "MISMATCH" : "SAME" ) << std::endl;
     fail = fail || fail1;
