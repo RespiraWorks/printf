@@ -92,13 +92,9 @@ std::string adjust_sigfigs( const std::string &in, unsigned desired_sigfigs, uns
   size_t needed_sigfigs = (desired_sigfigs < current_sigfigs)? 0 : (desired_sigfigs - current_sigfigs);
   std::cout << "aft insrt '.'::  needed_sigfigs=" << needed_sigfigs << ", desired_sigfigs=" << desired_sigfigs << ", current_sigfigs=" << current_sigfigs << ", decimal_places_found=" << decimal_places_found << ", pos_exponent=" << pos_exponent << ", pos_decimal=" << pos_decimal << std::endl;
 
-  // Remove just enough leading spaces to make room for desired sigfigs.
   // Remove the leading spaces, if any.
-  //size_t i = 0;
   while( out.length() > 0 && out[0] == ' ' ) {
-    //if( i >= needed_sigfigs ) break;
     out.erase(0,1);
-    //i++;
   }
 
   // Find positions again.
@@ -129,6 +125,7 @@ std::string adjust_sigfigs( const std::string &in, unsigned desired_sigfigs, uns
   }
   return out;
 }
+
 
 
 /***********
