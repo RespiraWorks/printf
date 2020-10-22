@@ -70,7 +70,7 @@ void _out_fct(char character, void* arg)
 * Utilities
 ***********/
 
-std::string adjust_sigfigs( const std::string &in, unsigned desired_sigfigs, unsigned desired_width ) {
+auto adjust_sigfigs( const std::string &in, unsigned desired_sigfigs, unsigned desired_width ) -> std::string {
   std::string out(in);
   // Find positions of exponent and decimal point.
   size_t pos_exponent = out.find_first_of( "eEgG" );
@@ -89,8 +89,7 @@ std::string adjust_sigfigs( const std::string &in, unsigned desired_sigfigs, uns
   pos_decimal = out.find( '.' );
   size_t decimal_places_found = (pos_exponent < (pos_decimal + 1))? 0 : (pos_exponent - (pos_decimal + 1));
   size_t current_sigfigs = decimal_places_found + 1;
-  size_t needed_sigfigs = (desired_sigfigs < current_sigfigs)? 0 : (desired_sigfigs - current_sigfigs);
-  std::cout << "aft insrt '.'::  needed_sigfigs=" << needed_sigfigs << ", desired_sigfigs=" << desired_sigfigs << ", current_sigfigs=" << current_sigfigs << ", decimal_places_found=" << decimal_places_found << ", pos_exponent=" << pos_exponent << ", pos_decimal=" << pos_decimal << std::endl;
+  //std::cout << "aft insrt '.'::  desired_sigfigs=" << desired_sigfigs << ", current_sigfigs=" << current_sigfigs << ", decimal_places_found=" << decimal_places_found << ", pos_exponent=" << pos_exponent << ", pos_decimal=" << pos_decimal << std::endl;
 
   // Remove the leading spaces, if any.
   while( out.length() > 0 && out[0] == ' ' ) {
@@ -102,11 +101,11 @@ std::string adjust_sigfigs( const std::string &in, unsigned desired_sigfigs, uns
   pos_decimal = out.find( '.' );
   decimal_places_found = (pos_exponent < (pos_decimal + 1))? 0 : (pos_exponent - (pos_decimal + 1));
   current_sigfigs = decimal_places_found + 1;
-  std::cout << "aft rm spaces::  needed_sigfigs=" << needed_sigfigs << ", desired_sigfigs=" << desired_sigfigs << ", current_sigfigs=" << current_sigfigs << ", decimal_places_found=" << decimal_places_found << ", pos_exponent=" << pos_exponent << ", pos_decimal=" << pos_decimal << std::endl;
+  //std::cout << "aft rm spaces::  desired_sigfigs=" << desired_sigfigs << ", current_sigfigs=" << current_sigfigs << ", decimal_places_found=" << decimal_places_found << ", pos_exponent=" << pos_exponent << ", pos_decimal=" << pos_decimal << std::endl;
 
   if( current_sigfigs > desired_sigfigs ) {
-    // Remove just enough 0's to achieve desired_sigfigs.
     size_t iz = 1;
+    // Remove just enough 0's to achieve desired_sigfigs.
     while( out.length() > 0 && out[pos_exponent-iz] == '0' ) {
       if( iz > (current_sigfigs - desired_sigfigs) ) break;
       out.erase(pos_exponent-iz,1);
@@ -116,6 +115,20 @@ std::string adjust_sigfigs( const std::string &in, unsigned desired_sigfigs, uns
     // Insert just enough 0's to achieve desired_sigfigs.
     for( size_t j = 0; j < desired_sigfigs - current_sigfigs; j++ ) {
       out.insert( pos_exponent, "0" );
+    }
+  }
+
+  // Find positions again.
+  pos_exponent = out.find_first_of( "eEgG" );
+  pos_decimal = out.find( '.' );
+  decimal_places_found = (pos_exponent < (pos_decimal + 1))? 0 : (pos_exponent - (pos_decimal + 1));
+  current_sigfigs = decimal_places_found + 1;
+  //std::cout << "aft rm/ins 0s::  desired_sigfigs=" << desired_sigfigs << ", current_sigfigs=" << current_sigfigs << ", decimal_places_found=" << decimal_places_found << ", pos_exponent=" << pos_exponent << ", pos_decimal=" << pos_decimal << std::endl;
+
+  // Remove decimal point, if there are now no decimal places.
+  if( current_sigfigs == 1 ) {
+    if( out.length() > 0 && out[pos_decimal] == '.' ) {
+      out.erase(pos_decimal,1);
     }
   }
 
@@ -209,6 +222,191 @@ TEST_CASE("vsnprintf", "[]" ) {
 
 
 
+TEST_CASE("various high exponents", "[]" ) {
+  char buffer[100];
+  bool fail = false;
+  bool fail1 = false;
+  const char * s = "";
+
+#ifndef PRINTF_DISABLE_SUPPORT_EXPONENTIAL
+  fail = false;
+  {
+    test::sprintf(buffer, "%9.3f", 1e+200);
+    s = "1.000e+200";
+    fail1 = !!strcmp( buffer, s );
+    std::cout << "line " << __LINE__ << "... should-be:'" << s << "'" << " code-said:'" << buffer << "' " << (fail1? "MISMATCH" : "SAME" ) << std::endl;
+    fail = fail || fail1;
+
+    test::sprintf(buffer, "%9.3f", 1e-200);
+    s = "1.000e-200";
+    fail1 = !!strcmp( buffer, s );
+    std::cout << "line " << __LINE__ << "... should-be:'" << s << "'" << " code-said:'" << buffer << "' " << (fail1? "MISMATCH" : "SAME" ) << std::endl;
+    fail = fail || fail1;
+
+    test::sprintf(buffer, "%9.3f", 1e+17);
+    s = "1.000e+17";
+    fail1 = !!strcmp( buffer, s );
+    std::cout << "line " << __LINE__ << "... should-be:'" << s << "'" << " code-said:'" << buffer << "' " << (fail1? "MISMATCH" : "SAME" ) << std::endl;
+    fail = fail || fail1;
+
+    test::sprintf(buffer, "%9.3f", 1e-17);
+    s = "1.000e-17";
+    fail1 = !!strcmp( buffer, s );
+    std::cout << "line " << __LINE__ << "... should-be:'" << s << "'" << " code-said:'" << buffer << "' " << (fail1? "MISMATCH" : "SAME" ) << std::endl;
+    fail = fail || fail1;
+
+    test::sprintf(buffer, "%9.3f", 1e+307);
+    s = "1.000e+307";
+    fail1 = !!strcmp( buffer, s );
+    std::cout << "line " << __LINE__ << "... should-be:'" << s << "'" << " code-said:'" << buffer << "' " << (fail1? "MISMATCH" : "SAME" ) << std::endl;
+    fail = fail || fail1;
+
+    test::sprintf(buffer, "%9.3f", 1e+257);
+    s = "1.000e+257";
+    fail1 = !!strcmp( buffer, s );
+    std::cout << "line " << __LINE__ << "... should-be:'" << s << "'" << " code-said:'" << buffer << "' " << (fail1? "MISMATCH" : "SAME" ) << std::endl;
+    fail = fail || fail1;
+
+    test::sprintf(buffer, "%9.3f", 1e+207);
+    s = "1.000e+207";
+    fail1 = !!strcmp( buffer, s );
+    std::cout << "line " << __LINE__ << "... should-be:'" << s << "'" << " code-said:'" << buffer << "' " << (fail1? "MISMATCH" : "SAME" ) << std::endl;
+    fail = fail || fail1;
+
+    test::sprintf(buffer, "%9.3f", 1e+157);
+    s = "1.000e+157";
+    fail1 = !!strcmp( buffer, s );
+    std::cout << "line " << __LINE__ << "... should-be:'" << s << "'" << " code-said:'" << buffer << "' " << (fail1? "MISMATCH" : "SAME" ) << std::endl;
+    fail = fail || fail1;
+
+    test::sprintf(buffer, "%9.3f", 1e+107);
+    s = "1.000e+107";
+    fail1 = !!strcmp( buffer, s );
+    std::cout << "line " << __LINE__ << "... should-be:'" << s << "'" << " code-said:'" << buffer << "' " << (fail1? "MISMATCH" : "SAME" ) << std::endl;
+    fail = fail || fail1;
+
+    test::sprintf(buffer, "%9.3f", 1e+87);
+    s = "1.000e+87";
+    fail1 = !!strcmp( buffer, s );
+    std::cout << "line " << __LINE__ << "... should-be:'" << s << "'" << " code-said:'" << buffer << "' " << (fail1? "MISMATCH" : "SAME" ) << std::endl;
+    fail = fail || fail1;
+
+    test::sprintf(buffer, "%9.3f", 1e+67);
+    s = "1.000e+67";
+    fail1 = !!strcmp( buffer, s );
+    std::cout << "line " << __LINE__ << "... should-be:'" << s << "'" << " code-said:'" << buffer << "' " << (fail1? "MISMATCH" : "SAME" ) << std::endl;
+    fail = fail || fail1;
+
+    test::sprintf(buffer, "%9.3f", 1e+57);
+    s = "1.000e+57";
+    fail1 = !!strcmp( buffer, s );
+    std::cout << "line " << __LINE__ << "... should-be:'" << s << "'" << " code-said:'" << buffer << "' " << (fail1? "MISMATCH" : "SAME" ) << std::endl;
+    fail = fail || fail1;
+
+    test::sprintf(buffer, "%9.3f", 1e+47);
+    s = "1.000e+47";
+    fail1 = !!strcmp( buffer, s );
+    std::cout << "line " << __LINE__ << "... should-be:'" << s << "'" << " code-said:'" << buffer << "' " << (fail1? "MISMATCH" : "SAME" ) << std::endl;
+    fail = fail || fail1;
+
+    test::sprintf(buffer, "%9.3f", 1e+37);
+    s = "1.000e+37";
+    fail1 = !!strcmp( buffer, s );
+    std::cout << "line " << __LINE__ << "... should-be:'" << s << "'" << " code-said:'" << buffer << "' " << (fail1? "MISMATCH" : "SAME" ) << std::endl;
+    fail = fail || fail1;
+
+    test::sprintf(buffer, "%9.3f", 1e+27);
+    s = "1.000e+27";
+    fail1 = !!strcmp( buffer, s );
+    std::cout << "line " << __LINE__ << "... should-be:'" << s << "'" << " code-said:'" << buffer << "' " << (fail1? "MISMATCH" : "SAME" ) << std::endl;
+    fail = fail || fail1;
+
+    test::sprintf(buffer, "%9.3f", 1e+17);
+    s = "1.000e+17";
+    fail1 = !!strcmp( buffer, s );
+    std::cout << "line " << __LINE__ << "... should-be:'" << s << "'" << " code-said:'" << buffer << "' " << (fail1? "MISMATCH" : "SAME" ) << std::endl;
+    fail = fail || fail1;
+
+    test::sprintf(buffer, "%9.3f", 1e-307);
+    s = "1.000e-307";
+    fail1 = !!strcmp( buffer, s );
+    std::cout << "line " << __LINE__ << "... should-be:'" << s << "'" << " code-said:'" << buffer << "' " << (fail1? "MISMATCH" : "SAME" ) << std::endl;
+    fail = fail || fail1;
+
+    test::sprintf(buffer, "%9.3f", 1e-257);
+    s = "1.000e-257";
+    fail1 = !!strcmp( buffer, s );
+    std::cout << "line " << __LINE__ << "... should-be:'" << s << "'" << " code-said:'" << buffer << "' " << (fail1? "MISMATCH" : "SAME" ) << std::endl;
+    fail = fail || fail1;
+
+    test::sprintf(buffer, "%9.3f", 1e-207);
+    s = "1.000e-207";
+    fail1 = !!strcmp( buffer, s );
+    std::cout << "line " << __LINE__ << "... should-be:'" << s << "'" << " code-said:'" << buffer << "' " << (fail1? "MISMATCH" : "SAME" ) << std::endl;
+    fail = fail || fail1;
+
+    test::sprintf(buffer, "%9.3f", 1e-157);
+    s = "1.000e-157";
+    fail1 = !!strcmp( buffer, s );
+    std::cout << "line " << __LINE__ << "... should-be:'" << s << "'" << " code-said:'" << buffer << "' " << (fail1? "MISMATCH" : "SAME" ) << std::endl;
+    fail = fail || fail1;
+
+    test::sprintf(buffer, "%9.3f", 1e-107);
+    s = "1.000e-107";
+    fail1 = !!strcmp( buffer, s );
+    std::cout << "line " << __LINE__ << "... should-be:'" << s << "'" << " code-said:'" << buffer << "' " << (fail1? "MISMATCH" : "SAME" ) << std::endl;
+    fail = fail || fail1;
+
+    test::sprintf(buffer, "%9.3f", 1e-87);
+    s = "1.000e-87";
+    fail1 = !!strcmp( buffer, s );
+    std::cout << "line " << __LINE__ << "... should-be:'" << s << "'" << " code-said:'" << buffer << "' " << (fail1? "MISMATCH" : "SAME" ) << std::endl;
+    fail = fail || fail1;
+
+    test::sprintf(buffer, "%9.3f", 1e-67);
+    s = "1.000e-67";
+    fail1 = !!strcmp( buffer, s );
+    std::cout << "line " << __LINE__ << "... should-be:'" << s << "'" << " code-said:'" << buffer << "' " << (fail1? "MISMATCH" : "SAME" ) << std::endl;
+    fail = fail || fail1;
+
+    test::sprintf(buffer, "%9.3f", 1e-57);
+    s = "1.000e-57";
+    fail1 = !!strcmp( buffer, s );
+    std::cout << "line " << __LINE__ << "... should-be:'" << s << "'" << " code-said:'" << buffer << "' " << (fail1? "MISMATCH" : "SAME" ) << std::endl;
+    fail = fail || fail1;
+
+    test::sprintf(buffer, "%9.3f", 1e-47);
+    s = "1.000e-47";
+    fail1 = !!strcmp( buffer, s );
+    std::cout << "line " << __LINE__ << "... should-be:'" << s << "'" << " code-said:'" << buffer << "' " << (fail1? "MISMATCH" : "SAME" ) << std::endl;
+    fail = fail || fail1;
+
+    test::sprintf(buffer, "%9.3f", 1e-37);
+    s = "1.000e-37";
+    fail1 = !!strcmp( buffer, s );
+    std::cout << "line " << __LINE__ << "... should-be:'" << s << "'" << " code-said:'" << buffer << "' " << (fail1? "MISMATCH" : "SAME" ) << std::endl;
+    fail = fail || fail1;
+
+    test::sprintf(buffer, "%9.3f", 1e-27);
+    s = "1.000e-27";
+    fail1 = !!strcmp( buffer, s );
+    std::cout << "line " << __LINE__ << "... should-be:'" << s << "'" << " code-said:'" << buffer << "' " << (fail1? "MISMATCH" : "SAME" ) << std::endl;
+    fail = fail || fail1;
+
+    test::sprintf(buffer, "%9.3f", 1e-17);
+    s = "1.000e-17";
+    fail1 = !!strcmp( buffer, s );
+    std::cout << "line " << __LINE__ << "... should-be:'" << s << "'" << " code-said:'" << buffer << "' " << (fail1? "MISMATCH" : "SAME" ) << std::endl;
+    fail = fail || fail1;
+
+  }
+  REQUIRE(!fail);
+
+#endif
+
+}
+
+
 TEST_CASE("various to start with", "[]" ) {
   char buffer[100];
   bool fail = false;
@@ -218,12 +416,6 @@ TEST_CASE("various to start with", "[]" ) {
 #ifndef PRINTF_DISABLE_SUPPORT_EXPONENTIAL
   fail = false;
   {
-    test::sprintf(buffer, "%9.3f", 1e17);
-    s = "1.000e+17";
-    fail1 = !!strcmp( buffer, s );
-    std::cout << "line " << __LINE__ << "... should-be:'" << s << "'" << " code-said:'" << buffer << "' " << (fail1? "MISMATCH" : "SAME" ) << std::endl;
-    fail = fail || fail1;
-
     test::sprintf(buffer, "%f", 42167.0);
     s = "42167.000000";
     fail1 = !!strcmp( buffer, s );

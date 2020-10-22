@@ -246,6 +246,12 @@ $(TRG)_nm.txt : $(TRG)
 	@-$(SIZE) -A -t $(TRG) > $(TRG)_size.txt
 
 
+%.cppcheck.out: %.cpp
+	cppcheck $< > $@ 2>&1
+
+%.tidy.out: %.cpp
+	clang-tidy $< > $@ 2>&1
+
 %.o : %.cpp
 	@$(ECHO) +++ compile: $<
   # Compile the source file
