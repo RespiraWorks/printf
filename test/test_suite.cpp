@@ -30,8 +30,6 @@
 #define CATCH_CONFIG_MAIN
 #include "catch.hpp"
 
-//#include <string.h>
-//#include <sstream>
 #include <cstring>
 #include <iostream>
 #include <iomanip>
@@ -85,10 +83,10 @@ auto adjust_sigfigs( const std::string &in, unsigned desired_sigfigs, unsigned d
   }
 
   // Find positions again.
-  pos_exponent = out.find_first_of( "eEgG" );
-  pos_decimal = out.find( '.' );
-  size_t decimal_places_found = (pos_exponent < (pos_decimal + 1))? 0 : (pos_exponent - (pos_decimal + 1));
-  size_t current_sigfigs = decimal_places_found + 1;
+  //pos_exponent = out.find_first_of( "eEgG" );
+  //pos_decimal = out.find( '.' );
+  //size_t decimal_places_found = (pos_exponent < (pos_decimal + 1))? 0 : (pos_exponent - (pos_decimal + 1));
+  //size_t current_sigfigs = decimal_places_found + 1;
   //std::cout << "aft insrt '.'::  desired_sigfigs=" << desired_sigfigs << ", current_sigfigs=" << current_sigfigs << ", decimal_places_found=" << decimal_places_found << ", pos_exponent=" << pos_exponent << ", pos_decimal=" << pos_decimal << std::endl;
 
   // Remove the leading spaces, if any.
@@ -99,8 +97,8 @@ auto adjust_sigfigs( const std::string &in, unsigned desired_sigfigs, unsigned d
   // Find positions again.
   pos_exponent = out.find_first_of( "eEgG" );
   pos_decimal = out.find( '.' );
-  decimal_places_found = (pos_exponent < (pos_decimal + 1))? 0 : (pos_exponent - (pos_decimal + 1));
-  current_sigfigs = decimal_places_found + 1;
+  size_t decimal_places_found = (pos_exponent < (pos_decimal + 1))? 0 : (pos_exponent - (pos_decimal + 1));
+  size_t current_sigfigs = decimal_places_found + 1;
   //std::cout << "aft rm spaces::  desired_sigfigs=" << desired_sigfigs << ", current_sigfigs=" << current_sigfigs << ", decimal_places_found=" << decimal_places_found << ", pos_exponent=" << pos_exponent << ", pos_decimal=" << pos_decimal << std::endl;
 
   if( current_sigfigs > desired_sigfigs ) {

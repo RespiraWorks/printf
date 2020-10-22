@@ -247,7 +247,7 @@ $(TRG)_nm.txt : $(TRG)
 
 
 %.cppcheck.out: %.cpp
-	cppcheck $< > $@ 2>&1
+	cppcheck --enable=warning,style --inline-suppr $< > $@ 2>&1
 
 %.tidy.out: %.cpp
 	clang-tidy $< > $@ 2>&1

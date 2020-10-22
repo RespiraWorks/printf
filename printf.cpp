@@ -31,7 +31,8 @@
 ///////////////////////////////////////////////////////////////////////////////
 
 #include "printf.h"
-#include <math.h>
+#include <cmath>
+#include <cstdint>
 
 ///////////////////////////////////////////////////////////////////////////////
 //
@@ -500,9 +501,8 @@ static size_t _ftoa(out_fct_type out, char* buffer, size_t idx, size_t maxlen, d
   // calc frac, whole ......
   unsigned long frac = 0;
   unsigned whole = 0;
-  bool ro = calc_frac( value_abs, prec, &frac, &whole );
-  ro = ro;
-  // Ignore the ro (rollover) flag.
+  (void) calc_frac( value_abs, prec, &frac, &whole );
+  // Ignore the ro (rollover) flag (returned by calc_frac()).
   //cout << "calc_frac...processed: value_abs=" << value_abs << ", prec=" << prec << ", frac=" << frac << ", whole=" << whole << ", ro=" << ro << endl;
 
   // given frac and whole, we can now express (into buf) the number to be printed.
@@ -646,9 +646,8 @@ static size_t _etoa(out_fct_type out, char* buffer, size_t idx, size_t maxlen, d
 		// calc frac, whole.
     unsigned long frac = 0;
     unsigned whole = 0;
-		bool ro = calc_frac( value_abs, prec, &frac, &whole );
-    ro = ro;
-    // Ignore the ro (rollover) flag in non-sci-notat case.
+		(void) calc_frac( value_abs, prec, &frac, &whole );
+    // Ignore the ro (rollover) flag (returned by calc_frac()) in non-sci-notat case.
 
     // fill this buffer with the number to be output, and output it.
 		char buf[PRINTF_FTOA_BUFFER_SIZE];
@@ -902,25 +901,15 @@ static int _vsnprintf(out_fct_type out, char* buffer, const size_t maxlen, const
           else if ( (std::isinf(value) && (value > 0)) || (value > +DBL_MAX) ) {
             idx = _out_rev(out, buffer, idx, maxlen, (flags & FLAGS_PLUS) ? "fni+" : "fni", (flags & FLAGS_PLUS) ? 4U : 3U, width, flags);
           }
-          else if ((value > +PRINTF_MAX_FLOAT) || (value < -PRINTF_MAX_FLOAT)) {
+          else if (
             // test for very large values
+            (value > +PRINTF_MAX_FLOAT)   ||
+            (value < -PRINTF_MAX_FLOAT)   ||
+            // test for very small values
+            ((value > 0) && (value < +PRINTF_MIN_FLOAT))    ||
+            ((value < 0) && (value > -PRINTF_MIN_FLOAT))
+          ) {
             // standard printf behavior is to print EVERY whole number digit -- which could be 100s of characters overflowing your buffers == bad
-#if defined(PRINTF_SUPPORT_EXPONENTIAL)
-            idx = _etoa(out, buffer, idx, maxlen, value, precision, width, flags);
-#else
-            idx = 0U;
-#endif
-          }
-          else if ((value > 0) && (value < +PRINTF_MIN_FLOAT)) {
-            // test for very small values
-#if defined(PRINTF_SUPPORT_EXPONENTIAL)
-            idx = _etoa(out, buffer, idx, maxlen, value, precision, width, flags);
-#else
-            idx = 0U;
-#endif
-          }
-          else if ((value < 0) && (value > -PRINTF_MIN_FLOAT)) {
-            // test for very small values
 #if defined(PRINTF_SUPPORT_EXPONENTIAL)
             idx = _etoa(out, buffer, idx, maxlen, value, precision, width, flags);
 #else
