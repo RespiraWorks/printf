@@ -218,8 +218,38 @@ TEST_CASE("vsnprintf", "[]" ) {
   REQUIRE(!strcmp(buffer, "3 -1000 test"));
 }
 
+using CaseSpec = struct { const char *fmt; double stimulus; const char *shouldBe; };
+
+TEST_CASE("case spec alias", "[]" ) {
+  char buffer[100];
+  bool fail = false;
+  bool fail1 = false;
+  //const char * s = "";
+
+  /*
+  CaseSpec spec =
+    { "%9.3f", 1e-17, "1.000e-17" };
+    */
+
+  CaseSpec specs[] = {
+    { "%9.3f", 1e+200, "1.000e+200" },
+    { "%9.3f", 1e-200, "1.000e-200" },
+    { "%9.3f", 1e+17, "1.000e+17" },
+    { "%9.3f", 1e-17, "1.000e-17" }
+  };
+
+  fail = false;
+  for( CaseSpec spec : specs ) {
+    test::sprintf(buffer, spec.fmt, spec.stimulus);
+    fail1 = !!strcmp( buffer, spec.shouldBe );
+    std::cout << "line " << __LINE__ << "... should-be:'" << spec.shouldBe << "'" << " code-said:'" << buffer << "' " << (fail1? "MISMATCH" : "SAME" ) << std::endl;
+    fail = fail || fail1;
+  }
+  REQUIRE(!fail);
+}
 
 
+#if 0 // all
 TEST_CASE("various high exponents", "[]" ) {
   char buffer[100];
   bool fail = false;
@@ -2405,3 +2435,5 @@ TEST_CASE("misc, part 2", "[]" ) {
   REQUIRE(!fail);
 #endif
 }
+
+#endif // all
