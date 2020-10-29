@@ -235,7 +235,31 @@ TEST_CASE("case spec alias", "[]" ) {
     { "%9.3f", 1e+200, "1.000e+200" },
     { "%9.3f", 1e-200, "1.000e-200" },
     { "%9.3f", 1e+17, "1.000e+17" },
-    { "%9.3f", 1e-17, "1.000e-17" }
+    { "%9.3f", 1e-17, "1.000e-17" },
+    { "%9.3f", 1e+307, "1.000e+307" },
+    { "%9.3f", 1e+257, "1.000e+257" },
+    { "%9.3f", 1e+207, "1.000e+207" },
+    { "%9.3f", 1e+157, "1.000e+157" },
+    { "%9.3f", 1e+107, "1.000e+107" },
+    { "%9.3f", 1e+87, "1.000e+87" },
+    { "%9.3f", 1e+67, "1.000e+67" },
+    { "%9.3f", 1e+57, "1.000e+57" },
+    { "%9.3f", 1e+47, "1.000e+47" },
+    { "%9.3f", 1e+37, "1.000e+37" },
+    { "%9.3f", 1e+27, "1.000e+27" },
+    { "%9.3f", 1e+17, "1.000e+17" },
+    { "%9.3f", 1e-307, "1.000e-307" },
+    { "%9.3f", 1e-257, "1.000e-257" },
+    { "%9.3f", 1e-207, "1.000e-207" },
+    { "%9.3f", 1e-157, "1.000e-157" },
+    { "%9.3f", 1e-107, "1.000e-107" },
+    { "%9.3f", 1e-87, "1.000e-87" },
+    { "%9.3f", 1e-67, "1.000e-67" },
+    { "%9.3f", 1e-57, "1.000e-57" },
+    { "%9.3f", 1e-47, "1.000e-47" },
+    { "%9.3f", 1e-37, "1.000e-37" },
+    { "%9.3f", 1e-27, "1.000e-27" },
+    { "%9.3f", 1e-17, "1.000e-17" },
   };
 
   fail = false;
@@ -249,7 +273,6 @@ TEST_CASE("case spec alias", "[]" ) {
 }
 
 
-#if 0 // all
 TEST_CASE("various high exponents", "[]" ) {
   char buffer[100];
   bool fail = false;
@@ -259,174 +282,6 @@ TEST_CASE("various high exponents", "[]" ) {
 #ifndef PRINTF_DISABLE_SUPPORT_EXPONENTIAL
   fail = false;
   {
-    test::sprintf(buffer, "%9.3f", 1e+200);
-    s = "1.000e+200";
-    fail1 = !!strcmp( buffer, s );
-    std::cout << "line " << __LINE__ << "... should-be:'" << s << "'" << " code-said:'" << buffer << "' " << (fail1? "MISMATCH" : "SAME" ) << std::endl;
-    fail = fail || fail1;
-
-    test::sprintf(buffer, "%9.3f", 1e-200);
-    s = "1.000e-200";
-    fail1 = !!strcmp( buffer, s );
-    std::cout << "line " << __LINE__ << "... should-be:'" << s << "'" << " code-said:'" << buffer << "' " << (fail1? "MISMATCH" : "SAME" ) << std::endl;
-    fail = fail || fail1;
-
-    test::sprintf(buffer, "%9.3f", 1e+17);
-    s = "1.000e+17";
-    fail1 = !!strcmp( buffer, s );
-    std::cout << "line " << __LINE__ << "... should-be:'" << s << "'" << " code-said:'" << buffer << "' " << (fail1? "MISMATCH" : "SAME" ) << std::endl;
-    fail = fail || fail1;
-
-    test::sprintf(buffer, "%9.3f", 1e-17);
-    s = "1.000e-17";
-    fail1 = !!strcmp( buffer, s );
-    std::cout << "line " << __LINE__ << "... should-be:'" << s << "'" << " code-said:'" << buffer << "' " << (fail1? "MISMATCH" : "SAME" ) << std::endl;
-    fail = fail || fail1;
-
-    test::sprintf(buffer, "%9.3f", 1e+307);
-    s = "1.000e+307";
-    fail1 = !!strcmp( buffer, s );
-    std::cout << "line " << __LINE__ << "... should-be:'" << s << "'" << " code-said:'" << buffer << "' " << (fail1? "MISMATCH" : "SAME" ) << std::endl;
-    fail = fail || fail1;
-
-    test::sprintf(buffer, "%9.3f", 1e+257);
-    s = "1.000e+257";
-    fail1 = !!strcmp( buffer, s );
-    std::cout << "line " << __LINE__ << "... should-be:'" << s << "'" << " code-said:'" << buffer << "' " << (fail1? "MISMATCH" : "SAME" ) << std::endl;
-    fail = fail || fail1;
-
-    test::sprintf(buffer, "%9.3f", 1e+207);
-    s = "1.000e+207";
-    fail1 = !!strcmp( buffer, s );
-    std::cout << "line " << __LINE__ << "... should-be:'" << s << "'" << " code-said:'" << buffer << "' " << (fail1? "MISMATCH" : "SAME" ) << std::endl;
-    fail = fail || fail1;
-
-    test::sprintf(buffer, "%9.3f", 1e+157);
-    s = "1.000e+157";
-    fail1 = !!strcmp( buffer, s );
-    std::cout << "line " << __LINE__ << "... should-be:'" << s << "'" << " code-said:'" << buffer << "' " << (fail1? "MISMATCH" : "SAME" ) << std::endl;
-    fail = fail || fail1;
-
-    test::sprintf(buffer, "%9.3f", 1e+107);
-    s = "1.000e+107";
-    fail1 = !!strcmp( buffer, s );
-    std::cout << "line " << __LINE__ << "... should-be:'" << s << "'" << " code-said:'" << buffer << "' " << (fail1? "MISMATCH" : "SAME" ) << std::endl;
-    fail = fail || fail1;
-
-    test::sprintf(buffer, "%9.3f", 1e+87);
-    s = "1.000e+87";
-    fail1 = !!strcmp( buffer, s );
-    std::cout << "line " << __LINE__ << "... should-be:'" << s << "'" << " code-said:'" << buffer << "' " << (fail1? "MISMATCH" : "SAME" ) << std::endl;
-    fail = fail || fail1;
-
-    test::sprintf(buffer, "%9.3f", 1e+67);
-    s = "1.000e+67";
-    fail1 = !!strcmp( buffer, s );
-    std::cout << "line " << __LINE__ << "... should-be:'" << s << "'" << " code-said:'" << buffer << "' " << (fail1? "MISMATCH" : "SAME" ) << std::endl;
-    fail = fail || fail1;
-
-    test::sprintf(buffer, "%9.3f", 1e+57);
-    s = "1.000e+57";
-    fail1 = !!strcmp( buffer, s );
-    std::cout << "line " << __LINE__ << "... should-be:'" << s << "'" << " code-said:'" << buffer << "' " << (fail1? "MISMATCH" : "SAME" ) << std::endl;
-    fail = fail || fail1;
-
-    test::sprintf(buffer, "%9.3f", 1e+47);
-    s = "1.000e+47";
-    fail1 = !!strcmp( buffer, s );
-    std::cout << "line " << __LINE__ << "... should-be:'" << s << "'" << " code-said:'" << buffer << "' " << (fail1? "MISMATCH" : "SAME" ) << std::endl;
-    fail = fail || fail1;
-
-    test::sprintf(buffer, "%9.3f", 1e+37);
-    s = "1.000e+37";
-    fail1 = !!strcmp( buffer, s );
-    std::cout << "line " << __LINE__ << "... should-be:'" << s << "'" << " code-said:'" << buffer << "' " << (fail1? "MISMATCH" : "SAME" ) << std::endl;
-    fail = fail || fail1;
-
-    test::sprintf(buffer, "%9.3f", 1e+27);
-    s = "1.000e+27";
-    fail1 = !!strcmp( buffer, s );
-    std::cout << "line " << __LINE__ << "... should-be:'" << s << "'" << " code-said:'" << buffer << "' " << (fail1? "MISMATCH" : "SAME" ) << std::endl;
-    fail = fail || fail1;
-
-    test::sprintf(buffer, "%9.3f", 1e+17);
-    s = "1.000e+17";
-    fail1 = !!strcmp( buffer, s );
-    std::cout << "line " << __LINE__ << "... should-be:'" << s << "'" << " code-said:'" << buffer << "' " << (fail1? "MISMATCH" : "SAME" ) << std::endl;
-    fail = fail || fail1;
-
-    test::sprintf(buffer, "%9.3f", 1e-307);
-    s = "1.000e-307";
-    fail1 = !!strcmp( buffer, s );
-    std::cout << "line " << __LINE__ << "... should-be:'" << s << "'" << " code-said:'" << buffer << "' " << (fail1? "MISMATCH" : "SAME" ) << std::endl;
-    fail = fail || fail1;
-
-    test::sprintf(buffer, "%9.3f", 1e-257);
-    s = "1.000e-257";
-    fail1 = !!strcmp( buffer, s );
-    std::cout << "line " << __LINE__ << "... should-be:'" << s << "'" << " code-said:'" << buffer << "' " << (fail1? "MISMATCH" : "SAME" ) << std::endl;
-    fail = fail || fail1;
-
-    test::sprintf(buffer, "%9.3f", 1e-207);
-    s = "1.000e-207";
-    fail1 = !!strcmp( buffer, s );
-    std::cout << "line " << __LINE__ << "... should-be:'" << s << "'" << " code-said:'" << buffer << "' " << (fail1? "MISMATCH" : "SAME" ) << std::endl;
-    fail = fail || fail1;
-
-    test::sprintf(buffer, "%9.3f", 1e-157);
-    s = "1.000e-157";
-    fail1 = !!strcmp( buffer, s );
-    std::cout << "line " << __LINE__ << "... should-be:'" << s << "'" << " code-said:'" << buffer << "' " << (fail1? "MISMATCH" : "SAME" ) << std::endl;
-    fail = fail || fail1;
-
-    test::sprintf(buffer, "%9.3f", 1e-107);
-    s = "1.000e-107";
-    fail1 = !!strcmp( buffer, s );
-    std::cout << "line " << __LINE__ << "... should-be:'" << s << "'" << " code-said:'" << buffer << "' " << (fail1? "MISMATCH" : "SAME" ) << std::endl;
-    fail = fail || fail1;
-
-    test::sprintf(buffer, "%9.3f", 1e-87);
-    s = "1.000e-87";
-    fail1 = !!strcmp( buffer, s );
-    std::cout << "line " << __LINE__ << "... should-be:'" << s << "'" << " code-said:'" << buffer << "' " << (fail1? "MISMATCH" : "SAME" ) << std::endl;
-    fail = fail || fail1;
-
-    test::sprintf(buffer, "%9.3f", 1e-67);
-    s = "1.000e-67";
-    fail1 = !!strcmp( buffer, s );
-    std::cout << "line " << __LINE__ << "... should-be:'" << s << "'" << " code-said:'" << buffer << "' " << (fail1? "MISMATCH" : "SAME" ) << std::endl;
-    fail = fail || fail1;
-
-    test::sprintf(buffer, "%9.3f", 1e-57);
-    s = "1.000e-57";
-    fail1 = !!strcmp( buffer, s );
-    std::cout << "line " << __LINE__ << "... should-be:'" << s << "'" << " code-said:'" << buffer << "' " << (fail1? "MISMATCH" : "SAME" ) << std::endl;
-    fail = fail || fail1;
-
-    test::sprintf(buffer, "%9.3f", 1e-47);
-    s = "1.000e-47";
-    fail1 = !!strcmp( buffer, s );
-    std::cout << "line " << __LINE__ << "... should-be:'" << s << "'" << " code-said:'" << buffer << "' " << (fail1? "MISMATCH" : "SAME" ) << std::endl;
-    fail = fail || fail1;
-
-    test::sprintf(buffer, "%9.3f", 1e-37);
-    s = "1.000e-37";
-    fail1 = !!strcmp( buffer, s );
-    std::cout << "line " << __LINE__ << "... should-be:'" << s << "'" << " code-said:'" << buffer << "' " << (fail1? "MISMATCH" : "SAME" ) << std::endl;
-    fail = fail || fail1;
-
-    test::sprintf(buffer, "%9.3f", 1e-27);
-    s = "1.000e-27";
-    fail1 = !!strcmp( buffer, s );
-    std::cout << "line " << __LINE__ << "... should-be:'" << s << "'" << " code-said:'" << buffer << "' " << (fail1? "MISMATCH" : "SAME" ) << std::endl;
-    fail = fail || fail1;
-
-    test::sprintf(buffer, "%9.3f", 1e-17);
-    s = "1.000e-17";
-    fail1 = !!strcmp( buffer, s );
-    std::cout << "line " << __LINE__ << "... should-be:'" << s << "'" << " code-said:'" << buffer << "' " << (fail1? "MISMATCH" : "SAME" ) << std::endl;
-    fail = fail || fail1;
-
   }
   REQUIRE(!fail);
 
@@ -435,6 +290,7 @@ TEST_CASE("various high exponents", "[]" ) {
 }
 
 
+#if 0 // all
 TEST_CASE("various to start with", "[]" ) {
   char buffer[100];
   bool fail = false;
