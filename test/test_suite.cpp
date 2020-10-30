@@ -239,9 +239,9 @@ TEST_CASE("float: various special cases, pt 2", "[]" ) {
 #else
     s = "g";
 #endif
-    CHECK( strcmp( buffer, s ) == 0 );
+    CHECK( std::string( buffer ) == s );
     fail1 = false;
-    std::cout << "line " << __LINE__ << "... should-be:'" << s << "'" << " code-said:'" << buffer << "' " << (fail1? "MISMATCH" : "SAME" ) << std::endl;
+    //std::cout << "line " << __LINE__ << "... should-be:'" << s << "'" << " code-said:'" << buffer << "' " << (fail1? "MISMATCH" : "SAME" ) << std::endl;
     fail = fail || fail1;
 
     test::sprintf(buffer, "%0-15.4g", -0.042);
@@ -250,9 +250,9 @@ TEST_CASE("float: various special cases, pt 2", "[]" ) {
 #else
     s = "g";
 #endif
-    CHECK( strcmp( buffer, s ) == 0 );
+    CHECK( std::string( buffer ) == s );
     fail1 = false;
-    std::cout << "line " << __LINE__ << "... should-be:'" << s << "'" << " code-said:'" << buffer << "' " << (fail1? "MISMATCH" : "SAME" ) << std::endl;
+    //std::cout << "line " << __LINE__ << "... should-be:'" << s << "'" << " code-said:'" << buffer << "' " << (fail1? "MISMATCH" : "SAME" ) << std::endl;
     fail = fail || fail1;
   }
   REQUIRE(!fail);
@@ -266,14 +266,13 @@ TEST_CASE("various large exponents", "[]" ) {
   char buffer[100];
   bool fail = false;
   bool fail1 = false;
-  //const char * s = "";
   {
     CaseSpec specs[] = {
       { "%9.3f", 1e+200, "1.000e+200" },
-      { "%9.3f", 1e-200, "1.000e-200" },
+      { "%9.3f", 1e-200, "1.e-200" },
       { "%9.3f", 1e+17, "1.000e+17" },
       { "%9.3f", 1e-17, "1.000e-17" },
-      { "%9.3f", 1e+307, "1.000e+307" },
+      { "%9.3f", 1e+307, "1.e+307" },
       { "%9.3f", 1e+257, "1.000e+257" },
       { "%9.3f", 1e+207, "1.000e+207" },
       { "%9.3f", 1e+157, "1.000e+157" },
@@ -299,12 +298,11 @@ TEST_CASE("various large exponents", "[]" ) {
       { "%9.3f", 1e-17, "1.000e-17" },
     };
 
-    fail = false;
     for( CaseSpec spec : specs ) {
       test::sprintf(buffer, spec.fmt, spec.stimulus);
-      CHECK( strcmp( buffer, spec.shouldBe ) == 0 );
+      CHECK( std::string( buffer ) == spec.shouldBe );
       fail1 = false;
-      std::cout << "line " << __LINE__ << "... should-be:'" << spec.shouldBe << "'" << " code-said:'" << buffer << "' " << (fail1? "MISMATCH" : "SAME" ) << std::endl;
+      //std::cout << "line " << __LINE__ << "... should-be:'" << spec.shouldBe << "'" << " code-said:'" << buffer << "' " << (fail1? "MISMATCH" : "SAME" ) << std::endl;
       fail = fail || fail1;
     }
   }
@@ -318,7 +316,6 @@ TEST_CASE("various to start with", "[]" ) {
   char buffer[100];
   bool fail = false;
   bool fail1 = false;
-  //const char * s = "";
 
 #ifndef PRINTF_DISABLE_SUPPORT_EXPONENTIAL
   {
@@ -338,12 +335,11 @@ TEST_CASE("various to start with", "[]" ) {
       { "%+10.4G", 0.001234, " +0.001234" },
     };
 
-    fail = false;
     for( CaseSpec spec : specs ) {
       test::sprintf(buffer, spec.fmt, spec.stimulus);
-      CHECK( strcmp( buffer, spec.shouldBe ) == 0 );
+      CHECK( std::string( buffer ) == spec.shouldBe );
       fail1 = false;
-      std::cout << "line " << __LINE__ << "... should-be:'" << spec.shouldBe << "'" << " code-said:'" << buffer << "' " << (fail1? "MISMATCH" : "SAME" ) << std::endl;
+      //std::cout << "line " << __LINE__ << "... should-be:'" << spec.shouldBe << "'" << " code-said:'" << buffer << "' " << (fail1? "MISMATCH" : "SAME" ) << std::endl;
       fail = fail || fail1;
     }
   }
@@ -358,7 +354,6 @@ TEST_CASE("float, set 1", "[]" ) {
   char buffer[100];
   bool fail = false;
   bool fail1 = false;
-  //const char * s = "";
 
 #ifndef PRINTF_DISABLE_SUPPORT_EXPONENTIAL
   {
@@ -406,12 +401,11 @@ TEST_CASE("float, set 1", "[]" ) {
       { "a%-5.1fend", 0.5, "a0.5  end" },
     };
 
-    fail = false;
     for( CaseSpec spec : specs ) {
       test::sprintf(buffer, spec.fmt, spec.stimulus);
-      CHECK( strcmp( buffer, spec.shouldBe ) == 0 );
+      CHECK( std::string( buffer ) == spec.shouldBe );
       fail1 = false;
-      std::cout << "line " << __LINE__ << "... should-be:'" << spec.shouldBe << "'" << " code-said:'" << buffer << "' " << (fail1? "MISMATCH" : "SAME" ) << std::endl;
+      //std::cout << "line " << __LINE__ << "... should-be:'" << spec.shouldBe << "'" << " code-said:'" << buffer << "' " << (fail1? "MISMATCH" : "SAME" ) << std::endl;
       fail = fail || fail1;
     }
   }
@@ -424,7 +418,6 @@ TEST_CASE("float, set 2", "[]" ) {
   char buffer[100];
   bool fail = false;
   bool fail1 = false;
-  //const char * s = "";
 
 #ifndef PRINTF_DISABLE_SUPPORT_EXPONENTIAL
   fail = false;
@@ -442,12 +435,11 @@ TEST_CASE("float, set 2", "[]" ) {
       { "%.2G", 0.001234, "0.0012" },
     };
 
-    fail = false;
     for( CaseSpec spec : specs ) {
       test::sprintf(buffer, spec.fmt, spec.stimulus);
-      CHECK( strcmp( buffer, spec.shouldBe ) == 0 );
+      CHECK( std::string( buffer ) == spec.shouldBe );
       fail1 = false;
-      std::cout << "line " << __LINE__ << "... should-be:'" << spec.shouldBe << "'" << " code-said:'" << buffer << "' " << (fail1? "MISMATCH" : "SAME" ) << std::endl;
+      //std::cout << "line " << __LINE__ << "... should-be:'" << spec.shouldBe << "'" << " code-said:'" << buffer << "' " << (fail1? "MISMATCH" : "SAME" ) << std::endl;
       fail = fail || fail1;
     }
   }
@@ -459,7 +451,6 @@ TEST_CASE("float, set 3", "[]" ) {
   char buffer[100];
   bool fail = false;
   bool fail1 = false;
-  //const char * s = "";
 
 #ifndef PRINTF_DISABLE_SUPPORT_EXPONENTIAL
   fail = false;
@@ -471,12 +462,11 @@ TEST_CASE("float, set 3", "[]" ) {
       { "%+10.4G", 0.001234, " +0.001234" },
     };
 
-    fail = false;
     for( CaseSpec spec : specs ) {
       test::sprintf(buffer, spec.fmt, spec.stimulus);
-      CHECK( strcmp( buffer, spec.shouldBe ) == 0 );
+      CHECK( std::string( buffer ) == spec.shouldBe );
       fail1 = false;
-      std::cout << "line " << __LINE__ << "... should-be:'" << spec.shouldBe << "'" << " code-said:'" << buffer << "' " << (fail1? "MISMATCH" : "SAME" ) << std::endl;
+      //std::cout << "line " << __LINE__ << "... should-be:'" << spec.shouldBe << "'" << " code-said:'" << buffer << "' " << (fail1? "MISMATCH" : "SAME" ) << std::endl;
       fail = fail || fail1;
     }
   }
@@ -490,7 +480,6 @@ TEST_CASE("float: %g: precision vs exponent, part 1", "[]" ) {
   char buffer[100];
   bool fail = false;
   bool fail1 = false;
-  //const char * s = "";
 
   fail = false;
   {
@@ -510,12 +499,11 @@ TEST_CASE("float: %g: precision vs exponent, part 1", "[]" ) {
       { "%7.3g", static_cast<double>(8.34e2f), "    834" },
     };
 
-    fail = false;
     for( CaseSpec spec : specs ) {
       test::sprintf(buffer, spec.fmt, spec.stimulus);
-      CHECK( strcmp( buffer, spec.shouldBe ) == 0 );
+      CHECK( std::string( buffer ) == spec.shouldBe );
       fail1 = false;
-      std::cout << "line " << __LINE__ << "... should-be:'" << spec.shouldBe << "'" << " code-said:'" << buffer << "' " << (fail1? "MISMATCH" : "SAME" ) << std::endl;
+      //std::cout << "line " << __LINE__ << "... should-be:'" << spec.shouldBe << "'" << " code-said:'" << buffer << "' " << (fail1? "MISMATCH" : "SAME" ) << std::endl;
       fail = fail || fail1;
     }
   }
@@ -528,7 +516,6 @@ TEST_CASE("float: %g: precision vs exponent, part 2", "[]" ) {
   char buffer[100];
   bool fail = false;
   bool fail1 = false;
-  //const char * s = "";
 
   fail = false;
   {
@@ -544,12 +531,11 @@ TEST_CASE("float: %g: precision vs exponent, part 2", "[]" ) {
       { "%10.7g", static_cast<double>(8.34e-7f), "8.340000e-07" },
     };
 
-    fail = false;
     for( CaseSpec spec : specs ) {
       test::sprintf(buffer, spec.fmt, spec.stimulus);
-      CHECK( strcmp( buffer, spec.shouldBe ) == 0 );
+      CHECK( std::string( buffer ) == spec.shouldBe );
       fail1 = false;
-      std::cout << "line " << __LINE__ << "... should-be:'" << spec.shouldBe << "'" << " code-said:'" << buffer << "' " << (fail1? "MISMATCH" : "SAME" ) << std::endl;
+      //std::cout << "line " << __LINE__ << "... should-be:'" << spec.shouldBe << "'" << " code-said:'" << buffer << "' " << (fail1? "MISMATCH" : "SAME" ) << std::endl;
       fail = fail || fail1;
     }
   }
@@ -562,7 +548,6 @@ TEST_CASE("float: %g: precision vs exponent, part 3", "[]" ) {
   char buffer[100];
   bool fail = false;
   bool fail1 = false;
-  //const char * s = "";
 
   fail = false;
   {
@@ -575,12 +560,11 @@ TEST_CASE("float: %g: precision vs exponent, part 3", "[]" ) {
       { "%7.4g", static_cast<double>(8.34e-3f), "0.008340" },
     };
 
-    fail = false;
     for( CaseSpec spec : specs ) {
       test::sprintf(buffer, spec.fmt, spec.stimulus);
-      CHECK( strcmp( buffer, spec.shouldBe ) == 0 );
+      CHECK( std::string( buffer ) == spec.shouldBe );
       fail1 = false;
-      std::cout << "line " << __LINE__ << "... should-be:'" << spec.shouldBe << "'" << " code-said:'" << buffer << "' " << (fail1? "MISMATCH" : "SAME" ) << std::endl;
+      //std::cout << "line " << __LINE__ << "... should-be:'" << spec.shouldBe << "'" << " code-said:'" << buffer << "' " << (fail1? "MISMATCH" : "SAME" ) << std::endl;
       fail = fail || fail1;
     }
   }
@@ -611,9 +595,9 @@ TEST_CASE("float: %f-to-%e, case 1", "[]" ) {
     test::sprintf(buffer, "%10.3f", static_cast<double>(f));
     sstr << std::setw(10) << f;
     std::string str2 = adjust_sigfigs( sstr.str(), 4, 10 );
-    CHECK( strcmp(buffer, str2.c_str()) == 0 );
+    CHECK( std::string( buffer ) == str2.c_str() );
     fail1 = false;
-    std::cout << "line " << __LINE__ << "... should-be:'" << str2.c_str() << "'" << " code-said:'" << buffer << "' " << (fail1? "MISMATCH" : "SAME" ) << std::endl;
+    //std::cout << "line " << __LINE__ << "... should-be:'" << str2.c_str() << "'" << " code-said:'" << buffer << "' " << (fail1? "MISMATCH" : "SAME" ) << std::endl;
     fail = fail || fail1;
     f *= 10.0f;
   }
@@ -638,9 +622,9 @@ TEST_CASE("float, %f-to-%e, case 2b", "[]" ) {
     sstr.precision(3);
     sstr << std::setw(10) << f;
     std::string str2 = adjust_sigfigs( sstr.str(), 3, 10 );
-    CHECK( strcmp(buffer, str2.c_str()) == 0 );
+    CHECK( std::string( buffer ) == str2.c_str() );
     fail1 = false;
-    std::cout << "line " << __LINE__ << "... should-be:'" << str2.c_str() << "'" << " code-said:'" << buffer << "' " << (fail1? "MISMATCH" : "SAME" ) << std::endl;
+    //std::cout << "line " << __LINE__ << "... should-be:'" << str2.c_str() << "'" << " code-said:'" << buffer << "' " << (fail1? "MISMATCH" : "SAME" ) << std::endl;
     fail = fail || fail1;
   }
   REQUIRE(!fail);
@@ -669,9 +653,9 @@ TEST_CASE("float: %g-to-%e, case 1", "[]" ) {
     test::sprintf(buffer, "%10.2g", static_cast<double>(f));
     sstr << std::setw(10) << f;
     std::string str2 = adjust_sigfigs( sstr.str(), 2, 10 );
-    CHECK( strcmp(buffer, str2.c_str()) == 0 );
+    CHECK( std::string( buffer ) == str2.c_str() );
     fail1 = false;
-    std::cout << "line " << __LINE__ << "... should-be:'" << str2.c_str() << "'" << " code-said:'" << buffer << "' " << (fail1? "MISMATCH" : "SAME" ) << std::endl;
+    //std::cout << "line " << __LINE__ << "... should-be:'" << str2.c_str() << "'" << " code-said:'" << buffer << "' " << (fail1? "MISMATCH" : "SAME" ) << std::endl;
     fail = fail || fail1;
     f *= 10.0f;
   }
@@ -696,9 +680,9 @@ TEST_CASE("float, %g-to-%e, case 2b", "[]" ) {
     sstr.precision(3);
     sstr << std::setw(10) << f;
     std::string str2 = adjust_sigfigs( sstr.str(), 3, 10 );
-    CHECK( strcmp(buffer, str2.c_str()) == 0 );
+    CHECK( std::string( buffer ) == str2.c_str() );
     fail1 = false;
-    std::cout << "line " << __LINE__ << "... should-be:'" << str2.c_str() << "'" << " code-said:'" << buffer << "' " << (fail1? "MISMATCH" : "SAME" ) << std::endl;
+    //std::cout << "line " << __LINE__ << "... should-be:'" << str2.c_str() << "'" << " code-said:'" << buffer << "' " << (fail1? "MISMATCH" : "SAME" ) << std::endl;
     fail = fail || fail1;
   }
   REQUIRE(!fail);
@@ -962,9 +946,9 @@ TEST_CASE("- flag, part 2", "[]" ) {
 #else
     s = "g";
 #endif
-    CHECK( strcmp( buffer, s ) == 0 );
+    CHECK( std::string( buffer ) == s );
     fail1 = false;
-    std::cout << "line " << __LINE__ << "... should-be:'" << s << "'" << " code-said:'" << buffer << "' " << (fail1? "MISMATCH" : "SAME" ) << std::endl;
+    //std::cout << "line " << __LINE__ << "... should-be:'" << s << "'" << " code-said:'" << buffer << "' " << (fail1? "MISMATCH" : "SAME" ) << std::endl;
     fail = fail || fail1;
 
     test::sprintf(buffer, "%0-15.4g", -42.);
@@ -973,9 +957,9 @@ TEST_CASE("- flag, part 2", "[]" ) {
 #else
     s = "g";
 #endif
-    CHECK( strcmp( buffer, s ) == 0 );
+    CHECK( std::string( buffer ) == s );
     fail1 = false;
-    std::cout << "line " << __LINE__ << "... should-be:'" << s << "'" << " code-said:'" << buffer << "' " << (fail1? "MISMATCH" : "SAME" ) << std::endl;
+    //std::cout << "line " << __LINE__ << "... should-be:'" << s << "'" << " code-said:'" << buffer << "' " << (fail1? "MISMATCH" : "SAME" ) << std::endl;
     fail = fail || fail1;
   }
   REQUIRE(!fail);
@@ -1593,25 +1577,24 @@ TEST_CASE("float padding neg numbers, part 2", "[]" ) {
   bool fail1 = false;
   const char * s = "";
 
+#ifndef PRINTF_DISABLE_SUPPORT_EXPONENTIAL
   fail = false;
   {
-#ifndef PRINTF_DISABLE_SUPPORT_EXPONENTIAL
-    test::sprintf(buffer, "% 6.1g", -5.);
-    s = "    -5";
-    CHECK( strcmp( buffer, s ) == 0 );
-    fail1 = false;
-    std::cout << "line " << __LINE__ << "... should-be:'" << s << "'" << " code-said:'" << buffer << "' " << (fail1? "MISMATCH" : "SAME" ) << std::endl;
-    fail = fail || fail1;
+    CaseSpec specs[] = {
+      { "% 6.1g", -5., "    -5" },
+      { "%03.0g", -5., "-05" },
+    };
 
-    test::sprintf(buffer, "%03.0g", -5.);
-    s = "-05";
-    CHECK( strcmp( buffer, s ) == 0 );
-    fail1 = false;
-    std::cout << "line " << __LINE__ << "... should-be:'" << s << "'" << " code-said:'" << buffer << "' " << (fail1? "MISMATCH" : "SAME" ) << std::endl;
-    fail = fail || fail1;
-#endif
+    for( CaseSpec spec : specs ) {
+      test::sprintf(buffer, spec.fmt, spec.stimulus);
+      CHECK( std::string( buffer ) == spec.shouldBe );
+      fail1 = false;
+      //std::cout << "line " << __LINE__ << "... should-be:'" << spec.shouldBe << "'" << " code-said:'" << buffer << "' " << (fail1? "MISMATCH" : "SAME" ) << std::endl;
+      fail = fail || fail1;
+    }
   }
   REQUIRE(!fail);
+#endif
 }
 
 
@@ -1970,27 +1953,19 @@ TEST_CASE("misc, part 2", "[]" ) {
 #ifndef PRINTF_DISABLE_SUPPORT_EXPONENTIAL
   fail = false;
   {
-    test::sprintf(buffer, "%.*f", 2, 0.33333333);
-    s = "0.33";
-    CHECK( strcmp( buffer, s ) == 0 );
-    fail1 = false;
-    std::cout << "line " << __LINE__ << "... should-be:'" << s << "'" << " code-said:'" << buffer << "' " << (fail1? "MISMATCH" : "SAME" ) << std::endl;
-    fail = fail || fail1;
+    CaseSpec specs[] = {
+      { "%.*f", 2, 0.33333333, "0.33" },
+      { "%.*g", 2, 0.33333333, "0.33" },
+      { "%.*e", 2, 0.33333333, "3.33e-01" },
+    };
 
-    test::sprintf(buffer, "%.*g", 2, 0.33333333);
-    s = "0.33";
-    CHECK( strcmp( buffer, s ) == 0 );
-    fail1 = false;
-    std::cout << "line " << __LINE__ << "... should-be:'" << s << "'" << " code-said:'" << buffer << "' " << (fail1? "MISMATCH" : "SAME" ) << std::endl;
-    fail = fail || fail1;
-
-    test::sprintf(buffer, "%.*e", 2, 0.33333333);
-    s = "3.33e-01";
-    CHECK( strcmp( buffer, s ) == 0 );
-    fail1 = false;
-    std::cout << "line " << __LINE__ << "... should-be:'" << s << "'" << " code-said:'" << buffer << "' " << (fail1? "MISMATCH" : "SAME" ) << std::endl;
-    fail = fail || fail1;
-
+    for( CaseSpec spec : specs ) {
+      test::sprintf(buffer, spec.fmt, spec.stimulus);
+      CHECK( std::string( buffer ) == spec.shouldBe );
+      fail1 = false;
+      //std::cout << "line " << __LINE__ << "... should-be:'" << spec.shouldBe << "'" << " code-said:'" << buffer << "' " << (fail1? "MISMATCH" : "SAME" ) << std::endl;
+      fail = fail || fail1;
+    }
   }
   REQUIRE(!fail);
 #endif
