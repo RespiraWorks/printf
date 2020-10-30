@@ -269,10 +269,10 @@ TEST_CASE("various large exponents", "[]" ) {
   {
     CaseSpec specs[] = {
       { "%9.3f", 1e+200, "1.000e+200" },
-      { "%9.3f", 1e-200, "1.e-200" },
+      { "%9.3f", 1e-200, "1.000e-200" },
       { "%9.3f", 1e+17, "1.000e+17" },
       { "%9.3f", 1e-17, "1.000e-17" },
-      { "%9.3f", 1e+307, "1.e+307" },
+      { "%9.3f", 1e+307, "1.000e+307" },
       { "%9.3f", 1e+257, "1.000e+257" },
       { "%9.3f", 1e+207, "1.000e+207" },
       { "%9.3f", 1e+157, "1.000e+157" },
@@ -1575,7 +1575,6 @@ TEST_CASE("float padding neg numbers, part 2", "[]" ) {
   char buffer[100];
   bool fail = false;
   bool fail1 = false;
-  const char * s = "";
 
 #ifndef PRINTF_DISABLE_SUPPORT_EXPONENTIAL
   fail = false;
@@ -1944,26 +1943,30 @@ TEST_CASE("misc, part 1", "[]" ) {
 }
 
 
+using CaseSpec2 = struct { const char *fmt; int parm; double stimulus; const char *shouldBe; };
+
 TEST_CASE("misc, part 2", "[]" ) {
   char buffer[100];
   bool fail = false;
   bool fail1 = false;
-  const char * s = "";
 
 #ifndef PRINTF_DISABLE_SUPPORT_EXPONENTIAL
   fail = false;
   {
-    CaseSpec specs[] = {
+    CaseSpec2 specs[] = {
       { "%.*f", 2, 0.33333333, "0.33" },
       { "%.*g", 2, 0.33333333, "0.33" },
       { "%.*e", 2, 0.33333333, "3.33e-01" },
     };
 
-    for( CaseSpec spec : specs ) {
-      test::sprintf(buffer, spec.fmt, spec.stimulus);
-      CHECK( std::string( buffer ) == spec.shouldBe );
-      fail1 = false;
-      //std::cout << "line " << __LINE__ << "... should-be:'" << spec.shouldBe << "'" << " code-said:'" << buffer << "' " << (fail1? "MISMATCH" : "SAME" ) << std::endl;
+    for( CaseSpec2 spec : specs ) {
+      test::sprintf(buffer, spec.fmt, spec.parm, spec.stimulus);
+      // Perhaps use this model, setting fail1 first, on all CHECKs.  Otherwise, fail1 doesn't ever tell us whether the check failed.
+      fail1 = !( std::string( buffer ) == spec.shouldBe );
+      CHECK( !fail1 );
+      if( fail1 ) {
+        std::cout << "line " << __LINE__ << "... should-be:'" << spec.shouldBe << "'" << " code-said:'" << buffer << "' " << (fail1? "MISMATCH" : "SAME" ) << std::endl;
+      }
       fail = fail || fail1;
     }
   }
