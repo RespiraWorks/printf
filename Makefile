@@ -228,13 +228,21 @@ version:
 # run lint-like checkers
 # ------------------------------------------------------------------------------
 .PHONY: checks
-checks : cppcheck tidy
+checks : cppcheck tidy run
 
 .PHONY: cppcheck
 cppcheck : printf.cppcheck.out
 
 .PHONY: tidy
 tidy : test/test_suite.tidy.out
+
+.PHONY: run
+run : $(TRG)
+	$(TRG) -r compact
+
+.PHONY: run_verbose
+run_verbose : $(TRG)
+	$(TRG) -r compact -s
 
 %.cppcheck.out: %.cpp
 	cppcheck --enable=warning,style --inline-suppr $< > $@ 2>&1

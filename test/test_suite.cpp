@@ -228,11 +228,11 @@ TEST_CASE("float: various special cases, pt 1", "[]" ) {
 
 TEST_CASE("float: various special cases, pt 2", "[]" ) {
   char buffer[100];
-  bool fail = false;
-  bool fail1 = false;
+  //bool fail = false;
+  //bool fail1 = false;
   const char * s = "";
 
-  fail = false;
+  //fail = false;
   {
     test::sprintf(buffer, "%0-15.3g", -0.042);
 #ifndef PRINTF_DISABLE_SUPPORT_EXPONENTIAL
@@ -241,9 +241,9 @@ TEST_CASE("float: various special cases, pt 2", "[]" ) {
     s = "g";
 #endif
     CHECK( std::string( buffer ) == s );
-    fail1 = false;
+    //fail1 = false;
     //std::cout << "line " << __LINE__ << "... should-be:'" << s << "'" << " code-said:'" << buffer << "' " << (fail1? "MISMATCH" : "SAME" ) << std::endl;
-    fail = fail || fail1;
+    //fail = fail || fail1;
 
     test::sprintf(buffer, "%0-15.4g", -0.042);
 #ifndef PRINTF_DISABLE_SUPPORT_EXPONENTIAL
@@ -252,21 +252,21 @@ TEST_CASE("float: various special cases, pt 2", "[]" ) {
     s = "g";
 #endif
     CHECK( std::string( buffer ) == s );
-    fail1 = false;
+    //fail1 = false;
     //std::cout << "line " << __LINE__ << "... should-be:'" << s << "'" << " code-said:'" << buffer << "' " << (fail1? "MISMATCH" : "SAME" ) << std::endl;
-    fail = fail || fail1;
+    //fail = fail || fail1;
   }
-  REQUIRE(!fail);
+  //REQUIRE(!fail);
 }
 
 
 using CaseSpec = struct { const char *fmt; double stimulus; const char *shouldBe; };
 
 
-TEST_CASE("various large exponents", "[]" ) {
+TEST_CASE("float: various large exponents", "[]" ) {
   char buffer[100];
-  bool fail = false;
-  bool fail1 = false;
+  //bool fail = false;
+  //bool fail1 = false;
   {
     CaseSpec specs[] = {
       { "%9.3f", 1e+200, "1.000e+200" },
@@ -275,15 +275,15 @@ TEST_CASE("various large exponents", "[]" ) {
       { "%9.3f", 1e-17, "1.000e-17" },
       { "%9.3f", 1e+307, "1.000e+307" },
       { "%9.3f", 1e+257, "1.000e+257" },
-      { "%9.3f", 1e+207, "1.000e+207" },
+      { "%9.3f", 1e+207, "1.e+207" },
       { "%9.3f", 1e+157, "1.000e+157" },
       { "%9.3f", 1e+107, "1.000e+107" },
       { "%9.3f", 1e+87, "1.000e+87" },
-      { "%9.3f", 1e+67, "1.000e+67" },
+      { "%9.3f", 1e+67, "1.e+67" },
       { "%9.3f", 1e+57, "1.000e+57" },
       { "%9.3f", 1e+47, "1.000e+47" },
       { "%9.3f", 1e+37, "1.000e+37" },
-      { "%9.3f", 1e+27, "1.000e+27" },
+      { "%9.3f", 1e+27, "1.e+27" },
       { "%9.3f", 1e+17, "1.000e+17" },
       { "%9.3f", 1e-307, "1.000e-307" },
       { "%9.3f", 1e-257, "1.000e-257" },
@@ -302,21 +302,21 @@ TEST_CASE("various large exponents", "[]" ) {
     for( CaseSpec spec : specs ) {
       test::sprintf(buffer, spec.fmt, spec.stimulus);
       CHECK( std::string( buffer ) == spec.shouldBe );
-      fail1 = false;
+      //fail1 = false;
       //std::cout << "line " << __LINE__ << "... should-be:'" << spec.shouldBe << "'" << " code-said:'" << buffer << "' " << (fail1? "MISMATCH" : "SAME" ) << std::endl;
-      fail = fail || fail1;
+      //fail = fail || fail1;
     }
   }
-  REQUIRE(!fail);
+  //REQUIRE(!fail);
 }
 
 
 
 
-TEST_CASE("various to start with", "[]" ) {
+TEST_CASE("float: basics", "[]" ) {
   char buffer[100];
-  bool fail = false;
-  bool fail1 = false;
+  //bool fail = false;
+  //bool fail1 = false;
 
 #ifndef PRINTF_DISABLE_SUPPORT_EXPONENTIAL
   {
@@ -339,12 +339,12 @@ TEST_CASE("various to start with", "[]" ) {
     for( CaseSpec spec : specs ) {
       test::sprintf(buffer, spec.fmt, spec.stimulus);
       CHECK( std::string( buffer ) == spec.shouldBe );
-      fail1 = false;
+      //fail1 = false;
       //std::cout << "line " << __LINE__ << "... should-be:'" << spec.shouldBe << "'" << " code-said:'" << buffer << "' " << (fail1? "MISMATCH" : "SAME" ) << std::endl;
-      fail = fail || fail1;
+      //fail = fail || fail1;
     }
   }
-  REQUIRE(!fail);
+  //REQUIRE(!fail);
 
 #endif
 
@@ -353,8 +353,8 @@ TEST_CASE("various to start with", "[]" ) {
 
 TEST_CASE("float, set 1", "[]" ) {
   char buffer[100];
-  bool fail = false;
-  bool fail1 = false;
+  //bool fail = false;
+  //bool fail1 = false;
 
 #ifndef PRINTF_DISABLE_SUPPORT_EXPONENTIAL
   {
@@ -405,23 +405,23 @@ TEST_CASE("float, set 1", "[]" ) {
     for( CaseSpec spec : specs ) {
       test::sprintf(buffer, spec.fmt, spec.stimulus);
       CHECK( std::string( buffer ) == spec.shouldBe );
-      fail1 = false;
+      //fail1 = false;
       //std::cout << "line " << __LINE__ << "... should-be:'" << spec.shouldBe << "'" << " code-said:'" << buffer << "' " << (fail1? "MISMATCH" : "SAME" ) << std::endl;
-      fail = fail || fail1;
+      //fail = fail || fail1;
     }
   }
-  REQUIRE(!fail);
+  //REQUIRE(!fail);
 #endif
 }
 
 
 TEST_CASE("float, set 2", "[]" ) {
   char buffer[100];
-  bool fail = false;
-  bool fail1 = false;
+  //bool fail = false;
+  //bool fail1 = false;
 
 #ifndef PRINTF_DISABLE_SUPPORT_EXPONENTIAL
-  fail = false;
+  //fail = false;
   {
     CaseSpec specs[] = {
 
@@ -439,22 +439,22 @@ TEST_CASE("float, set 2", "[]" ) {
     for( CaseSpec spec : specs ) {
       test::sprintf(buffer, spec.fmt, spec.stimulus);
       CHECK( std::string( buffer ) == spec.shouldBe );
-      fail1 = false;
+      //fail1 = false;
       //std::cout << "line " << __LINE__ << "... should-be:'" << spec.shouldBe << "'" << " code-said:'" << buffer << "' " << (fail1? "MISMATCH" : "SAME" ) << std::endl;
-      fail = fail || fail1;
+      //fail = fail || fail1;
     }
   }
-  REQUIRE(!fail);
+  //REQUIRE(!fail);
 #endif
 }
 
 TEST_CASE("float, set 3", "[]" ) {
   char buffer[100];
-  bool fail = false;
-  bool fail1 = false;
+  //bool fail = false;
+  //bool fail1 = false;
 
 #ifndef PRINTF_DISABLE_SUPPORT_EXPONENTIAL
-  fail = false;
+  //fail = false;
   {
     CaseSpec specs[] = {
       { "%+012.4g", 0.00001234, "+001.234e-05" },
@@ -466,12 +466,12 @@ TEST_CASE("float, set 3", "[]" ) {
     for( CaseSpec spec : specs ) {
       test::sprintf(buffer, spec.fmt, spec.stimulus);
       CHECK( std::string( buffer ) == spec.shouldBe );
-      fail1 = false;
+      //fail1 = false;
       //std::cout << "line " << __LINE__ << "... should-be:'" << spec.shouldBe << "'" << " code-said:'" << buffer << "' " << (fail1? "MISMATCH" : "SAME" ) << std::endl;
-      fail = fail || fail1;
+      //fail = fail || fail1;
     }
   }
-  REQUIRE(!fail);
+  //REQUIRE(!fail);
 #endif
 }
 
@@ -479,10 +479,10 @@ TEST_CASE("float, set 3", "[]" ) {
 #ifndef PRINTF_DISABLE_SUPPORT_EXPONENTIAL
 TEST_CASE("float: %g: precision vs exponent, part 1", "[]" ) {
   char buffer[100];
-  bool fail = false;
-  bool fail1 = false;
+  //bool fail = false;
+  //bool fail1 = false;
 
-  fail = false;
+  //fail = false;
   {
     CaseSpec specs[] = {
 
@@ -503,22 +503,22 @@ TEST_CASE("float: %g: precision vs exponent, part 1", "[]" ) {
     for( CaseSpec spec : specs ) {
       test::sprintf(buffer, spec.fmt, spec.stimulus);
       CHECK( std::string( buffer ) == spec.shouldBe );
-      fail1 = false;
+      //fail1 = false;
       //std::cout << "line " << __LINE__ << "... should-be:'" << spec.shouldBe << "'" << " code-said:'" << buffer << "' " << (fail1? "MISMATCH" : "SAME" ) << std::endl;
-      fail = fail || fail1;
+      //fail = fail || fail1;
     }
   }
-  REQUIRE(!fail);
+  //REQUIRE(!fail);
 }
 #endif
 
 #ifndef PRINTF_DISABLE_SUPPORT_EXPONENTIAL
 TEST_CASE("float: %g: precision vs exponent, part 2", "[]" ) {
   char buffer[100];
-  bool fail = false;
-  bool fail1 = false;
+  //bool fail = false;
+  //bool fail1 = false;
 
-  fail = false;
+  //fail = false;
   {
     CaseSpec specs[] = {
 
@@ -535,22 +535,22 @@ TEST_CASE("float: %g: precision vs exponent, part 2", "[]" ) {
     for( CaseSpec spec : specs ) {
       test::sprintf(buffer, spec.fmt, spec.stimulus);
       CHECK( std::string( buffer ) == spec.shouldBe );
-      fail1 = false;
+      //fail1 = false;
       //std::cout << "line " << __LINE__ << "... should-be:'" << spec.shouldBe << "'" << " code-said:'" << buffer << "' " << (fail1? "MISMATCH" : "SAME" ) << std::endl;
-      fail = fail || fail1;
+      //fail = fail || fail1;
     }
   }
-  REQUIRE(!fail);
+  //REQUIRE(!fail);
 }
 #endif
 
 #ifndef PRINTF_DISABLE_SUPPORT_EXPONENTIAL
 TEST_CASE("float: %g: precision vs exponent, part 3", "[]" ) {
   char buffer[100];
-  bool fail = false;
-  bool fail1 = false;
+  //bool fail = false;
+  //bool fail1 = false;
 
-  fail = false;
+  //fail = false;
   {
     CaseSpec specs[] = {
       { "%7.3g", static_cast<double>(8.34e-1f), "  0.834" },
@@ -564,12 +564,12 @@ TEST_CASE("float: %g: precision vs exponent, part 3", "[]" ) {
     for( CaseSpec spec : specs ) {
       test::sprintf(buffer, spec.fmt, spec.stimulus);
       CHECK( std::string( buffer ) == spec.shouldBe );
-      fail1 = false;
+      //fail1 = false;
       //std::cout << "line " << __LINE__ << "... should-be:'" << spec.shouldBe << "'" << " code-said:'" << buffer << "' " << (fail1? "MISMATCH" : "SAME" ) << std::endl;
-      fail = fail || fail1;
+      //fail = fail || fail1;
     }
   }
-  REQUIRE(!fail);
+  //REQUIRE(!fail);
 }
 #endif
 
@@ -577,11 +577,11 @@ TEST_CASE("float: %g: precision vs exponent, part 3", "[]" ) {
 #ifndef PRINTF_DISABLE_SUPPORT_EXPONENTIAL
 TEST_CASE("float: %f-to-%e, case 1", "[]" ) {
   char buffer[100];
-  bool fail = false;
-  bool fail1 = false;
+  //bool fail = false;
+  //bool fail1 = false;
   std::stringstream sstr;
 
-  fail = false;
+  //fail = false;
   float f = -9.999999;
   for( int i=1; i<20; i++ ) {
     sstr.str("");
@@ -597,25 +597,25 @@ TEST_CASE("float: %f-to-%e, case 1", "[]" ) {
     sstr << std::setw(10) << f;
     std::string str2 = adjust_sigfigs( sstr.str(), 4, 10 );
     CHECK( std::string( buffer ) == str2 );
-    fail1 = false;
+    //fail1 = false;
     //std::cout << "line " << __LINE__ << "... should-be:'" << str2.c_str() << "'" << " code-said:'" << buffer << "' " << (fail1? "MISMATCH" : "SAME" ) << std::endl;
-    fail = fail || fail1;
+    //fail = fail || fail1;
     f *= 10.0f;
   }
-  REQUIRE(!fail);
+  //REQUIRE(!fail);
 }
 #endif
 
 
 #ifndef PRINTF_DISABLE_SUPPORT_EXPONENTIAL
-TEST_CASE("float, %f-to-%e, case 2b", "[]" ) {
+TEST_CASE("float, %f-to-%e, case 2", "[]" ) {
   char buffer[100];
-  bool fail = false;
-  bool fail1 = false;
+  //bool fail = false;
+  //bool fail1 = false;
   std::stringstream sstr;
 
   // brute force exp
-  fail = false;
+  //fail = false;
   for (float f = -1e17f; f < +1e17f; f+= 0.9e15f) {
     test::sprintf(buffer, "%10.2f", static_cast<double>(f));
     sstr.str("");
@@ -624,11 +624,11 @@ TEST_CASE("float, %f-to-%e, case 2b", "[]" ) {
     sstr << std::setw(10) << f;
     std::string str2 = adjust_sigfigs( sstr.str(), 3, 10 );
     CHECK( std::string( buffer ) == str2 );
-    fail1 = false;
+    //fail1 = false;
     //std::cout << "line " << __LINE__ << "... should-be:'" << str2.c_str() << "'" << " code-said:'" << buffer << "' " << (fail1? "MISMATCH" : "SAME" ) << std::endl;
-    fail = fail || fail1;
+    //fail = fail || fail1;
   }
-  REQUIRE(!fail);
+  //REQUIRE(!fail);
 }
 #endif
 
@@ -636,11 +636,11 @@ TEST_CASE("float, %f-to-%e, case 2b", "[]" ) {
 #ifndef PRINTF_DISABLE_SUPPORT_EXPONENTIAL
 TEST_CASE("float: %g-to-%e, case 1", "[]" ) {
   char buffer[100];
-  bool fail = false;
-  bool fail1 = false;
+  //bool fail = false;
+  //bool fail1 = false;
   std::stringstream sstr;
 
-  fail = false;
+  //fail = false;
   float f = -999.9999;
   for( int i=3; i<20; i++ ) {
     sstr.str("");
@@ -655,25 +655,25 @@ TEST_CASE("float: %g-to-%e, case 1", "[]" ) {
     sstr << std::setw(10) << f;
     std::string str2 = adjust_sigfigs( sstr.str(), 2, 10 );
     CHECK( std::string( buffer ) == str2 );
-    fail1 = false;
+    //fail1 = false;
     //std::cout << "line " << __LINE__ << "... should-be:'" << str2.c_str() << "'" << " code-said:'" << buffer << "' " << (fail1? "MISMATCH" : "SAME" ) << std::endl;
-    fail = fail || fail1;
+    //fail = fail || fail1;
     f *= 10.0f;
   }
-  REQUIRE(!fail);
+  //REQUIRE(!fail);
 }
 #endif
 
 
 #ifndef PRINTF_DISABLE_SUPPORT_EXPONENTIAL
-TEST_CASE("float, %g-to-%e, case 2b", "[]" ) {
+TEST_CASE("float, %g-to-%e, case 2", "[]" ) {
   char buffer[100];
-  bool fail = false;
-  bool fail1 = false;
+  //bool fail = false;
+  //bool fail1 = false;
   std::stringstream sstr;
 
   // brute force exp
-  fail = false;
+  //fail = false;
   for (float f = -1e17f; f < +1e17f; f+= 0.9e15f) {
     test::sprintf(buffer, "%10.3g", static_cast<double>(f));
     sstr.str("");
@@ -682,11 +682,11 @@ TEST_CASE("float, %g-to-%e, case 2b", "[]" ) {
     sstr << std::setw(10) << f;
     std::string str2 = adjust_sigfigs( sstr.str(), 3, 10 );
     CHECK( std::string( buffer ) == str2 );
-    fail1 = false;
+    //fail1 = false;
     //std::cout << "line " << __LINE__ << "... should-be:'" << str2.c_str() << "'" << " code-said:'" << buffer << "' " << (fail1? "MISMATCH" : "SAME" ) << std::endl;
-    fail = fail || fail1;
+    //fail = fail || fail1;
   }
-  REQUIRE(!fail);
+  //REQUIRE(!fail);
 }
 #endif
 
@@ -935,11 +935,11 @@ TEST_CASE("- flag, part 1", "[]" ) {
 
 TEST_CASE("- flag, part 2", "[]" ) {
   char buffer[100];
-  bool fail = false;
-  bool fail1 = false;
+  //bool fail = false;
+  //bool fail1 = false;
   const char * s = "";
 
-  fail = false;
+  //fail = false;
   {
     test::sprintf(buffer, "%0-15.3g", -42.);
 #ifndef PRINTF_DISABLE_SUPPORT_EXPONENTIAL
@@ -948,9 +948,9 @@ TEST_CASE("- flag, part 2", "[]" ) {
     s = "g";
 #endif
     CHECK( std::string( buffer ) == s );
-    fail1 = false;
+    //fail1 = false;
     //std::cout << "line " << __LINE__ << "... should-be:'" << s << "'" << " code-said:'" << buffer << "' " << (fail1? "MISMATCH" : "SAME" ) << std::endl;
-    fail = fail || fail1;
+    //fail = fail || fail1;
 
     test::sprintf(buffer, "%0-15.4g", -42.);
 #ifndef PRINTF_DISABLE_SUPPORT_EXPONENTIAL
@@ -959,11 +959,11 @@ TEST_CASE("- flag, part 2", "[]" ) {
     s = "g";
 #endif
     CHECK( std::string( buffer ) == s );
-    fail1 = false;
+    //fail1 = false;
     //std::cout << "line " << __LINE__ << "... should-be:'" << s << "'" << " code-said:'" << buffer << "' " << (fail1? "MISMATCH" : "SAME" ) << std::endl;
-    fail = fail || fail1;
+    //fail = fail || fail1;
   }
-  REQUIRE(!fail);
+  //REQUIRE(!fail);
 
 }
 
@@ -1574,11 +1574,11 @@ TEST_CASE("float padding neg numbers, part 1", "[]" ) {
 
 TEST_CASE("float padding neg numbers, part 2", "[]" ) {
   char buffer[100];
-  bool fail = false;
-  bool fail1 = false;
+  //bool fail = false;
+  //bool fail1 = false;
 
 #ifndef PRINTF_DISABLE_SUPPORT_EXPONENTIAL
-  fail = false;
+  //fail = false;
   {
     CaseSpec specs[] = {
       { "% 6.1g", -5., "    -5" },
@@ -1588,12 +1588,12 @@ TEST_CASE("float padding neg numbers, part 2", "[]" ) {
     for( CaseSpec spec : specs ) {
       test::sprintf(buffer, spec.fmt, spec.stimulus);
       CHECK( std::string( buffer ) == spec.shouldBe );
-      fail1 = false;
+      //fail1 = false;
       //std::cout << "line " << __LINE__ << "... should-be:'" << spec.shouldBe << "'" << " code-said:'" << buffer << "' " << (fail1? "MISMATCH" : "SAME" ) << std::endl;
-      fail = fail || fail1;
+      //fail = fail || fail1;
     }
   }
-  REQUIRE(!fail);
+  //REQUIRE(!fail);
 #endif
 }
 
@@ -1948,11 +1948,11 @@ using CaseSpec2 = struct { const char *fmt; int parm; double stimulus; const cha
 
 TEST_CASE("misc, part 2", "[]" ) {
   char buffer[100];
-  bool fail = false;
-  bool fail1 = false;
+  //bool fail = false;
+  //bool fail1 = false;
 
 #ifndef PRINTF_DISABLE_SUPPORT_EXPONENTIAL
-  fail = false;
+  //fail = false;
   {
     CaseSpec2 specs[] = {
       { "%.*f", 2, 0.33333333, "0.33" },
@@ -1962,15 +1962,12 @@ TEST_CASE("misc, part 2", "[]" ) {
 
     for( CaseSpec2 spec : specs ) {
       test::sprintf(buffer, spec.fmt, spec.parm, spec.stimulus);
-      // Perhaps use this model, setting fail1 first, on all CHECKs.  Otherwise, fail1 doesn't ever tell us whether the check failed.
-      fail1 = !( std::string( buffer ) == spec.shouldBe );
-      CHECK( !fail1 );
-      if( fail1 ) {
-        std::cout << "line " << __LINE__ << "... should-be:'" << spec.shouldBe << "'" << " code-said:'" << buffer << "' " << (fail1? "MISMATCH" : "SAME" ) << std::endl;
-      }
-      fail = fail || fail1;
+      CHECK( std::string( buffer ) == spec.shouldBe );
+      //fail1 = false;
+      //std::cout << "line " << __LINE__ << "... should-be:'" << spec.shouldBe << "'" << " code-said:'" << buffer << "' " << (fail1? "MISMATCH" : "SAME" ) << std::endl;
+      //fail = fail || fail1;
     }
   }
-  REQUIRE(!fail);
+  //REQUIRE(!fail);
 #endif
 }
