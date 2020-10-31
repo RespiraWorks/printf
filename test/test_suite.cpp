@@ -40,6 +40,7 @@ static constexpr double nan_double = std::numeric_limits<double>::quiet_NaN();
 static constexpr float nan_float = std::numeric_limits<float>::quiet_NaN();
 
 
+
 namespace test {
 
   // dummy putchar
@@ -595,7 +596,7 @@ TEST_CASE("float: %f-to-%e, case 1", "[]" ) {
     test::sprintf(buffer, "%10.3f", static_cast<double>(f));
     sstr << std::setw(10) << f;
     std::string str2 = adjust_sigfigs( sstr.str(), 4, 10 );
-    CHECK( std::string( buffer ) == str2.c_str() );
+    CHECK( std::string( buffer ) == str2 );
     fail1 = false;
     //std::cout << "line " << __LINE__ << "... should-be:'" << str2.c_str() << "'" << " code-said:'" << buffer << "' " << (fail1? "MISMATCH" : "SAME" ) << std::endl;
     fail = fail || fail1;
@@ -622,7 +623,7 @@ TEST_CASE("float, %f-to-%e, case 2b", "[]" ) {
     sstr.precision(3);
     sstr << std::setw(10) << f;
     std::string str2 = adjust_sigfigs( sstr.str(), 3, 10 );
-    CHECK( std::string( buffer ) == str2.c_str() );
+    CHECK( std::string( buffer ) == str2 );
     fail1 = false;
     //std::cout << "line " << __LINE__ << "... should-be:'" << str2.c_str() << "'" << " code-said:'" << buffer << "' " << (fail1? "MISMATCH" : "SAME" ) << std::endl;
     fail = fail || fail1;
@@ -653,7 +654,7 @@ TEST_CASE("float: %g-to-%e, case 1", "[]" ) {
     test::sprintf(buffer, "%10.2g", static_cast<double>(f));
     sstr << std::setw(10) << f;
     std::string str2 = adjust_sigfigs( sstr.str(), 2, 10 );
-    CHECK( std::string( buffer ) == str2.c_str() );
+    CHECK( std::string( buffer ) == str2 );
     fail1 = false;
     //std::cout << "line " << __LINE__ << "... should-be:'" << str2.c_str() << "'" << " code-said:'" << buffer << "' " << (fail1? "MISMATCH" : "SAME" ) << std::endl;
     fail = fail || fail1;
@@ -680,7 +681,7 @@ TEST_CASE("float, %g-to-%e, case 2b", "[]" ) {
     sstr.precision(3);
     sstr << std::setw(10) << f;
     std::string str2 = adjust_sigfigs( sstr.str(), 3, 10 );
-    CHECK( std::string( buffer ) == str2.c_str() );
+    CHECK( std::string( buffer ) == str2 );
     fail1 = false;
     //std::cout << "line " << __LINE__ << "... should-be:'" << str2.c_str() << "'" << " code-said:'" << buffer << "' " << (fail1? "MISMATCH" : "SAME" ) << std::endl;
     fail = fail || fail1;

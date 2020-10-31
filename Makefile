@@ -168,7 +168,7 @@ LFLAGS        = $(GCCFLAGS)                       \
 # Main-Dependencies (app: all)
 # ------------------------------------------------------------------------------
 .PHONY: all
-all: clean_prj $(TRG) $(TRG)_nm.txt
+all: clean_prj $(TRG) $(TRG)_nm.txt support checks cov_app
 
 
 # ------------------------------------------------------------------------------
@@ -225,57 +225,115 @@ version:
 # ------------------------------------------------------------------------------
 
 # ------------------------------------------------------------------------------
-# Link/locate application
+# run lint-like checkers
 # ------------------------------------------------------------------------------
-$(TRG) : $(FILES_O)
-	@-$(ECHO) +++ linkink application to generate: $(TRG)
-	@-$(CL) $(LFLAGS) -L. -lc $(PATH_OBJ)/*.o -Wl,-Map,$(TRG).map -o $(TRG)
-  # profiling
-	@-$(CL) $(LFLAGS) -L. -lc $(PATH_COV)/*.o --coverage -o $(PATH_COV)/$(APP)
+.PHONY: checks
+checks : cppcheck tidy
 
+.PHONY: cppcheck
+cppcheck : printf.cppcheck.out
+
+.PHONY: tidy
+tidy : test/test_suite.tidy.out
+
+%.cppcheck.out: %.cpp
+	cppcheck --enable=warning,style --inline-suppr $< > $@ 2>&1
+
+test/%.tidy.out: test/%.cpp
+	clang-tidy $< > $@ 2>&1
 
 # ------------------------------------------------------------------------------
 # parse the object files to obtain symbol information, and create a size summary
 # ------------------------------------------------------------------------------
 $(TRG)_nm.txt : $(TRG)
 	@-$(ECHO) +++ parsing symbols with nm to generate: $(TRG)_nm.txt
-	@-$(NM) --numeric-sort --print-size $(TRG) > $(TRG)_nm.txt
+	$(NM) --numeric-sort --print-size $(TRG) > $(TRG)_nm.txt
 	@-$(ECHO) +++ demangling symbols with c++filt to generate: $(TRG)_cppfilt.txt
-	@-$(NM) --numeric-sort --print-size $(TRG) | $(CPPFILT) > $(TRG)_cppfilt.txt
+	$(NM) --numeric-sort --print-size $(TRG) | $(CPPFILT) > $(TRG)_cppfilt.txt
 	@-$(ECHO) +++ creating size summary table with size to generate: $(TRG)_size.txt
-	@-$(SIZE) -A -t $(TRG) > $(TRG)_size.txt
+	$(SIZE) -A -t $(TRG) > $(TRG)_size.txt
 
+# ------------------------------------------------------------------------------
+# compiling/assembling/linking/locating:  normal executable target
+# ------------------------------------------------------------------------------
+.PHONY: bin_app
+bin_app : $(TRG)
 
-%.cppcheck.out: %.cpp
-	cppcheck --enable=warning,style --inline-suppr $< > $@ 2>&1
+.PHONY: support
+support: obj_d obj_lst pre_pre
 
-%.tidy.out: %.cpp
-	clang-tidy $< > $@ 2>&1
+.PHONY: obj_o
+obj_o : $(PATH_OBJ)/*.o
 
-%.o : %.cpp
-	@$(ECHO) +++ compile: $<
-  # Compile the source file
-  # ...and Reformat (using sed) any possible error/warning messages for the VisualStudio(R) output window
-  # ...and Create an assembly listing using objdump
-  # ...and Generate a dependency file (using the -MM flag)
+.PHONY: obj_d
+obj_d : $(PATH_OBJ)/*.d
+
+.PHONY: obj_lst
+obj_lst : $(PATH_OBJ)/*.lst
+
+.PHONY: pre_pre
+pre_pre : $(PATH_PRE)/*.pre
+
+$(TRG) : $(PATH_OBJ)/*.o
+	@-$(ECHO) +++ linkink application to generate: $(TRG)
+	$(CL) $(LFLAGS) -L. -lc $(PATH_OBJ)/*.o -Wl,-Map,$(TRG).map -o $(TRG)
+
+$(PATH_OBJ)/%.o : test/%.cpp
+	$(CL) $(CPPFLAGS) $< -c -o $(PATH_OBJ)/$(basename $(@F)).o 2> $(PATH_ERR)/$(basename $(@F)).err
+	$(SED) -e 's|.h:\([0-9]*\),|.h(\1) :|' -e 's|:\([0-9]*\):|(\1) :|' $(PATH_ERR)/$(basename $(@F)).err
+
+$(PATH_PRE)/%.pre : test/%.cpp
+	$(CL) $(CPPFLAGS) $< -E -o $(PATH_PRE)/$(basename $(@F)).pre
+
+$(PATH_OBJ)/%.d : test/%.cpp
+	$(CL) $(CPPFLAGS) $< -MM > $(PATH_OBJ)/$(basename $(@F)).d
+
+$(PATH_OBJ)/%.lst : $(PATH_OBJ)/%.o
+	$(OBJDUMP) --disassemble --line-numbers -S $(PATH_OBJ)/$(basename $(@F)).o > $(PATH_LST)/$(basename $(@F)).lst
+
+# ------------------------------------------------------------------------------
+# compiling/assembling/linking/locating:  profiling target
+# ------------------------------------------------------------------------------
+.PHONY: cov_app
+cov_app : $(PATH_COV)/$(APP)
+
+.PHONY: cov_o
+cov_o : $(PATH_COV)/*.o
+
+$(PATH_COV)/$(APP) : $(PATH_COV)/*.o
+	@-$(ECHO) +++ linkink application to generate: $(PATH_COV)/$(APP)
+	$(CL) $(LFLAGS) -L. -lc $(PATH_COV)/*.o --coverage -o $(PATH_COV)/$(APP)
+
+$(PATH_COV)/%.o : test/%.cpp
+	$(CL) $(CPPFLAGS) -O0 --coverage $< -c -o $(PATH_COV)/$(basename $(@F)).o 2> $(PATH_ERR)/$(basename $(@F)).coverr
+
+# ------------------------------------------------------------------------------
+# compiling/assembling:  simplify these.
+# ------------------------------------------------------------------------------
+#%.o : %.cpp
+#	@$(ECHO) +++ compile: $<
+#  # Compile the source file
+#  # ...and Reformat (using sed) any possible error/warning messages for the VisualStudio(R) output window
+#  # ...and Create an assembly listing using objdump
+#  # ...and Generate a dependency file (using the -MM flag)
 #	$(CL) $(CPPFLAGS) $< -E -o $(PATH_PRE)/$(basename $(@F)).pre
 # stderr, file, continue
 #	$(CL) $(CPPFLAGS) $< -c -o $(PATH_OBJ)/$(basename $(@F)).o 2>&1 | tee $(PATH_ERR)/$(basename $(@F)).err
-	$(CL) $(CPPFLAGS) $< -c -o $(PATH_OBJ)/$(basename $(@F)).o 2> $(PATH_ERR)/$(basename $(@F)).err
+#	$(CL) $(CPPFLAGS) $< -c -o $(PATH_OBJ)/$(basename $(@F)).o 2> $(PATH_ERR)/$(basename $(@F)).err
 #	$(SED) -e 's|.h:\([0-9]*\),|.h(\1) :|' -e 's|:\([0-9]*\):|(\1) :|' $(PATH_ERR)/$(basename $(@F)).err
 #	$(OBJDUMP) --disassemble --line-numbers -S $(PATH_OBJ)/$(basename $(@F)).o > $(PATH_LST)/$(basename $(@F)).lst
-	$(CL) $(CPPFLAGS) $< -MM > $(PATH_OBJ)/$(basename $(@F)).d
-  # profiling
-	$(CL) $(CPPFLAGS) -O0 --coverage $< -c -o $(PATH_COV)/$(basename $(@F)).o 2> $(PATH_ERR)/$(basename $(@F)).coverr
+#	$(CL) $(CPPFLAGS) $< -MM > $(PATH_OBJ)/$(basename $(@F)).d
+#  # profiling
+#	$(CL) $(CPPFLAGS) -O0 --coverage $< -c -o $(PATH_COV)/$(basename $(@F)).o 2> $(PATH_ERR)/$(basename $(@F)).coverr
 
-%.o : %.c
-	@$(ECHO) +++ compile: $<
-  # Compile the source file
-  # ...and Reformat (using sed) any possible error/warning messages for the VisualStudio(R) output window
-  # ...and Create an assembly listing using objdump
-  # ...and Generate a dependency file (using the -MM flag)
-	$(CL) $(CFLAGS) $< -E -o $(PATH_PRE)/$(basename $(@F)).pre
-	$(CC) $(CFLAGS) $< -c -o $(PATH_OBJ)/$(basename $(@F)).o 2> $(PATH_ERR)/$(basename $(@F)).err
-	$(SED) -e 's|.h:\([0-9]*\),|.h(\1) :|' -e 's|:\([0-9]*\):|(\1) :|' $(PATH_ERR)/$(basename $(@F)).err
-	$(OBJDUMP) -S $(PATH_OBJ)/$(basename $(@F)).o > $(PATH_LST)/$(basename $(@F)).lst
-	$(CC) $(CFLAGS) $< -MM > $(PATH_OBJ)/$(basename $(@F)).d
+#%.o : %.c
+#	@$(ECHO) +++ compile: $<
+#  # Compile the source file
+#  # ...and Reformat (using sed) any possible error/warning messages for the VisualStudio(R) output window
+#  # ...and Create an assembly listing using objdump
+#  # ...and Generate a dependency file (using the -MM flag)
+#	$(CL) $(CFLAGS) $< -E -o $(PATH_PRE)/$(basename $(@F)).pre
+#	$(CC) $(CFLAGS) $< -c -o $(PATH_OBJ)/$(basename $(@F)).o 2> $(PATH_ERR)/$(basename $(@F)).err
+#	$(SED) -e 's|.h:\([0-9]*\),|.h(\1) :|' -e 's|:\([0-9]*\):|(\1) :|' $(PATH_ERR)/$(basename $(@F)).err
+#	$(OBJDUMP) -S $(PATH_OBJ)/$(basename $(@F)).o > $(PATH_LST)/$(basename $(@F)).lst
+#	$(CC) $(CFLAGS) $< -MM > $(PATH_OBJ)/$(basename $(@F)).d
