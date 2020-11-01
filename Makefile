@@ -228,7 +228,7 @@ version:
 # run lint-like checkers
 # ------------------------------------------------------------------------------
 .PHONY: checks
-checks : cppcheck tidy run
+checks : run cppcheck tidy
 
 .PHONY: cppcheck
 cppcheck : printf.cppcheck.out
