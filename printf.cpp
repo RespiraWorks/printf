@@ -30,16 +30,24 @@
 //
 ///////////////////////////////////////////////////////////////////////////////
 
+
 #include "printf.h"
 #include <cmath>
 #include <cstdint>
 
 ///////////////////////////////////////////////////////////////////////////////
 //
-// Check c++ with:
+// Check c++ with (or simply run "make checks"):
 //
 // clang-tidy test/test_suite.cpp
 // cppcheck --enable=warning,style --inline-suppr printf.cpp
+//
+///////////////////////////////////////////////////////////////////////////////
+
+///////////////////////////////////////////////////////////////////////////////
+//
+// configuration options:
+//   Pass these to compiler if desired.
 //
 ///////////////////////////////////////////////////////////////////////////////
 
@@ -48,21 +56,6 @@
 // default: undefined
 #ifdef PRINTF_INCLUDE_CONFIG_H
 #include "printf_config.h"
-#endif
-
-
-// 'ntoa' conversion buffer size, this must be big enough to hold one converted
-// numeric number including padded zeros (dynamically created on stack)
-// default: 32 byte
-#ifndef PRINTF_NTOA_BUFFER_SIZE
-#define PRINTF_NTOA_BUFFER_SIZE    32U
-#endif
-
-// 'ftoa' conversion buffer size, this must be big enough to hold one converted
-// float number including padded zeros (dynamically created on stack)
-// default: 32 byte
-#ifndef PRINTF_FTOA_BUFFER_SIZE
-#define PRINTF_FTOA_BUFFER_SIZE    32U
 #endif
 
 // support for the floating point type (%f)
@@ -75,24 +68,6 @@
 // default: activated
 #ifndef PRINTF_DISABLE_SUPPORT_EXPONENTIAL
 #define PRINTF_SUPPORT_EXPONENTIAL
-#endif
-
-// define the default floating point precision
-// default: 6 digits
-#ifndef PRINTF_DEFAULT_FLOAT_PRECISION
-#define PRINTF_DEFAULT_FLOAT_PRECISION  6U
-#endif
-
-// define the largest float suitable to print with %f
-// default: 1e9 (minus an epsilon)
-#ifndef PRINTF_MAX_FLOAT
-#define PRINTF_MAX_FLOAT  (0.999 * 1e+9)
-#endif
-
-// define the smallest float suitable to print with %f
-// default: 1e-9 (plus an epsilon)
-#ifndef PRINTF_MIN_FLOAT
-#define PRINTF_MIN_FLOAT  (1.001 * 1e-9)
 #endif
 
 // support for the long long types (%llu or %p)
@@ -108,6 +83,42 @@
 #define PRINTF_SUPPORT_PTRDIFF_T
 #endif
 
+// if not true, minimize the code size.
+// default: activated
+#ifndef PRINTF_DISABLE_MINIMIZE_CODE_SIZE
+#define PRINTF_MINIMIZE_CODE_SIZE
+#endif
+
+
+///////////////////////////////////////////////////////////////////////////////
+//
+// internal configuration options
+//
+///////////////////////////////////////////////////////////////////////////////
+
+// define the largest float suitable to print with %f
+// default: 1e9 (minus an epsilon)
+constexpr double PRINTF_MAX_FLOAT = (0.999 * 1e+9);
+// define the smallest float suitable to print with %f
+// default: 1e-9 (plus an epsilon)
+constexpr double PRINTF_MIN_FLOAT = (1.001 * 1e-9);
+// define the default floating point precision
+// default: 6 digits
+constexpr unsigned PRINTF_DEFAULT_FLOAT_PRECISION = 6U;
+// 'ntoa' conversion buffer size, this must be big enough to hold one converted
+// numeric number including padded zeros (dynamically created on stack)
+// default: 32 byte
+constexpr unsigned PRINTF_NTOA_BUFFER_SIZE = 32U;
+// 'ftoa' conversion buffer size, this must be big enough to hold one converted
+// float number including padded zeros (dynamically created on stack)
+// default: 32 byte
+constexpr unsigned PRINTF_FTOA_BUFFER_SIZE = 32U;
+
+
+///////////////////////////////////////////////////////////////////////////////
+//
+// constants
+//
 ///////////////////////////////////////////////////////////////////////////////
 
 // internal flag definitions
@@ -350,7 +361,6 @@ static size_t _ntoa_long_long(out_fct_type out, char* buffer, size_t idx, size_t
 
 
 #if defined(PRINTF_SUPPORT_FLOAT)
-
 
 const int       I_1           = 1;
 const int       I_10          = 10;

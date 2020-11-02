@@ -56,6 +56,9 @@ C_INCLUDES =
 
 C_DEFINES  =
 
+ifndef $(CC_STD)
+  CC_STD = -std=c++14
+endif
 
 # ------------------------------------------------------------------------------
 # The target name and location
@@ -109,7 +112,7 @@ SED       = $(PATH_TOOLS_UTIL)sed
 
 GCCFLAGS      = $(C_INCLUDES)                     \
                 $(C_DEFINES)                      \
-                -std=c++11                        \
+                $(CC_STD)                         \
                 -g                                \
                 -Wall                             \
                 -pedantic                         \
@@ -168,7 +171,7 @@ LFLAGS        = $(GCCFLAGS)                       \
 # Main-Dependencies (app: all)
 # ------------------------------------------------------------------------------
 .PHONY: all
-all: clean_prj $(TRG) $(TRG)_nm.txt support checks cov_app
+all: clean_prj $(TRG) $(TRG)_nm.txt diagnostics checks cov_app
 
 
 # ------------------------------------------------------------------------------
@@ -225,10 +228,13 @@ version:
 # ------------------------------------------------------------------------------
 
 # ------------------------------------------------------------------------------
-# run lint-like checkers
+# tests and lint-like checkers
 # ------------------------------------------------------------------------------
-.PHONY: checks
-checks : run cppcheck tidy
+.PHONY: most
+most : $(TRG) tests lints
+
+.PHONY: lints
+lints : cppcheck tidy
 
 .PHONY: cppcheck
 cppcheck : printf.cppcheck.out
@@ -236,12 +242,12 @@ cppcheck : printf.cppcheck.out
 .PHONY: tidy
 tidy : test/test_suite.tidy.out
 
-.PHONY: run
-run : $(TRG)
+.PHONY: tests
+tests : $(TRG)
 	$(TRG) -r compact
 
-.PHONY: run_verbose
-run_verbose : $(TRG)
+.PHONY: tests_verbose
+tests_verbose : $(TRG)
 	$(TRG) -r compact -s
 
 %.cppcheck.out: %.cpp
@@ -267,8 +273,8 @@ $(TRG)_nm.txt : $(TRG)
 .PHONY: bin_app
 bin_app : $(TRG)
 
-.PHONY: support
-support: obj_d obj_lst pre_pre
+.PHONY: diagnostics
+diagnostics: obj_d obj_lst pre_pre
 
 .PHONY: obj_o
 obj_o : $(PATH_OBJ)/*.o
@@ -287,16 +293,20 @@ $(TRG) : $(PATH_OBJ)/*.o
 	$(CL) $(LFLAGS) -L. -lc $(PATH_OBJ)/*.o -Wl,-Map,$(TRG).map -o $(TRG)
 
 $(PATH_OBJ)/%.o : test/%.cpp
+  # Compile the source file
 	$(CL) $(CPPFLAGS) $< -c -o $(PATH_OBJ)/$(basename $(@F)).o 2> $(PATH_ERR)/$(basename $(@F)).err
+  # ...and Reformat (using sed) any possible error/warning messages for the VisualStudio(R) output window
 	$(SED) -e 's|.h:\([0-9]*\),|.h(\1) :|' -e 's|:\([0-9]*\):|(\1) :|' $(PATH_ERR)/$(basename $(@F)).err
 
 $(PATH_PRE)/%.pre : test/%.cpp
 	$(CL) $(CPPFLAGS) $< -E -o $(PATH_PRE)/$(basename $(@F)).pre
 
 $(PATH_OBJ)/%.d : test/%.cpp
+  # ...and Generate a dependency file (using the -MM flag)
 	$(CL) $(CPPFLAGS) $< -MM > $(PATH_OBJ)/$(basename $(@F)).d
 
 $(PATH_OBJ)/%.lst : $(PATH_OBJ)/%.o
+  # ...and Create an assembly listing using objdump
 	$(OBJDUMP) --disassemble --line-numbers -S $(PATH_OBJ)/$(basename $(@F)).o > $(PATH_LST)/$(basename $(@F)).lst
 
 # ------------------------------------------------------------------------------
@@ -309,39 +319,8 @@ cov_app : $(PATH_COV)/$(APP)
 cov_o : $(PATH_COV)/*.o
 
 $(PATH_COV)/$(APP) : $(PATH_COV)/*.o
-	@-$(ECHO) +++ linkink application to generate: $(PATH_COV)/$(APP)
+	@-$(ECHO) +++ linking application to generate: $(PATH_COV)/$(APP)
 	$(CL) $(LFLAGS) -L. -lc $(PATH_COV)/*.o --coverage -o $(PATH_COV)/$(APP)
 
 $(PATH_COV)/%.o : test/%.cpp
 	$(CL) $(CPPFLAGS) -O0 --coverage $< -c -o $(PATH_COV)/$(basename $(@F)).o 2> $(PATH_ERR)/$(basename $(@F)).coverr
-
-# ------------------------------------------------------------------------------
-# compiling/assembling:  simplify these.
-# ------------------------------------------------------------------------------
-#%.o : %.cpp
-#	@$(ECHO) +++ compile: $<
-#  # Compile the source file
-#  # ...and Reformat (using sed) any possible error/warning messages for the VisualStudio(R) output window
-#  # ...and Create an assembly listing using objdump
-#  # ...and Generate a dependency file (using the -MM flag)
-#	$(CL) $(CPPFLAGS) $< -E -o $(PATH_PRE)/$(basename $(@F)).pre
-# stderr, file, continue
-#	$(CL) $(CPPFLAGS) $< -c -o $(PATH_OBJ)/$(basename $(@F)).o 2>&1 | tee $(PATH_ERR)/$(basename $(@F)).err
-#	$(CL) $(CPPFLAGS) $< -c -o $(PATH_OBJ)/$(basename $(@F)).o 2> $(PATH_ERR)/$(basename $(@F)).err
-#	$(SED) -e 's|.h:\([0-9]*\),|.h(\1) :|' -e 's|:\([0-9]*\):|(\1) :|' $(PATH_ERR)/$(basename $(@F)).err
-#	$(OBJDUMP) --disassemble --line-numbers -S $(PATH_OBJ)/$(basename $(@F)).o > $(PATH_LST)/$(basename $(@F)).lst
-#	$(CL) $(CPPFLAGS) $< -MM > $(PATH_OBJ)/$(basename $(@F)).d
-#  # profiling
-#	$(CL) $(CPPFLAGS) -O0 --coverage $< -c -o $(PATH_COV)/$(basename $(@F)).o 2> $(PATH_ERR)/$(basename $(@F)).coverr
-
-#%.o : %.c
-#	@$(ECHO) +++ compile: $<
-#  # Compile the source file
-#  # ...and Reformat (using sed) any possible error/warning messages for the VisualStudio(R) output window
-#  # ...and Create an assembly listing using objdump
-#  # ...and Generate a dependency file (using the -MM flag)
-#	$(CL) $(CFLAGS) $< -E -o $(PATH_PRE)/$(basename $(@F)).pre
-#	$(CC) $(CFLAGS) $< -c -o $(PATH_OBJ)/$(basename $(@F)).o 2> $(PATH_ERR)/$(basename $(@F)).err
-#	$(SED) -e 's|.h:\([0-9]*\),|.h(\1) :|' -e 's|:\([0-9]*\):|(\1) :|' $(PATH_ERR)/$(basename $(@F)).err
-#	$(OBJDUMP) -S $(PATH_OBJ)/$(basename $(@F)).o > $(PATH_LST)/$(basename $(@F)).lst
-#	$(CC) $(CFLAGS) $< -MM > $(PATH_OBJ)/$(basename $(@F)).d
