@@ -1,0 +1,8 @@
+#!/bin/bash
+set -o xtrace
+for v in "-std=c++11" "-std=c++14" "-std=c++17"
+do
+  echo building for $v
+  touch test/test_suite.cpp printf.cpp
+  make most CC_STD=$v
+done

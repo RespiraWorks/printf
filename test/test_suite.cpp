@@ -10,10 +10,10 @@
 // to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
 // copies of the Software, and to permit persons to whom the Software is
 // furnished to do so, subject to the following conditions:
-// 
+//
 // The above copyright notice and this permission notice shall be included in
 // all copies or substantial portions of the Software.
-// 
+//
 // THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
 // IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
 // FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
@@ -30,50 +30,128 @@
 #define CATCH_CONFIG_MAIN
 #include "catch.hpp"
 
-#include <string.h>
-#include <sstream>
-#include <math.h>
+#include <cstring>
+#include <iostream>
+#include <iomanip>
+#include <cmath>
+#include <limits>
+
+static constexpr double nan_double = std::numeric_limits<double>::quiet_NaN();
+static constexpr float nan_float = std::numeric_limits<float>::quiet_NaN();
 
 
 namespace test {
+
+  // dummy putchar
+  static char   printf_buffer[100];
+  static size_t printf_idx = 0U;
+
+  void _putchar(char character)
+  {
+    printf_buffer[printf_idx++] = character;
+  }
+
+  void _out_fct(char character, void* arg)
+  {
+    (void)arg;
+    printf_buffer[printf_idx++] = character;
+  }
+
   // use functions in own test namespace to avoid stdio conflicts
   #include "../printf.h"
-  #include "../printf.c"
+  #include "../printf.cpp"
+
 } // namespace test
 
 
-// dummy putchar
-static char   printf_buffer[100];
-static size_t printf_idx = 0U;
+/***********
+* Utilities
+***********/
 
-void test::_putchar(char character)
-{
-  printf_buffer[printf_idx++] = character;
+auto adjust_sigfigs( const std::string &in, unsigned desired_sigfigs, unsigned desired_width ) -> std::string {
+  std::string out(in);
+  // Find positions of exponent and decimal point.
+  size_t pos_exponent = out.find_first_of( "eEgG" );
+  size_t pos_decimal = out.find( '.' );
+  if( pos_exponent == std::string::npos ) {
+    return in;
+  }
+
+  // Insert decimal point if needed.
+  if( pos_decimal == std::string::npos ) {
+    out.insert( pos_exponent, "." );
+  }
+
+  // Remove the leading spaces, if any.
+  while( out.length() > 0 && out[0] == ' ' ) {
+    out.erase(0,1);
+  }
+
+  // Find positions again.
+  pos_exponent = out.find_first_of( "eEgG" );
+  pos_decimal = out.find( '.' );
+  size_t decimal_places_found = (pos_exponent < (pos_decimal + 1))? 0 : (pos_exponent - (pos_decimal + 1));
+  size_t current_sigfigs = decimal_places_found + 1;
+  //std::cout << "aft rm spaces::  desired_sigfigs=" << desired_sigfigs << ", current_sigfigs=" << current_sigfigs << ", decimal_places_found=" << decimal_places_found << ", pos_exponent=" << pos_exponent << ", pos_decimal=" << pos_decimal << std::endl;
+
+  if( current_sigfigs > desired_sigfigs ) {
+    size_t iz = 1;
+    // Remove just enough 0's to achieve desired_sigfigs.
+    while( out.length() > 0 && out[pos_exponent-iz] == '0' ) {
+      if( iz > (current_sigfigs - desired_sigfigs) ) break;
+      out.erase(pos_exponent-iz,1);
+      iz++;
+    }
+  } else if( current_sigfigs < desired_sigfigs ) {
+    // Insert just enough 0's to achieve desired_sigfigs.
+    for( size_t j = 0; j < desired_sigfigs - current_sigfigs; j++ ) {
+      out.insert( pos_exponent, "0" );
+    }
+  }
+
+  // Find positions again.
+  pos_exponent = out.find_first_of( "eEgG" );
+  pos_decimal = out.find( '.' );
+  decimal_places_found = (pos_exponent < (pos_decimal + 1))? 0 : (pos_exponent - (pos_decimal + 1));
+  current_sigfigs = decimal_places_found + 1;
+  //std::cout << "aft rm/ins 0s::  desired_sigfigs=" << desired_sigfigs << ", current_sigfigs=" << current_sigfigs << ", decimal_places_found=" << decimal_places_found << ", pos_exponent=" << pos_exponent << ", pos_decimal=" << pos_decimal << std::endl;
+
+  // Remove decimal point, if there are now no decimal places.
+  if( current_sigfigs == 1 ) {
+    if( out.length() > 0 && out[pos_decimal] == '.' ) {
+      out.erase(pos_decimal,1);
+    }
+  }
+
+  // Insert just enough leading spaces to achieve desired_width.
+  while( out.length() < desired_width ) {
+    out.insert( 0, " " );
+  }
+  return out;
 }
 
-void _out_fct(char character, void* arg)
-{
-  (void)arg;
-  printf_buffer[printf_idx++] = character;
-}
 
+
+/***********
+* Test Cases
+***********/
 
 TEST_CASE("printf", "[]" ) {
-  printf_idx = 0U;
-  memset(printf_buffer, 0xCC, 100U);
+  test::printf_idx = 0U;
+  memset(test::printf_buffer, 0xCC, 100U);
   REQUIRE(test::printf("% d", 4232) == 5);
-  REQUIRE(printf_buffer[5] == (char)0xCC);
-  printf_buffer[5] = 0;
-  REQUIRE(!strcmp(printf_buffer, " 4232"));
+  REQUIRE(test::printf_buffer[5] == (char)0xCC);
+  test::printf_buffer[5] = 0;
+  REQUIRE(!strcmp(test::printf_buffer, " 4232"));
 }
 
 
 TEST_CASE("fctprintf", "[]" ) {
-  printf_idx = 0U;
-  memset(printf_buffer, 0xCC, 100U);
-  test::fctprintf(&_out_fct, nullptr, "This is a test of %X", 0x12EFU);
-  REQUIRE(!strncmp(printf_buffer, "This is a test of 12EF", 22U));
-  REQUIRE(printf_buffer[22] == (char)0xCC);
+  test::printf_idx = 0U;
+  memset(test::printf_buffer, 0xCC, 100U);
+  test::fctprintf(&test::_out_fct, nullptr, "This is a test of %X", 0x12EFU);
+  REQUIRE(!strncmp(test::printf_buffer, "This is a test of 12EF", 22U));
+  REQUIRE(test::printf_buffer[22] == (char)0xCC);
 }
 
 
@@ -114,12 +192,12 @@ static void vsnprintf_builder_3(char* buffer, ...)
 
 TEST_CASE("vprintf", "[]" ) {
   char buffer[100];
-  printf_idx = 0U;
-  memset(printf_buffer, 0xCC, 100U);
+  test::printf_idx = 0U;
+  memset(test::printf_buffer, 0xCC, 100U);
   vprintf_builder_1(buffer, 2345);
-  REQUIRE(printf_buffer[4] == (char)0xCC);
-  printf_buffer[4] = 0;
-  REQUIRE(!strcmp(printf_buffer, "2345"));
+  REQUIRE(test::printf_buffer[4] == (char)0xCC);
+  test::printf_buffer[4] = 0;
+  REQUIRE(!strcmp(test::printf_buffer, "2345"));
 }
 
 
@@ -131,6 +209,394 @@ TEST_CASE("vsnprintf", "[]" ) {
 
   vsnprintf_builder_3(buffer, 3, -1000, "test");
   REQUIRE(!strcmp(buffer, "3 -1000 test"));
+}
+
+
+TEST_CASE("float: various special cases, pt 1", "[]" ) {
+  char buffer[100];
+
+  // out of range for float: should switch to exp notation if supported, else empty
+  test::sprintf(buffer, "%.1f", 1E20);
+#ifndef PRINTF_DISABLE_SUPPORT_EXPONENTIAL
+  REQUIRE(!strcmp(buffer, "1.0e+20"));
+#else
+  REQUIRE(!strcmp(buffer, ""));
+#endif
+}
+
+
+TEST_CASE("float: various special cases, pt 2", "[]" ) {
+  char buffer[100];
+  const char * s = "";
+
+  {
+    test::sprintf(buffer, "%0-15.3g", -0.042);
+#ifndef PRINTF_DISABLE_SUPPORT_EXPONENTIAL
+    s = "-0.0420        ";
+#else
+    s = "g";
+#endif
+    CHECK( std::string( buffer ) == s );
+
+    test::sprintf(buffer, "%0-15.4g", -0.042);
+#ifndef PRINTF_DISABLE_SUPPORT_EXPONENTIAL
+    s = "-0.04200       ";
+#else
+    s = "g";
+#endif
+    CHECK( std::string( buffer ) == s );
+  }
+}
+
+
+using CaseSpec = struct { const char *fmt; double stimulus; const char *shouldBe; };
+
+
+TEST_CASE("float: various large exponents", "[]" ) {
+  char buffer[100];
+  {
+    CaseSpec specs[] = {
+      { "%9.3f", 1e+200, "1.000e+200" },
+      { "%9.3f", 1e-200, "1.000e-200" },
+      { "%9.3f", 1e+17, "1.000e+17" },
+      { "%9.3f", 1e-17, "1.000e-17" },
+      { "%9.3f", 1e+307, "1.000e+307" },
+      { "%9.3f", 1e+257, "1.000e+257" },
+      { "%9.3f", 1e+207, "1.000e+207" },
+      { "%9.3f", 1e+157, "1.000e+157" },
+      { "%9.3f", 1e+107, "1.000e+107" },
+      { "%9.3f", 1e+87, "1.000e+87" },
+      { "%9.3f", 1e+67, "1.000e+67" },
+      { "%9.3f", 1e+57, "1.000e+57" },
+      { "%9.3f", 1e+47, "1.000e+47" },
+      { "%9.3f", 1e+37, "1.000e+37" },
+      { "%9.3f", 1e+27, "1.000e+27" },
+      { "%9.3f", 1e+17, "1.000e+17" },
+      { "%9.3f", 1e-307, "1.000e-307" },
+      { "%9.3f", 1e-257, "1.000e-257" },
+      { "%9.3f", 1e-207, "1.000e-207" },
+      { "%9.3f", 1e-157, "1.000e-157" },
+      { "%9.3f", 1e-107, "1.000e-107" },
+      { "%9.3f", 1e-87, "1.000e-87" },
+      { "%9.3f", 1e-67, "1.000e-67" },
+      { "%9.3f", 1e-57, "1.000e-57" },
+      { "%9.3f", 1e-47, "1.000e-47" },
+      { "%9.3f", 1e-37, "1.000e-37" },
+      { "%9.3f", 1e-27, "1.000e-27" },
+      { "%9.3f", 1e-17, "1.000e-17" },
+    };
+
+    for( CaseSpec spec : specs ) {
+      test::sprintf(buffer, spec.fmt, spec.stimulus);
+      CHECK( std::string( buffer ) == spec.shouldBe );
+    }
+  }
+}
+
+
+
+
+TEST_CASE("float: basics", "[]" ) {
+  char buffer[100];
+
+#ifndef PRINTF_DISABLE_SUPPORT_EXPONENTIAL
+  {
+    CaseSpec specs[] = {
+      { "%f", 42167.0, "42167.000000" },
+      { "%10.3f", 42167.0, " 42167.000" },
+      { "%10.3f", -42167.0, "-42167.000" },
+      { "%e", 42167.0, "4.216700e+04" },
+      { "%+10.3e", 42167.0, "+4.217e+04" },
+      { "%10.3e", -42167.0, "-4.217e+04" },
+      { "%g", 42167.0, "42167.0" },
+      { "%+10.3g", 42167.0, " +4.22e+04" },
+      { "%10.3g", -42167.0, " -4.22e+04" },
+      { "%+012.4g", 0.00001234, "+001.234e-05" },
+      { "%.3g", -1.2345e-308, "-1.23e-308" },
+      { "%+.3E", 1.23e+308, "+1.230E+308" },
+      { "%+10.4G", 0.001234, " +0.001234" },
+    };
+
+    for( CaseSpec spec : specs ) {
+      test::sprintf(buffer, spec.fmt, spec.stimulus);
+      CHECK( std::string( buffer ) == spec.shouldBe );
+    }
+  }
+
+#endif
+
+}
+
+
+TEST_CASE("float, set 1", "[]" ) {
+  char buffer[100];
+
+#ifndef PRINTF_DISABLE_SUPPORT_EXPONENTIAL
+  {
+    CaseSpec specs[] = {
+
+      // test special-case floats using std::numeric_limits.
+      { "%8f", nan_double , "     nan" },
+      { "%8f", static_cast<double>( nan_float ), "     nan" },
+      { "%8f", std::numeric_limits<double>::infinity() /* INFINITY */ , "     inf" },
+      { "%-8f", -std::numeric_limits<double>::infinity() /* -INFINITY */ , "-inf    " },
+      { "%8e", nan_double , "     nan" },
+      { "%8e", static_cast<double>( nan_float ), "     nan" },
+      { "%+8e", std::numeric_limits<double>::infinity() /* INFINITY */ , "    +inf" },
+      { "%-8e", -std::numeric_limits<double>::infinity() /* -INFINITY */ , "-inf    " },
+      { "%.4f", 3.1415354, "3.1415" },
+      { "%.3f", 30343.1415354, "30343.142" },
+      { "%.0f", 34.1415354, "34" },
+      { "%.0f", 1.3, "1" },
+      { "%.0f", 1.55, "2" },
+      { "%.1f", 1.64, "1.6" },
+      { "%.2f", 42.8952, "42.90" },
+      { "%.9f", 42.8952, "42.895200000" },
+      { "%.10f", 42.895223, "42.8952230000" },
+      // this testcase checks, that the precision is truncated to 9 digits.
+      // a perfect working float should return the whole number
+      { "%.12f", 42.89522312345678, "42.895223123000" },
+      // this testcase checks, that the precision is truncated AND rounded to 9 digits.
+      // a perfect working float should return the whole number
+      { "%.12f", 42.89522387654321, "42.895223877000" },
+      { "%6.2f", 42.8952, " 42.90" },
+      { "%+6.2f", 42.8952, "+42.90" },
+      { "%+5.1f", 42.9252, "+42.9" },
+      { "%f", 42.5, "42.500000" },
+      { "%.1f", 42.5, "42.5" },
+      { "%f", 42167.0, "42167.000000" },
+      { "%.9f", -12345.987654321, "-12345.987654321" },
+      { "%.1f", 3.999, "4.0" },
+      { "%.0f", 3.5, "4" },
+      { "%.0f", 4.5, "4" },
+      { "%.0f", 3.49, "3" },
+      { "%.1f", 3.49, "3.5" },
+      { "%.0F", 3.49, "3" },
+      { "%.1F", 3.49, "3.5" },
+      { "a%-5.1f", 0.5, "a0.5  " },
+      { "a%-5.1fend", 0.5, "a0.5  end" },
+    };
+
+    for( CaseSpec spec : specs ) {
+      test::sprintf(buffer, spec.fmt, spec.stimulus);
+      CHECK( std::string( buffer ) == spec.shouldBe );
+    }
+  }
+#endif
+}
+
+
+TEST_CASE("float, set 2", "[]" ) {
+  char buffer[100];
+
+#ifndef PRINTF_DISABLE_SUPPORT_EXPONENTIAL
+  {
+    CaseSpec specs[] = {
+
+      { "%G", 12345.678, "12345.7" },
+      { "%.4G", 12345.678, "1.235E+04" },
+      { "%.5G", 12345.678, "12346" },
+      { "%.6G", 12345.678, "12345.7" },
+      { "%.7G", 12345.678, "12345.68" },
+      { "%.5G", 123456789., "1.2346E+08" },
+      { "%.6G", 12345., "12345.0" },
+      { "%+12.4g", 123456789., "  +1.235e+08" },
+      { "%.2G", 0.001234, "0.0012" },
+    };
+
+    for( CaseSpec spec : specs ) {
+      test::sprintf(buffer, spec.fmt, spec.stimulus);
+      CHECK( std::string( buffer ) == spec.shouldBe );
+    }
+  }
+#endif
+}
+
+TEST_CASE("float, set 3", "[]" ) {
+  char buffer[100];
+
+#ifndef PRINTF_DISABLE_SUPPORT_EXPONENTIAL
+  {
+    CaseSpec specs[] = {
+      { "%+012.4g", 0.00001234, "+001.234e-05" },
+      { "%.3g", -1.2345e-308, "-1.23e-308" },
+      { "%+.3E", 1.23e+308, "+1.230E+308" },
+      { "%+10.4G", 0.001234, " +0.001234" },
+    };
+
+    for( CaseSpec spec : specs ) {
+      test::sprintf(buffer, spec.fmt, spec.stimulus);
+      CHECK( std::string( buffer ) == spec.shouldBe );
+    }
+  }
+#endif
+}
+
+
+TEST_CASE("float: %g: precision vs exponent, part 1", "[]" ) {
+  char buffer[100];
+
+#ifndef PRINTF_DISABLE_SUPPORT_EXPONENTIAL
+  {
+    CaseSpec specs[] = {
+
+      { "%7.0g", static_cast<double>(8.34f), "      8" },
+      { "%7.0g", static_cast<double>(8.34e1f), "  8e+01" },
+      { "%7.0g", static_cast<double>(8.34e2f), "  8e+02" },
+      { "%7.1g", static_cast<double>(8.34f), "      8" },
+      { "%7.1g", static_cast<double>(8.34e1f), "  8e+01" },
+      { "%7.1g", static_cast<double>(8.34e2f), "  8e+02" },
+      { "%7.2g", static_cast<double>(8.34f), "    8.3" },
+      { "%7.2g", static_cast<double>(8.34e1f), "     83" },
+      { "%7.2g", static_cast<double>(8.34e2f), "8.3e+02" },
+      { "%7.3g", static_cast<double>(8.34f), "   8.34" },
+      { "%7.3g", static_cast<double>(8.34e1f), "   83.4" },
+      { "%7.3g", static_cast<double>(8.34e2f), "    834" },
+    };
+
+    for( CaseSpec spec : specs ) {
+      test::sprintf(buffer, spec.fmt, spec.stimulus);
+      CHECK( std::string( buffer ) == spec.shouldBe );
+    }
+  }
+#endif
+}
+
+TEST_CASE("float: %g: precision vs exponent, part 2", "[]" ) {
+  char buffer[100];
+
+#ifndef PRINTF_DISABLE_SUPPORT_EXPONENTIAL
+  {
+    CaseSpec specs[] = {
+
+      { "%7.3g", static_cast<double>(8.34e9f), "8.34e+09" },
+      { "%7.3g", static_cast<double>(8.34e3f), "8.34e+03" },
+      { "%7.3g", static_cast<double>(8.34e-2f), " 0.0834" },
+      { "%7.3g", static_cast<double>(8.34e-7f), "8.34e-07" },
+      { "%10.7g", static_cast<double>(8.34e9f), "8.340000e+09" },
+      { "%10.7g", static_cast<double>(8.34e3f), "  8340.000" },
+      { "%10.7g", static_cast<double>(8.34e-2f), "0.08340000" },
+      { "%10.7g", static_cast<double>(8.34e-7f), "8.340000e-07" },
+    };
+
+    for( CaseSpec spec : specs ) {
+      test::sprintf(buffer, spec.fmt, spec.stimulus);
+      CHECK( std::string( buffer ) == spec.shouldBe );
+    }
+  }
+#endif
+}
+
+
+TEST_CASE("float: %g: precision vs exponent, part 3", "[]" ) {
+  char buffer[100];
+
+#ifndef PRINTF_DISABLE_SUPPORT_EXPONENTIAL
+  {
+    CaseSpec specs[] = {
+      { "%7.3g", static_cast<double>(8.34e-1f), "  0.834" },
+      { "%7.3g", static_cast<double>(8.34e-2f), " 0.0834" },
+      { "%7.3g", static_cast<double>(8.34e-3f), "0.00834" },
+      { "%7.4g", static_cast<double>(8.34e-1f), " 0.8340" },
+      { "%7.4g", static_cast<double>(8.34e-2f), "0.08340" },
+      { "%7.4g", static_cast<double>(8.34e-3f), "0.008340" },
+    };
+
+    for( CaseSpec spec : specs ) {
+      test::sprintf(buffer, spec.fmt, spec.stimulus);
+      CHECK( std::string( buffer ) == spec.shouldBe );
+    }
+  }
+#endif
+}
+
+
+TEST_CASE("float: %f-to-%e, case 1", "[]" ) {
+  char buffer[100];
+  std::stringstream sstr;
+
+#ifndef PRINTF_DISABLE_SUPPORT_EXPONENTIAL
+  float f = -9.999999;
+  for( int i=1; i<20; i++ ) {
+    sstr.str("");
+    sstr.unsetf(std::ios::floatfield);
+    if( i >= 9 ) {
+      sstr.precision(4);
+      sstr.setf(std::ios::scientific);
+    } else {
+      sstr.precision(3);
+      sstr.setf(std::ios::fixed);
+    }
+    test::sprintf(buffer, "%10.3f", static_cast<double>(f));
+    sstr << std::setw(10) << f;
+    std::string str2 = adjust_sigfigs( sstr.str(), 4, 10 );
+    CHECK( std::string( buffer ) == str2 );
+    f *= 10.0f;
+  }
+#endif
+}
+
+
+TEST_CASE("float, %f-to-%e, case 2", "[]" ) {
+  char buffer[100];
+  std::stringstream sstr;
+
+#ifndef PRINTF_DISABLE_SUPPORT_EXPONENTIAL
+  // brute force exp
+  for (float f = -1e17f; f < +1e17f; f+= 0.9e15f) {
+    test::sprintf(buffer, "%10.2f", static_cast<double>(f));
+    sstr.str("");
+    sstr.unsetf(std::ios::floatfield);
+    sstr.precision(3);
+    sstr << std::setw(10) << f;
+    std::string str2 = adjust_sigfigs( sstr.str(), 3, 10 );
+    CHECK( std::string( buffer ) == str2 );
+  }
+#endif
+}
+
+
+TEST_CASE("float: %g-to-%e, case 1", "[]" ) {
+  char buffer[100];
+  std::stringstream sstr;
+
+#ifndef PRINTF_DISABLE_SUPPORT_EXPONENTIAL
+  float f = -999.9999;
+  for( int i=3; i<20; i++ ) {
+    sstr.str("");
+    sstr.unsetf(std::ios::floatfield);
+    sstr.precision(3);
+    if( i >= 3 ) {
+      sstr.setf(std::ios::scientific);
+    } else {
+      sstr.setf(std::ios::fixed);
+    }
+    test::sprintf(buffer, "%10.2g", static_cast<double>(f));
+    sstr << std::setw(10) << f;
+    std::string str2 = adjust_sigfigs( sstr.str(), 2, 10 );
+    CHECK( std::string( buffer ) == str2 );
+    f *= 10.0f;
+  }
+#endif
+}
+
+
+TEST_CASE("float, %g-to-%e, case 2", "[]" ) {
+  char buffer[100];
+  std::stringstream sstr;
+
+#ifndef PRINTF_DISABLE_SUPPORT_EXPONENTIAL
+  // brute force exp
+  for (float f = -1e17f; f < +1e17f; f+= 0.9e15f) {
+    test::sprintf(buffer, "%10.3g", static_cast<double>(f));
+    sstr.str("");
+    sstr.unsetf(std::ios::floatfield);
+    sstr.precision(3);
+    sstr << std::setw(10) << f;
+    std::string str2 = adjust_sigfigs( sstr.str(), 3, 10 );
+    CHECK( std::string( buffer ) == str2 );
+  }
+#endif
 }
 
 
@@ -206,7 +672,6 @@ TEST_CASE("space flag", "[]" ) {
   test::sprintf(buffer, "% c", 'x');
   REQUIRE(!strcmp(buffer, "x"));
 }
-
 
 TEST_CASE("+ flag", "[]" ) {
   char buffer[100];
@@ -311,7 +776,7 @@ TEST_CASE("0 flag", "[]" ) {
 }
 
 
-TEST_CASE("- flag", "[]" ) {
+TEST_CASE("- flag, part 1", "[]" ) {
   char buffer[100];
 
   test::sprintf(buffer, "%-d", 42);
@@ -374,13 +839,31 @@ TEST_CASE("- flag", "[]" ) {
 #else
   REQUIRE(!strcmp(buffer, "e"));
 #endif
+}
 
-  test::sprintf(buffer, "%0-15.3g", -42.);
+
+TEST_CASE("- flag, part 2", "[]" ) {
+  char buffer[100];
+  const char * s = "";
+
+  {
+    test::sprintf(buffer, "%0-15.3g", -42.);
 #ifndef PRINTF_DISABLE_SUPPORT_EXPONENTIAL
-  REQUIRE(!strcmp(buffer, "-42.0          "));
+    s = "-42.0          ";
 #else
-  REQUIRE(!strcmp(buffer, "g"));
+    s = "g";
 #endif
+    CHECK( std::string( buffer ) == s );
+
+    test::sprintf(buffer, "%0-15.4g", -42.);
+#ifndef PRINTF_DISABLE_SUPPORT_EXPONENTIAL
+    s = "-42.00         ";
+#else
+    s = "g";
+#endif
+    CHECK( std::string( buffer ) == s );
+  }
+
 }
 
 
@@ -391,7 +874,7 @@ TEST_CASE("# flag", "[]" ) {
   REQUIRE(!strcmp(buffer, ""));
   test::sprintf(buffer, "%#.1x", 0);
   REQUIRE(!strcmp(buffer, "0"));
-  test::sprintf(buffer, "%#.0llx", (long long)0);
+  test::sprintf(buffer, "%#.0llx", 0LL);
   REQUIRE(!strcmp(buffer, ""));
   test::sprintf(buffer, "%#.8x", 0x614e);
   REQUIRE(!strcmp(buffer, "0x0000614e"));
@@ -936,7 +1419,7 @@ TEST_CASE("padding neg numbers", "[]" ) {
 }
 
 
-TEST_CASE("float padding neg numbers", "[]" ) {
+TEST_CASE("float padding neg numbers, part 1", "[]" ) {
   char buffer[100];
 
   // space padding
@@ -950,8 +1433,6 @@ TEST_CASE("float padding neg numbers", "[]" ) {
   REQUIRE(!strcmp(buffer, " -5.0"));
 
 #ifndef PRINTF_DISABLE_SUPPORT_EXPONENTIAL
-  test::sprintf(buffer, "% 6.1g", -5.);
-  REQUIRE(!strcmp(buffer, "    -5"));
 
   test::sprintf(buffer, "% 6.1e", -5.);
   REQUIRE(!strcmp(buffer, "-5.0e+00"));
@@ -986,11 +1467,28 @@ TEST_CASE("float padding neg numbers", "[]" ) {
 
   test::sprintf(buffer, "%07.0E", -5.);
   REQUIRE(!strcmp(buffer, "-05E+00"));
-
-  test::sprintf(buffer, "%03.0g", -5.);
-  REQUIRE(!strcmp(buffer, "-05"));
 #endif
 }
+
+
+TEST_CASE("float padding neg numbers, part 2", "[]" ) {
+  char buffer[100];
+
+#ifndef PRINTF_DISABLE_SUPPORT_EXPONENTIAL
+  {
+    CaseSpec specs[] = {
+      { "% 6.1g", -5., "    -5" },
+      { "%03.0g", -5., "-05" },
+    };
+
+    for( CaseSpec spec : specs ) {
+      test::sprintf(buffer, spec.fmt, spec.stimulus);
+      CHECK( std::string( buffer ) == spec.shouldBe );
+    }
+  }
+#endif
+}
+
 
 TEST_CASE("length", "[]" ) {
   char buffer[100];
@@ -1072,170 +1570,6 @@ TEST_CASE("length", "[]" ) {
 
   test::sprintf(buffer, "%02.0d", 0);
   REQUIRE(!strcmp(buffer, "  "));
-}
-
-
-TEST_CASE("float", "[]" ) {
-  char buffer[100];
-
-  // test special-case floats using math.h macros
-  test::sprintf(buffer, "%8f", NAN);
-  REQUIRE(!strcmp(buffer, "     nan"));
-
-  test::sprintf(buffer, "%8f", INFINITY);
-  REQUIRE(!strcmp(buffer, "     inf"));
-
-  test::sprintf(buffer, "%-8f", -INFINITY);
-  REQUIRE(!strcmp(buffer, "-inf    "));
-
-#ifndef PRINTF_DISABLE_SUPPORT_EXPONENTIAL
-  test::sprintf(buffer, "%+8e", INFINITY);
-  REQUIRE(!strcmp(buffer, "    +inf"));
-#endif
-
-  test::sprintf(buffer, "%.4f", 3.1415354);
-  REQUIRE(!strcmp(buffer, "3.1415"));
-
-  test::sprintf(buffer, "%.3f", 30343.1415354);
-  REQUIRE(!strcmp(buffer, "30343.142"));
-
-  test::sprintf(buffer, "%.0f", 34.1415354);
-  REQUIRE(!strcmp(buffer, "34"));
-
-  test::sprintf(buffer, "%.0f", 1.3);
-  REQUIRE(!strcmp(buffer, "1"));
-
-  test::sprintf(buffer, "%.0f", 1.55);
-  REQUIRE(!strcmp(buffer, "2"));
-
-  test::sprintf(buffer, "%.1f", 1.64);
-  REQUIRE(!strcmp(buffer, "1.6"));
-
-  test::sprintf(buffer, "%.2f", 42.8952);
-  REQUIRE(!strcmp(buffer, "42.90"));
-
-  test::sprintf(buffer, "%.9f", 42.8952);
-  REQUIRE(!strcmp(buffer, "42.895200000"));
-
-  test::sprintf(buffer, "%.10f", 42.895223);
-  REQUIRE(!strcmp(buffer, "42.8952230000"));
-
-  // this testcase checks, that the precision is truncated to 9 digits.
-  // a perfect working float should return the whole number
-  test::sprintf(buffer, "%.12f", 42.89522312345678);
-  REQUIRE(!strcmp(buffer, "42.895223123000"));
-
-  // this testcase checks, that the precision is truncated AND rounded to 9 digits.
-  // a perfect working float should return the whole number
-  test::sprintf(buffer, "%.12f", 42.89522387654321);
-  REQUIRE(!strcmp(buffer, "42.895223877000"));
-
-  test::sprintf(buffer, "%6.2f", 42.8952);
-  REQUIRE(!strcmp(buffer, " 42.90"));
-
-  test::sprintf(buffer, "%+6.2f", 42.8952);
-  REQUIRE(!strcmp(buffer, "+42.90"));
-
-  test::sprintf(buffer, "%+5.1f", 42.9252);
-  REQUIRE(!strcmp(buffer, "+42.9"));
-
-  test::sprintf(buffer, "%f", 42.5);
-  REQUIRE(!strcmp(buffer, "42.500000"));
-
-  test::sprintf(buffer, "%.1f", 42.5);
-  REQUIRE(!strcmp(buffer, "42.5"));
-
-  test::sprintf(buffer, "%f", 42167.0);
-  REQUIRE(!strcmp(buffer, "42167.000000"));
-
-  test::sprintf(buffer, "%.9f", -12345.987654321);
-  REQUIRE(!strcmp(buffer, "-12345.987654321"));
-
-  test::sprintf(buffer, "%.1f", 3.999);
-  REQUIRE(!strcmp(buffer, "4.0"));
-
-  test::sprintf(buffer, "%.0f", 3.5);
-  REQUIRE(!strcmp(buffer, "4"));
-
-  test::sprintf(buffer, "%.0f", 4.5);
-  REQUIRE(!strcmp(buffer, "4"));
-
-  test::sprintf(buffer, "%.0f", 3.49);
-  REQUIRE(!strcmp(buffer, "3"));
-
-  test::sprintf(buffer, "%.1f", 3.49);
-  REQUIRE(!strcmp(buffer, "3.5"));
-
-  test::sprintf(buffer, "a%-5.1f", 0.5);
-  REQUIRE(!strcmp(buffer, "a0.5  "));
-
-  test::sprintf(buffer, "a%-5.1fend", 0.5);
-  REQUIRE(!strcmp(buffer, "a0.5  end"));
-
-#ifndef PRINTF_DISABLE_SUPPORT_EXPONENTIAL
-  test::sprintf(buffer, "%G", 12345.678);
-  REQUIRE(!strcmp(buffer, "12345.7"));
-
-  test::sprintf(buffer, "%.7G", 12345.678);
-  REQUIRE(!strcmp(buffer, "12345.68"));
-
-  test::sprintf(buffer, "%.5G", 123456789.);
-  REQUIRE(!strcmp(buffer, "1.2346E+08"));
-
-  test::sprintf(buffer, "%.6G", 12345.);
-  REQUIRE(!strcmp(buffer, "12345.0"));
-
-  test::sprintf(buffer, "%+12.4g", 123456789.);
-  REQUIRE(!strcmp(buffer, "  +1.235e+08"));
-
-  test::sprintf(buffer, "%.2G", 0.001234);
-  REQUIRE(!strcmp(buffer, "0.0012"));
-
-  test::sprintf(buffer, "%+10.4G", 0.001234);
-  REQUIRE(!strcmp(buffer, " +0.001234"));
-
-  test::sprintf(buffer, "%+012.4g", 0.00001234);
-  REQUIRE(!strcmp(buffer, "+001.234e-05"));
-
-  test::sprintf(buffer, "%.3g", -1.2345e-308);
-  REQUIRE(!strcmp(buffer, "-1.23e-308"));
-
-  test::sprintf(buffer, "%+.3E", 1.23e+308);
-  REQUIRE(!strcmp(buffer, "+1.230E+308"));
-#endif
-
-  // out of range for float: should switch to exp notation if supported, else empty
-  test::sprintf(buffer, "%.1f", 1E20);
-#ifndef PRINTF_DISABLE_SUPPORT_EXPONENTIAL
-  REQUIRE(!strcmp(buffer, "1.0e+20"));
-#else
-  REQUIRE(!strcmp(buffer, ""));
-#endif
-
-  // brute force float
-  bool fail = false;
-  std::stringstream str;
-  str.precision(5);
-  for (float i = -100000; i < 100000; i += 1) {
-    test::sprintf(buffer, "%.5f", i / 10000);
-    str.str("");
-    str << std::fixed << i / 10000;
-    fail = fail || !!strcmp(buffer, str.str().c_str());
-  }
-  REQUIRE(!fail);
-
-
-#ifndef PRINTF_DISABLE_SUPPORT_EXPONENTIAL
-  // brute force exp
-  str.setf(std::ios::scientific, std::ios::floatfield);
-  for (float i = -1e20; i < 1e20; i += 1e15) {
-    test::sprintf(buffer, "%.5f", i);
-    str.str("");
-    str << i;
-    fail = fail || !!strcmp(buffer, str.str().c_str());
-  }
-  REQUIRE(!fail);
-#endif
 }
 
 
@@ -1479,14 +1813,11 @@ TEST_CASE("ret value", "[]" ) {
 }
 
 
-TEST_CASE("misc", "[]" ) {
+TEST_CASE("misc, part 1", "[]" ) {
   char buffer[100];
 
   test::sprintf(buffer, "%u%u%ctest%d %s", 5, 3000, 'a', -20, "bit");
   REQUIRE(!strcmp(buffer, "53000atest-20 bit"));
-
-  test::sprintf(buffer, "%.*f", 2, 0.33333333);
-  REQUIRE(!strcmp(buffer, "0.33"));
 
   test::sprintf(buffer, "%.*d", -1, 1);
   REQUIRE(!strcmp(buffer, "1"));
@@ -1502,12 +1833,26 @@ TEST_CASE("misc", "[]" ) {
 
   test::sprintf(buffer, "%*sx", -3, "hi");
   REQUIRE(!strcmp(buffer, "hi x"));
+}
+
+
+using CaseSpec2 = struct { const char *fmt; int parm; double stimulus; const char *shouldBe; };
+
+TEST_CASE("misc, part 2", "[]" ) {
+  char buffer[100];
 
 #ifndef PRINTF_DISABLE_SUPPORT_EXPONENTIAL
-  test::sprintf(buffer, "%.*g", 2, 0.33333333);
-  REQUIRE(!strcmp(buffer, "0.33"));
+  {
+    CaseSpec2 specs[] = {
+      { "%.*f", 2, 0.33333333, "0.33" },
+      { "%.*g", 2, 0.33333333, "0.33" },
+      { "%.*e", 2, 0.33333333, "3.33e-01" },
+    };
 
-  test::sprintf(buffer, "%.*e", 2, 0.33333333);
-  REQUIRE(!strcmp(buffer, "3.33e-01"));
+    for( CaseSpec2 spec : specs ) {
+      test::sprintf(buffer, spec.fmt, spec.parm, spec.stimulus);
+      CHECK( std::string( buffer ) == spec.shouldBe );
+    }
+  }
 #endif
 }

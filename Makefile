@@ -1,5 +1,5 @@
 # ------------------------------------------------------------------------------
-# 
+#
 # Generic Makefile
 #
 # Copyright Marco Paland 2007 - 2017
@@ -7,16 +7,18 @@
 #
 # ------------------------------------------------------------------------------
 
+SHELL := /bin/bash
+
 # ------------------------------------------------------------------------------
 # Paths
 # ------------------------------------------------------------------------------
 PATH_TOOLS_CC        = /usr/bin/
 PATH_TOOLS_CC_LIB    = /usr/lib/
-PATH_TOOLS_UTIL      = 
+PATH_TOOLS_UTIL      =
 
 PATH_BIN       = bin
 PATH_TMP       = tmp
-PATH_NUL       = /dev/null
+PATH_NUL       = /dev/stderr
 PATH_OBJ       = $(PATH_TMP)/obj
 PATH_LST       = $(PATH_TMP)/lst
 PATH_ERR       = $(PATH_TMP)/err
@@ -50,10 +52,13 @@ FILES_PRJ  = test/test_suite
 #              -Iinclude_path3                 \
 # ------------------------------------------------------------------------------
 
-C_INCLUDES = 
+C_INCLUDES =
 
-C_DEFINES  = 
+C_DEFINES  =
 
+ifndef $(CC_STD)
+  CC_STD = -std=c++14
+endif
 
 # ------------------------------------------------------------------------------
 # The target name and location
@@ -107,7 +112,7 @@ SED       = $(PATH_TOOLS_UTIL)sed
 
 GCCFLAGS      = $(C_INCLUDES)                     \
                 $(C_DEFINES)                      \
-                -std=c++11                        \
+                $(CC_STD)                         \
                 -g                                \
                 -Wall                             \
                 -pedantic                         \
@@ -166,7 +171,7 @@ LFLAGS        = $(GCCFLAGS)                       \
 # Main-Dependencies (app: all)
 # ------------------------------------------------------------------------------
 .PHONY: all
-all: clean_prj $(TRG) $(TRG)_nm.txt
+all: clean_prj $(TRG) $(TRG)_nm.txt diagnostics checks cov_app
 
 
 # ------------------------------------------------------------------------------
@@ -223,49 +228,99 @@ version:
 # ------------------------------------------------------------------------------
 
 # ------------------------------------------------------------------------------
-# Link/locate application
+# tests and lint-like checkers
 # ------------------------------------------------------------------------------
-$(TRG) : $(FILES_O)
-	@-$(ECHO) +++ linkink application to generate: $(TRG)
-	@-$(CL) $(LFLAGS) -L. -lc $(PATH_OBJ)/*.o -Wl,-Map,$(TRG).map -o $(TRG)
-  # profiling
-	@-$(CL) $(LFLAGS) -L. -lc $(PATH_COV)/*.o --coverage -o $(PATH_COV)/$(APP)
+.PHONY: most
+most : $(TRG) tests lints
 
+.PHONY: lints
+lints : cppcheck tidy
+
+.PHONY: cppcheck
+cppcheck : printf.cppcheck.out
+
+.PHONY: tidy
+tidy : test/test_suite.tidy.out
+
+.PHONY: tests
+tests : $(TRG)
+	$(TRG) -r compact
+
+.PHONY: tests_verbose
+tests_verbose : $(TRG)
+	$(TRG) -r compact -s
+
+%.cppcheck.out: %.cpp
+	cppcheck --enable=warning,style --inline-suppr $< > $@ 2>&1
+
+test/%.tidy.out: test/%.cpp
+	clang-tidy $< > $@ 2>&1
 
 # ------------------------------------------------------------------------------
 # parse the object files to obtain symbol information, and create a size summary
 # ------------------------------------------------------------------------------
 $(TRG)_nm.txt : $(TRG)
 	@-$(ECHO) +++ parsing symbols with nm to generate: $(TRG)_nm.txt
-	@-$(NM) --numeric-sort --print-size $(TRG) > $(TRG)_nm.txt
+	$(NM) --numeric-sort --print-size $(TRG) > $(TRG)_nm.txt
 	@-$(ECHO) +++ demangling symbols with c++filt to generate: $(TRG)_cppfilt.txt
-	@-$(NM) --numeric-sort --print-size $(TRG) | $(CPPFILT) > $(TRG)_cppfilt.txt
+	$(NM) --numeric-sort --print-size $(TRG) | $(CPPFILT) > $(TRG)_cppfilt.txt
 	@-$(ECHO) +++ creating size summary table with size to generate: $(TRG)_size.txt
-	@-$(SIZE) -A -t $(TRG) > $(TRG)_size.txt
+	$(SIZE) -A -t $(TRG) > $(TRG)_size.txt
 
+# ------------------------------------------------------------------------------
+# compiling/assembling/linking/locating:  normal executable target
+# ------------------------------------------------------------------------------
+.PHONY: bin_app
+bin_app : $(TRG)
 
-%.o : %.cpp
-	@$(ECHO) +++ compile: $<
+.PHONY: diagnostics
+diagnostics: obj_d obj_lst pre_pre
+
+.PHONY: obj_o
+obj_o : $(PATH_OBJ)/*.o
+
+.PHONY: obj_d
+obj_d : $(PATH_OBJ)/*.d
+
+.PHONY: obj_lst
+obj_lst : $(PATH_OBJ)/*.lst
+
+.PHONY: pre_pre
+pre_pre : $(PATH_PRE)/*.pre
+
+$(TRG) : $(PATH_OBJ)/*.o
+	@-$(ECHO) +++ linkink application to generate: $(TRG)
+	$(CL) $(LFLAGS) -L. -lc $(PATH_OBJ)/*.o -Wl,-Map,$(TRG).map -o $(TRG)
+
+$(PATH_OBJ)/%.o : test/%.cpp
   # Compile the source file
+	$(CL) $(CPPFLAGS) $< -c -o $(PATH_OBJ)/$(basename $(@F)).o 2> $(PATH_ERR)/$(basename $(@F)).err
   # ...and Reformat (using sed) any possible error/warning messages for the VisualStudio(R) output window
-  # ...and Create an assembly listing using objdump
-  # ...and Generate a dependency file (using the -MM flag)
-	@-$(CL) $(CPPFLAGS) $< -E -o $(PATH_PRE)/$(basename $(@F)).pre
-	@-$(CL) $(CPPFLAGS) $< -c -o $(PATH_OBJ)/$(basename $(@F)).o 2> $(PATH_ERR)/$(basename $(@F)).err
-	@-$(SED) -e 's|.h:\([0-9]*\),|.h(\1) :|' -e 's|:\([0-9]*\):|(\1) :|' $(PATH_ERR)/$(basename $(@F)).err
-	@-$(OBJDUMP) --disassemble --line-numbers -S $(PATH_OBJ)/$(basename $(@F)).o > $(PATH_LST)/$(basename $(@F)).lst
-	@-$(CL) $(CPPFLAGS) $< -MM > $(PATH_OBJ)/$(basename $(@F)).d
-  # profiling
-	@-$(CL) $(CPPFLAGS) -O0 --coverage $< -c -o $(PATH_COV)/$(basename $(@F)).o 2> $(PATH_NUL)
+	$(SED) -e 's|.h:\([0-9]*\),|.h(\1) :|' -e 's|:\([0-9]*\):|(\1) :|' $(PATH_ERR)/$(basename $(@F)).err
 
-%.o : %.c
-	@$(ECHO) +++ compile: $<
-  # Compile the source file
-  # ...and Reformat (using sed) any possible error/warning messages for the VisualStudio(R) output window
-  # ...and Create an assembly listing using objdump
+$(PATH_PRE)/%.pre : test/%.cpp
+	$(CL) $(CPPFLAGS) $< -E -o $(PATH_PRE)/$(basename $(@F)).pre
+
+$(PATH_OBJ)/%.d : test/%.cpp
   # ...and Generate a dependency file (using the -MM flag)
-	@-$(CL) $(CFLAGS) $< -E -o $(PATH_PRE)/$(basename $(@F)).pre
-	@-$(CC) $(CFLAGS) $< -c -o $(PATH_OBJ)/$(basename $(@F)).o 2> $(PATH_ERR)/$(basename $(@F)).err
-	@-$(SED) -e 's|.h:\([0-9]*\),|.h(\1) :|' -e 's|:\([0-9]*\):|(\1) :|' $(PATH_ERR)/$(basename $(@F)).err
-	@-$(OBJDUMP) -S $(PATH_OBJ)/$(basename $(@F)).o > $(PATH_LST)/$(basename $(@F)).lst
-	@-$(CC) $(CFLAGS) $< -MM > $(PATH_OBJ)/$(basename $(@F)).d
+	$(CL) $(CPPFLAGS) $< -MM > $(PATH_OBJ)/$(basename $(@F)).d
+
+$(PATH_OBJ)/%.lst : $(PATH_OBJ)/%.o
+  # ...and Create an assembly listing using objdump
+	$(OBJDUMP) --disassemble --line-numbers -S $(PATH_OBJ)/$(basename $(@F)).o > $(PATH_LST)/$(basename $(@F)).lst
+
+# ------------------------------------------------------------------------------
+# compiling/assembling/linking/locating:  profiling target
+# ------------------------------------------------------------------------------
+.PHONY: cov_app
+cov_app : $(PATH_COV)/$(APP)
+
+.PHONY: cov_o
+cov_o : $(PATH_COV)/*.o
+
+$(PATH_COV)/$(APP) : $(PATH_COV)/*.o
+	@-$(ECHO) +++ linking application to generate: $(PATH_COV)/$(APP)
+	$(CL) $(LFLAGS) -L. -lc $(PATH_COV)/*.o --coverage -o $(PATH_COV)/$(APP)
+
+$(PATH_COV)/%.o : test/%.cpp
+	$(CL) $(CPPFLAGS) -O0 --coverage $< -c -o $(PATH_COV)/$(basename $(@F)).o 2> $(PATH_ERR)/$(basename $(@F)).coverr
